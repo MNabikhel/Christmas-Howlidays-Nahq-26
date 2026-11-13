@@ -22,7 +22,23 @@
   "notes": "Red, green & gold mix with glitter, gold caps and a few tartan-print balls; matches the tree palette.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/81t4QG8HhCL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81t4QG8HhCL._AC_SX679_.jpg",
+  "size_in": {
+   "d_mix": [
+    [
+     2.4,
+     32
+    ],
+    [
+     1.6,
+     36
+    ],
+    [
+     1.2,
+     32
+    ]
+   ]
+  }
  },
  {
   "id": "baubles_champ",
@@ -46,7 +62,23 @@
   "notes": "Champagne/gold mix, some lace-pattern balls; reads cream-gold on the tree.",
   "verdict_before": "close",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/71jMH8CWYjL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71jMH8CWYjL._AC_SX679_.jpg",
+  "size_in": {
+   "d_mix": [
+    [
+     2.4,
+     33
+    ],
+    [
+     1.6,
+     34
+    ],
+    [
+     1.2,
+     33
+    ]
+   ]
+  }
  },
  {
   "id": "glitter_red",
@@ -71,7 +103,10 @@
   "notes": "12 large red & gold glitter/painted 3.15\" balls. Price up from $29.99, so qty cut to 1.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/81eZrnLDP1L._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81eZrnLDP1L._AC_SX679_.jpg",
+  "size_in": {
+   "d": 3.15
+  }
  },
  {
   "id": "glitter_champ",
@@ -95,40 +130,19 @@
   "notes": "Old listing unavailable. New: champagne glitter 3.15\" balls with sequin texture.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/81tkO5Iuh4L._AC_SX679_.jpg"
- },
- {
-  "id": "plaid_balls",
-  "section": "Tree ornaments",
-  "name": "CANVAS red & green plaid ball ornaments, 80 mm (6-pk)",
-  "store": "Canadian Tire",
-  "url": "https://www.canadiantire.ca/en/pdp/canvas-red-collection-decoration-plaid-ball-christmas-ornament-set-red-green-80-mm-6-pk-1518863p.html",
-  "price": 14.99,
-  "qty": 2,
-  "status": "listed",
-  "viz": "Tartan balls",
-  "look": "Optional accent: red-and-green tartan fabric baubles that match the tartan ribbon. Not in the photo; drop if budget is tight.",
-  "reference_crops": [
-   "tree_bottom"
-  ],
-  "priority": "low",
-  "image_checked": true,
-  "match": "close",
-  "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-20",
-  "notes": "Red/green tartan fabric balls (not in the photo). Qty cut to 2 for budget. Price not shown online; confirm in store.",
-  "verdict_before": "close",
-  "action": "kept",
-  "photo": "https://media-www.canadiantire.ca/product/seasonal-gardening/seasonal/seasonal-decor/1518863/red-6-pack-red-and-green-plaid-pack-d8b25c24-ef42-42e2-a047-7e9cbc8481b5-jpgrendition.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81tkO5Iuh4L._AC_SX679_.jpg",
+  "size_in": {
+   "d": 3.15
+  }
  },
  {
   "id": "golden",
   "section": "Tree ornaments",
-  "name": "Golden retriever ornaments with red plaid fringed scarf, 2.75\"",
+  "name": "Golden retriever plush, sitting, ~10\" (2 on the tree, 1 under it in a tartan scarf)",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/dp/B0C5LH4K55",
-  "price": 27.26,
-  "qty": 6,
+  "url": "https://www.amazon.ca/dp/B01N4NC8QY",
+  "price": 19.37,
+  "qty": 3,
   "status": "listed",
   "viz": "Golden retriever puppies",
   "look": "Seated golden-retriever PUPPY figurine ornament, front-facing, soft resin look, about 3-4 in, with a red-and-green tartan scarf knotted at the neck.",
@@ -140,20 +154,25 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-16",
-  "notes": "Sitting golden in a red/black plaid fringed scarf; closer to the photo than the old knit-hat version, and $16 cheaper each.",
+  "arrives_by": "2026-11-17",
+  "notes": "Resin 2.75\" ornaments were far too small to read like the inspiration. Sitting golden plush with dark eyes and floppy ears; wired into the lower branches with a tartan-ribbon scarf.",
   "verdict_before": "close",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/61t7bpa6NuL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71W5NrxDdUL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 10,
+   "w": 7,
+   "d": 11
+  }
  },
  {
   "id": "tabby_grey",
   "section": "Tree ornaments",
-  "name": "Grey tabby kitten ornaments with red & white scarf",
+  "name": "Grey tabby kitten plush, sitting, 4.7\" (on the tree, tartan-ribbon scarf)",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/Sliver-Tabby-Shorthair-Christmas-Ornament/dp/B0BGQZBSKV",
-  "price": 28.8,
-  "qty": 4,
+  "url": "https://www.amazon.ca/dp/B0CVNDJS4D",
+  "price": 10.66,
+  "qty": 3,
   "status": "listed",
   "viz": "Grey tabby kittens",
   "look": "Seated grey/silver tabby kitten ornament, white chest and muzzle, front-facing, red tartan scarf.",
@@ -164,19 +183,24 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-16",
-  "notes": "Grey-and-white tabby kitten, red/white knit scarf with pompom; same as the cats in the photo. Qty up to 4.",
+  "arrives_by": "2026-11-17",
+  "notes": "Wild Republic Pocketkins: sitting grey tabby with white chest, like the kittens in the inspiration. Replaces the 2.25\" resin kittens.",
   "verdict_before": "match",
-  "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/719D1UOWMbL._AC_SX679_.jpg"
+  "action": "replaced",
+  "photo": "https://m.media-amazon.com/images/I/41+6yxSJT2L._AC_.jpg",
+  "size_in": {
+   "h": 4.7,
+   "w": 3.7,
+   "d": 5.9
+  }
  },
  {
   "id": "tabby_brown",
   "section": "Tree ornaments",
-  "name": "Brown tabby kitten ornament with red & white scarf",
+  "name": "Grey tabby cat plush, 6\" tall (under the tree with the dog, tartan scarf)",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/Brown-Stripped-Shorthaired-Christmas-Ornament/dp/B0BGT2WPHM",
-  "price": 28.81,
+  "url": "https://www.amazon.ca/dp/B086H6SNL7",
+  "price": 24.99,
   "qty": 1,
   "status": "listed",
   "viz": "Brown tabby kittens",
@@ -188,21 +212,26 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-25",
-  "notes": "Same style in brown tabby. Only 1 left in stock, so qty 1 (extra grey kitten covers the gap).",
+  "arrives_by": "2026-11-16",
+  "notes": "Douglas Zigby: realistic grey-brown tabby with white bib, the closest to the cat in the inspiration panel. $5.21 shipping on this listing.",
   "verdict_before": "match",
-  "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/714cjakZk6L._AC_SX679_.jpg"
+  "action": "replaced",
+  "photo": "https://m.media-amazon.com/images/I/61Mu-iFPXEL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 6,
+   "w": 3,
+   "d": 8
+  }
  },
  {
   "id": "paw_disc",
   "section": "Tree ornaments",
-  "name": "Paw-print disc ornaments (makes 30): 3\" wood rounds painted cream, black glitter paw, mini velvet bow",
+  "name": "Paw-print bauble ornaments (makes 30): 4\" bauble-shaped wood rounds painted cream, gold rim & cap, black glitter paw, velvet bow",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/dp/B0DM4YQRBV",
+  "url": "https://www.amazon.ca/dp/B0FC6DWFVL",
   "diy": true,
   "made": 30,
-  "price": 22.99,
+  "price": 13.9,
   "qty": 1,
   "status": "listed",
   "viz": "Cream discs with a black paw",
@@ -215,21 +244,26 @@
   "image_checked": true,
   "match": "close",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
-  "notes": "No bought cream disc with black paw exists (all are clay prints or personalised). Old wood-slice link unavailable; new 60-pk 3\" rounds with holes.",
+  "arrives_by": "2026-11-20",
+  "notes": "OurWarm 4\" wood rounds already cut in a bauble shape with a cap tab, like the paw ornament in the inspiration. 50 pcs, cheaper than the 3\" set.",
   "verdict_before": "no",
   "action": "DIY",
-  "photo": "https://m.media-amazon.com/images/I/71CyNMEGWSL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/61bJqwBX-oL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 4.3,
+   "w": 3.5,
+   "d": 0.1
+  }
  },
  {
   "id": "bones",
   "section": "Tree ornaments",
-  "name": "Dog-bone ornaments (makes 24): chunky 4\" wood bones painted biscuit-cream",
+  "name": "3D dog-bone ornaments (makes 24): 5\" puffy bones shaped from white air-dry foam clay, painted biscuit-cream",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/dp/B0G5B5ZLHN",
+  "url": "https://www.amazon.ca/dp/B0F86WQG4W",
   "diy": true,
   "made": 24,
-  "price": 19.89,
+  "price": 22.0,
   "qty": 1,
   "status": "listed",
   "viz": "Cream dog bones",
@@ -242,11 +276,16 @@
   "image_checked": true,
   "match": "close",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-18",
-  "notes": "Bought bone ornaments are all personalised/plaid. Old cutouts arrive Dec 2+; new 24-pk chunky bones with holes arrive Nov 18.",
+  "arrives_by": "2026-11-17",
+  "notes": "The inspiration bones are chunky and 3D, not flat. Lightweight foam clay (500 g) keeps them light enough to hang; also makes the faux biscuits for the jar.",
   "verdict_before": "no",
   "action": "DIY",
-  "photo": "https://m.media-amazon.com/images/I/61gqHzKmZGL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71N9Mto+9iL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 1.8,
+   "w": 5,
+   "d": 1
+  }
  },
  {
   "id": "doghouse",
@@ -270,10 +309,15 @@
   "match": "close",
   "checked_on": "2026-11-13",
   "arrives_by": "2026-11-19",
-  "notes": "Only bought doghouses are Snoopy (brand) or one-off glass. Gabled 4.3\" birdhouses with hanging loop are the closest base. Price was $76.90 on the old listing.",
+  "notes": "Make Market gabled birdhouses with hanging rope, 4.3\" tall: painted barn-red with brick lines, cream roof and arched door trim, cream paw on the gable.",
   "verdict_before": "no",
   "action": "DIY",
-  "photo": "https://m.media-amazon.com/images/I/81zuaO30A7L._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81zuaO30A7L._AC_SX679_.jpg",
+  "size_in": {
+   "h": 4.3,
+   "w": 3.4,
+   "d": 2.7
+  }
  },
  {
   "id": "stockings",
@@ -297,17 +341,21 @@
   "notes": "Old plaid set unavailable. New: cable-knit minis in red, forest green and cream with fluffy cuffs.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/71scdvqwj1L._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71scdvqwj1L._AC_SX679_.jpg",
+  "size_in": {
+   "h": 4.3,
+   "w": 3.9
+  }
  },
  {
   "id": "topper",
   "section": "Tree ornaments",
-  "name": "Tree topper (makes 1): 4-loop bow from 2.5\" natural burlap paw-print wired ribbon",
+  "name": "Tree topper (makes 1): 24\" four-loop bow with 3 ft streamers, from 4\" natural burlap stamped with black paws",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/dp/B09H2YMHCL",
+  "url": "https://www.amazon.ca/dp/B0CHMLF3NP",
   "diy": true,
   "made": 1,
-  "price": 20.56,
+  "price": 16.8,
   "qty": 1,
   "status": "listed",
   "viz": "Paw-print bow topper",
@@ -317,21 +365,55 @@
   ],
   "priority": "high",
   "image_checked": true,
-  "match": "close",
+  "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-20",
-  "notes": "Old link was a mixed 6-roll set (black/white/colour). New: natural burlap with dark-brown paws; closest to the black-paw burlap in the photo.",
+  "arrives_by": "2026-11-17",
+  "notes": "No 4\" burlap with black paws exists; the 2.5\" one had brown paws. 4\" natural burlap + black paw stamps = exactly the inspiration topper. Only 2 rolls left, order first.",
   "verdict_before": "no",
   "action": "DIY",
-  "photo": "https://m.media-amazon.com/images/I/81DL09E+mCL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81p175ygSKL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 24,
+   "w": 24,
+   "d": 8,
+   "ribbon_w": 4,
+   "len_yd": 10
+  }
+ },
+ {
+  "status": "listed",
+  "image_checked": true,
+  "checked_on": "2026-11-13",
+  "action": "new",
+  "reference_crops": [
+   "tree_full"
+  ],
+  "id": "glitter_green",
+  "section": "Tree ornaments",
+  "name": "Large 4\" dark green glitter baubles (6-pc)",
+  "store": "Amazon.ca",
+  "url": "https://www.amazon.ca/dp/B0CSYXLVCF",
+  "price": 30.99,
+  "qty": 2,
+  "priority": "medium",
+  "match": "match",
+  "arrives_by": "2026-11-17",
+  "notes": "Deep forest-green glitter, 3.94\"; the inspiration has big dark green glitter balls among the red and gold.",
+  "size_in": {
+   "d": 3.94
+  },
+  "look": "Large forest-green glitter baubles.",
+  "viz": "Green glitter balls",
+  "photo": "https://m.media-amazon.com/images/I/912GngceVvL._AC_SX679_.jpg",
+  "verdict_before": "new"
  },
  {
   "id": "tartan_ribbon",
   "section": "Ribbon & bows",
-  "name": "Red/green tartan plaid wired ribbon, 2.5\" x 10 yd",
+  "name": "Red/green/black tartan wired ribbon, 4\" x 10 yd",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/Ribbon-Traditions-Green-Christmas-Tartan/dp/B081KYQQR6",
-  "price": 20.33,
+  "url": "https://www.amazon.ca/dp/B0D7WPZDJW",
+  "price": 33.68,
   "qty": 6,
   "status": "listed",
   "viz": "Cascading tartan ribbon",
@@ -344,11 +426,15 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-18",
-  "notes": "Red/green tartan wired ribbon with gold edge, 2.5\" x 10 yd.",
+  "arrives_by": "2026-11-21",
+  "notes": "Darker Stewart-style tartan, 4\" wide like the cascading ribbon in the inspiration. 60 yd: 6 cascades with poufs, 10 big hand-tied bows, and scarves for the plush pets. $5.45 shipping per order.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/71YidkgyVBL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/61otY0qPR-L._AC_SX679_.jpg",
+  "size_in": {
+   "w": 4,
+   "len_yd": 10
+  }
  },
  {
   "id": "velvet_ribbon",
@@ -357,7 +443,7 @@
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/MEEDEE-Crushed-Velvet-Christmas-Supplies/dp/B0C9TMPDBM",
   "price": 36.37,
-  "qty": 2,
+  "qty": 1,
   "status": "listed",
   "viz": "Red velvet ribbon garland",
   "look": "Deep red velvet wired ribbon about 2.5 in wide.",
@@ -370,10 +456,14 @@
   "match": "match",
   "checked_on": "2026-11-13",
   "arrives_by": "2026-11-19",
-  "notes": "Deep-red velvet with gold back, 2.5\" x 10 yd. Price up from $16.99, qty cut to 2.",
+  "notes": "Deep red velvet with gold back, 2.5\" x 10 yd. One roll ties the display gift boxes.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/7134bl6oDzL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/7134bl6oDzL._AC_SX679_.jpg",
+  "size_in": {
+   "w": 2.5,
+   "len_yd": 10
+  }
  },
  {
   "id": "plaid_bows",
@@ -397,15 +487,19 @@
   "notes": "Red tartan bows with tails. Price up from $25.99, qty cut to 1 (12 bows).",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/91pc3CSB9eL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/91pc3CSB9eL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 7,
+   "w": 5
+  }
  },
  {
   "id": "velvet_bows",
   "section": "Ribbon & bows",
-  "name": "Large red velvet bows, 16\" x 9\" (12-pk)",
+  "name": "Deep red velvet bows with long tails, 5\" x 10\" (12-pk)",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/dp/B07K7W8GBC",
-  "price": 29.99,
+  "url": "https://www.amazon.ca/dp/B0HDXK13R2",
+  "price": 23.99,
   "qty": 1,
   "status": "listed",
   "viz": "Red velvet bows",
@@ -417,11 +511,16 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-18",
-  "notes": "Old listing showed BROWN velvet bows arriving Dec 3+. New: true red velvet bows.",
+  "arrives_by": "2026-11-17",
+  "notes": "Wine-red velvet, the same deep red as the bow on the paw ornament in the inspiration (the JOYIN bows were bright red).",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/81OjyfCIePL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71sB3T58pAL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 10.2,
+   "w": 5.1,
+   "d": 1
+  }
  },
  {
   "id": "mini_bows",
@@ -446,7 +545,42 @@
   "notes": "Small deep-red velvet bows on twist ties.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/71+z14wADiL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71+z14wADiL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 3.5,
+   "w": 3.5
+  }
+ },
+ {
+  "status": "listed",
+  "image_checked": true,
+  "checked_on": "2026-11-13",
+  "action": "new",
+  "reference_crops": [
+   "tree_full"
+  ],
+  "id": "big_bows",
+  "section": "Ribbon & bows",
+  "name": "Big tartan bows, 11\" with 18\" tails (makes 10): hand-tied from the 4\" tartan ribbon",
+  "store": "Amazon.ca (tartan ribbon)",
+  "url": "https://www.amazon.ca/dp/B0D7WPZDJW",
+  "price": 0.0,
+  "qty": 1,
+  "diy": true,
+  "made": 10,
+  "priority": "high",
+  "match": "match",
+  "arrives_by": "2026-11-21",
+  "notes": "The inspiration bows are much bigger than store-bought 5x7\" bows. 1.5 yd of 4\" wired ribbon makes one 11\" bow with tails.",
+  "size_in": {
+   "h": 18,
+   "w": 11,
+   "d": 3
+  },
+  "look": "Large tartan bows with long tails.",
+  "viz": "Big tartan bows",
+  "photo": "https://m.media-amazon.com/images/I/61otY0qPR-L._AC_SX679_.jpg",
+  "verdict_before": "new"
  },
  {
   "id": "red_picks",
@@ -470,7 +604,10 @@
   "notes": "Red glitter berry sprays; matches the red berries in the photo.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/81ChEM+CCRL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81ChEM+CCRL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 17
+  }
  },
  {
   "id": "gold_picks",
@@ -494,7 +631,10 @@
   "notes": "Gold glitter berry & leaf picks.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/71S70YCkJ2L._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71S70YCkJ2L._AC_SX679_.jpg",
+  "size_in": {
+   "h": 17
+  }
  },
  {
   "id": "pine_picks",
@@ -518,7 +658,11 @@
   "notes": "Pine sprigs with pinecones and red berries.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/81pKBuL-lWL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81pKBuL-lWL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 4,
+   "w": 3
+  }
  },
  {
   "id": "paint",
@@ -539,7 +683,8 @@
   "arrives_by": null,
   "notes": "Michaels site blocks automated browsing (403); price not re-checked. Buy in store.",
   "verdict_before": null,
-  "action": "kept"
+  "action": "kept",
+  "size_in": {}
  },
  {
   "id": "paw_stamp",
@@ -560,7 +705,10 @@
   "arrives_by": null,
   "notes": "Michaels site blocks automated browsing (403); price not re-checked. Buy in store.",
   "verdict_before": null,
-  "action": "kept"
+  "action": "kept",
+  "size_in": {
+   "w": 2
+  }
  },
  {
   "id": "floral_wire",
@@ -582,15 +730,95 @@
   "notes": "Green 22-gauge paddle wire, 3 spools.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/715LG1i1U7L._SX522_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/715LG1i1U7L._SX522_.jpg",
+  "size_in": {}
+ },
+ {
+  "id": "bone_cutters",
+  "section": "Accents & supplies",
+  "name": "Bone cookie cutters, 2.7\"/3\"/3.3\" (for the faux biscuits)",
+  "store": "Amazon.ca",
+  "url": "https://www.amazon.ca/dp/B08GJDGNRC",
+  "price": 8.92,
+  "qty": 1,
+  "status": "listed",
+  "priority": "low",
+  "image_checked": true,
+  "match": "match",
+  "checked_on": "2026-11-13",
+  "arrives_by": "2026-11-17",
+  "action": "new",
+  "notes": "Metal cutters with soft coating; cut biscuit shapes from the leftover foam clay.",
+  "size_in": {
+   "w": 3.3
+  },
+  "look": "Supply only.",
+  "reference_crops": [],
+  "viz": null,
+  "photo": "https://m.media-amazon.com/images/I/71jfakagczL._AC_SX679_.jpg",
+  "verdict_before": "new"
+ },
+ {
+  "id": "felt",
+  "section": "Accents & supplies",
+  "name": "Black felt sheets, 8\" x 12\" (paw on the bone pillow)",
+  "store": "Amazon.ca",
+  "url": "https://www.amazon.ca/dp/B0DX78HCZC",
+  "price": 8.5,
+  "qty": 1,
+  "status": "listed",
+  "priority": "low",
+  "image_checked": true,
+  "match": "match",
+  "checked_on": "2026-11-13",
+  "arrives_by": "2026-11-17",
+  "action": "new",
+  "notes": "1 mm black felt; cut a 4\" paw and glue it to the sherpa pillow.",
+  "size_in": {
+   "w": 8,
+   "h": 12
+  },
+  "look": "Supply only.",
+  "reference_crops": [],
+  "viz": null,
+  "photo": "https://m.media-amazon.com/images/I/71DA89e+QOL._AC_SX679_.jpg",
+  "verdict_before": "new"
+ },
+ {
+  "status": "listed",
+  "image_checked": true,
+  "checked_on": "2026-11-13",
+  "action": "new",
+  "reference_crops": [
+   "tree_full"
+  ],
+  "id": "glossy_berries",
+  "section": "Accents & supplies",
+  "name": "Glossy red berry stems, 7\" (48-pk)",
+  "store": "Amazon.ca",
+  "url": "https://www.amazon.ca/dp/B0CBFJG1XR",
+  "price": 19.99,
+  "qty": 1,
+  "priority": "medium",
+  "match": "match",
+  "arrives_by": "2026-11-17",
+  "notes": "Shiny 0.6\" red berries on 7\" stems; the inspiration has glossy berry clusters tucked all over (the glitter picks are a different look).",
+  "size_in": {
+   "h": 7,
+   "berry_d": 0.6
+  },
+  "look": "Glossy red holly-berry clusters.",
+  "viz": "Red berry clusters",
+  "photo": "https://m.media-amazon.com/images/I/71fAv9LDNiL._AC_SX679_.jpg",
+  "verdict_before": "new"
  },
  {
   "id": "gift_boxes",
   "section": "Under-tree display",
-  "name": "Kraft nesting gift boxes with lids (set of 3)",
-  "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/Soul-Lane-Christmas-Decorative-Cardboard/dp/B0D79WZ3V2",
-  "price": 47.54,
+  "name": "Display gift boxes (makes 5): empty shipping boxes from our orders, wrapped in tartan & kraft paw paper",
+  "store": "Amazon.ca (wrapping paper)",
+  "url": "https://www.amazon.ca/dp/B0FSXRGDGM",
+  "price": 0.0,
   "qty": 1,
   "status": "listed",
   "viz": "Wrapped display boxes",
@@ -602,11 +830,42 @@
   "image_checked": true,
   "match": "close",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-16",
-  "notes": "Nesting boxes (red/green/kraft prints); they get wrapped in the kraft paw & tartan paper anyway.",
+  "arrives_by": "2026-11-21",
+  "notes": "The Soul & Lane set was only 3.5\" tall. The inspiration has chunky 10-14\" presents, so we wrap the boxes our orders arrive in. No extra cost.",
   "verdict_before": "close",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/81ubVthD8NL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71AUbqW7srL._AC_SX679_.jpg",
+  "diy": true,
+  "made": 5,
+  "size_in": {
+   "boxes": [
+    [
+     14,
+     11,
+     12
+    ],
+    [
+     12,
+     10,
+     9
+    ],
+    [
+     10,
+     10,
+     10
+    ],
+    [
+     16,
+     12,
+     7
+    ],
+    [
+     9,
+     9,
+     6
+    ]
+   ]
+  }
  },
  {
   "id": "tartan_wrap",
@@ -630,7 +889,11 @@
   "notes": "Old roll was green with tan check. New: red tartan with green & white lines, like the boxes in the photo.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/91tYOo8NuZL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/91tYOo8NuZL._AC_SX679_.jpg",
+  "size_in": {
+   "w": 17,
+   "len_ft": 33
+  }
  },
  {
   "id": "paw_wrap",
@@ -654,15 +917,19 @@
   "notes": "Old listing unavailable (and was red bones). New: brown kraft with black paws, exactly the boxes in the photo.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/71AUbqW7srL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71AUbqW7srL._AC_SX679_.jpg",
+  "size_in": {
+   "w": 17,
+   "len_ft": 20
+  }
  },
  {
   "id": "bone_pillow",
   "section": "Under-tree display",
-  "name": "Plush bone pillow, cream with black paw",
+  "name": "Cream sherpa bone pillow, 15\" (black felt paw added)",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/dp/B0GR99NF8V",
-  "price": 11.99,
+  "url": "https://www.amazon.ca/dp/B0GS53B213",
+  "price": 26.57,
   "qty": 1,
   "status": "listed",
   "viz": "Plush bone pillows",
@@ -675,11 +942,16 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-24",
-  "notes": "Soft cream/light-grey bone with a black embroidered paw, like the pillow under the tree.",
+  "arrives_by": "2026-11-21",
+  "notes": "Curly cream sherpa bone like the big pillow under the tree in the inspiration; glue on a 4\" black felt paw. $6.11 shipping on this listing.",
   "verdict_before": "close",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/71lta6DXkgL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81-fleiyBPL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 3,
+   "w": 15,
+   "d": 9
+  }
  },
  {
   "id": "bowl",
@@ -703,7 +975,11 @@
   "notes": "Old bowl unavailable. No red bowl with a white paw exists on Amazon.ca; this is glossy red ceramic with white dots. Optional: add a white paw with a paint pen.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/61hHZgycaXL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/61hHZgycaXL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 1.8,
+   "w": 5.9
+  }
  },
  {
   "id": "gift_card",
@@ -727,15 +1003,19 @@
   "notes": "Buy in store at Homes Alive Pets.",
   "verdict_before": "match",
   "action": "kept",
-  "photo": "https://www.homesalive.ca/static/version1794513699/frontend/Gorilla/homesalive/en_CA/images/og-default.png"
+  "photo": "https://www.homesalive.ca/static/version1794513699/frontend/Gorilla/homesalive/en_CA/images/og-default.png",
+  "size_in": {
+   "h": 2.1,
+   "w": 3.4
+  }
  },
  {
   "id": "basket",
   "section": "Gift basket",
-  "name": "Large wicker gift basket with handle & liner",
+  "name": "Natural wicker gift basket with handle & lace liner, 13\" x 10.5\" x 6\"",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/Wicker-Basket-Gathering-Wedding-GNIEMCKIN/dp/B0C61WF3MF",
-  "price": 53.6,
+  "url": "https://www.amazon.ca/dp/B0CW39X1ZP",
+  "price": 39.99,
   "qty": 1,
   "status": "listed",
   "viz": "Wicker basket",
@@ -745,13 +1025,19 @@
   ],
   "priority": "medium",
   "image_checked": true,
-  "match": "close",
+  "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-22",
-  "notes": "Wicker basket with handles and cream liner; a bit darker than the natural wicker in the photo. Price up from $29.99.",
+  "arrives_by": "2026-11-17",
+  "notes": "Light natural willow like the inspiration basket (the old one was dark burgundy wicker). 11\" tall to the handle.",
   "verdict_before": "close",
   "action": "kept",
-  "photo": "https://m.media-amazon.com/images/I/71X9C70c+eL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71u21p7Hy4L._AC_SX679_.jpg",
+  "size_in": {
+   "h": 6,
+   "w": 13,
+   "d": 10.5,
+   "handle_h": 11
+  }
  },
  {
   "id": "blanket",
@@ -775,7 +1061,11 @@
   "notes": "Old one was snowflakes only. New: red with white paws (plus snowflakes); photo is red knit with white paws.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/71pVd4nSuQL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71pVd4nSuQL._AC_SX679_.jpg",
+  "size_in": {
+   "w": 50,
+   "len": 60
+  }
  },
  {
   "id": "jar",
@@ -799,7 +1089,11 @@
   "notes": "Old link was a 40 lb steel food bin. New: clear glass jar with knob lid, like the photo. No treats (auction is 2027).",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/51xVrkIusNL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/51xVrkIusNL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 9.9,
+   "w": 7
+  }
  },
  {
   "id": "holiday_toy",
@@ -823,7 +1117,12 @@
   "notes": "Old toy was Santa-in-chimney. Now a cream bone with black paw, as in the basket photo.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/71lta6DXkgL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71lta6DXkgL._AC_SX679_.jpg",
+  "size_in": {
+   "h": 1.8,
+   "w": 8.7,
+   "d": 5.7
+  }
  },
  {
   "id": "rope",
@@ -847,7 +1146,10 @@
   "notes": "Old rope was navy/yellow. New set is red, white and green braided ropes.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/71k5KfmM3hL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/71k5KfmM3hL._AC_SX679_.jpg",
+  "size_in": {
+   "w": 10
+  }
  },
  {
   "id": "balls",
@@ -871,16 +1173,19 @@
   "notes": "Old KONG balls were yellow-green. These are red felt with white seams, as in the basket.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/91c4ZS4+rPL._AC_SX679_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/91c4ZS4+rPL._AC_SX679_.jpg",
+  "size_in": {
+   "d": 2.58
+  }
  },
  {
   "id": "bandanas",
   "section": "Gift basket",
-  "name": "Red tartan scarves with fringe (2) for the dog & cat",
+  "name": "Red tartan fringed scarf, 12\" x 72\" (cut in half: one each for the plush dog & cat)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B075ZCW8JD",
   "price": 35.28,
-  "qty": 2,
+  "qty": 1,
   "status": "listed",
   "viz": "Plaid bandanas",
   "look": "Red tartan pet SCARVES with fringe (the dog and cat in the photo wear knit tartan scarves, not bandanas).",
@@ -892,9 +1197,43 @@
   "match": "match",
   "checked_on": "2026-11-13",
   "arrives_by": "2026-11-16",
-  "notes": "Bandanas swapped for real fringed red/green tartan scarves, the exact look the dog and cat wear.",
+  "notes": "Fold each half to 4\" wide so it fits a 10\" plush; the real fringe shows on the front like the inspiration panel.",
   "verdict_before": "no",
   "action": "replaced",
-  "photo": "https://m.media-amazon.com/images/I/81ZkWCSgqJL._AC_SY879_.jpg"
+  "photo": "https://m.media-amazon.com/images/I/81ZkWCSgqJL._AC_SY879_.jpg",
+  "size_in": {
+   "w": 12,
+   "len": 72
+  }
+ },
+ {
+  "id": "faux_treats",
+  "section": "Gift basket",
+  "name": "Faux dog biscuits for the jar (makes 30): foam clay cut with the bone cutters, painted biscuit-tan, sealed",
+  "store": "Amazon.ca (cutters)",
+  "url": "https://www.amazon.ca/dp/B08GJDGNRC",
+  "price": 0.0,
+  "qty": 1,
+  "diy": true,
+  "made": 30,
+  "status": "listed",
+  "priority": "high",
+  "image_checked": true,
+  "match": "close",
+  "checked_on": "2026-11-13",
+  "arrives_by": "2026-11-17",
+  "action": "new",
+  "notes": "The inspiration jar is full of biscuits, but real treats would expire before the 2027 auction. These are inedible and last.",
+  "size_in": {
+   "w": 3,
+   "h": 1.2
+  },
+  "look": "Biscuit-coloured bone treats filling the glass jar.",
+  "reference_crops": [
+   "gift_basket"
+  ],
+  "viz": "Biscuits in the jar",
+  "photo": "https://m.media-amazon.com/images/I/71jfakagczL._AC_SX679_.jpg",
+  "verdict_before": "new"
  }
 ]
