@@ -28,7 +28,9 @@ for f in sorted((ROOT / 'data' / 'cutouts').glob('*.webp')):
     w, h = Image.open(f).size
     cuts[f.stem] = {'src': 'data:image/webp;base64,' + base64.b64encode(f.read_bytes()).decode(), 'w': w, 'h': h}
 template = (ROOT / 'build' / 'tree_template.html').read_text(encoding='utf-8')
-page = template.replace('__ITEMS__', json.dumps(slim, ensure_ascii=False, separators=(',', ':'))).replace('__CUTS__', json.dumps(cuts, separators=(',', ':'))).replace('__SCRIPT__', script)
+docx = ROOT / 'output' / 'HP26_Tree_Gallery_Form_Corporate_Finance.docx'  # built first by build_docx.js
+docx_b64 = base64.b64encode(docx.read_bytes()).decode() if docx.exists() else ''
+page = template.replace('__DOCX__', docx_b64).replace('__ITEMS__', json.dumps(slim, ensure_ascii=False, separators=(',', ':'))).replace('__CUTS__', json.dumps(cuts, separators=(',', ':'))).replace('__SCRIPT__', script)
 (ROOT / 'output' / 'howlidays_tree.html').write_text(page, encoding='utf-8')
 preview = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'

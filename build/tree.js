@@ -33,6 +33,35 @@ const NOT_ON_TREE = {
 };
 const STATUS = { est: 'Estimated price', listed: 'Price as listed when checked', face: 'Face value' };
 
+/* ---------------- Export the Word form ---------------- */
+{
+  const btn = document.getElementById('export'), msg = document.getElementById('exportMsg');
+  const NAME = 'HP26_Tree_Gallery_Form_Corporate_Finance.docx', HINT = msg.textContent;
+  const blob = () => new Blob([Uint8Array.from(atob(window.HOWL_DOCX), c => c.charCodeAt(0))], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  if (!window.HOWL_DOCX) btn.closest('.export').hidden = true;
+  const viaClaude = () => window.claude && typeof window.claude.use === 'function';
+  if (viaClaude()) window.claude.use('downloads').then(dl => { if (!dl) btn.closest('.export').hidden = true; });
+  btn.onclick = async () => {
+    msg.textContent = HINT;
+    if (!viaClaude()) {   // standalone preview file opened in a normal browser
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob()); a.download = NAME; document.body.append(a); a.click(); a.remove();
+      msg.textContent = 'Downloading ' + NAME + '.'; return;
+    }
+    const dl = await window.claude.use('downloads');
+    if (!dl) { btn.closest('.export').hidden = true; return; }
+    btn.disabled = true;
+    try {
+      const r = await dl.save({ filename: NAME, data: blob() });
+      msg.textContent = r.status === 'saved' ? 'Saved ' + NAME + '.' : 'Sent where you chose.';
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'declined') msg.textContent = HINT;
+      else if (code === 'rate_limited') msg.textContent = 'A save prompt is already open. Finish that one first.';
+      else { msg.textContent = 'Saving files isn\'t available in this view. Open the page in claude.ai to export.'; }
+    } finally { btn.disabled = false; }
+  };
+}
+
 /* ---------------- Panel ---------------- */
 document.getElementById('about').textContent = ABOUT;
 const subtotal = ITEMS.reduce((s, i) => s + i.total, 0);

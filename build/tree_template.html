@@ -103,6 +103,11 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 30px; line-height
 .meter i { display: block; height: 100%; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
 .legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; background: var(--c); vertical-align: 0; }
+.export { display: grid; gap: 6px; margin: -6px 0 18px; }
+.export button { justify-self: start; display: inline-flex; gap: 8px; align-items: center; background: var(--pine); color: var(--surface); border: 0; border-radius: 9px; padding: 9px 14px; font-weight: 700; font-size: 13.5px; cursor: pointer; }
+.export button:hover { filter: brightness(1.08); }
+.export button:disabled { opacity: .55; cursor: default; }
+.export p { margin: 0; font-size: 12px; color: var(--muted); }
 .list h3 { display: flex; justify-content: space-between; align-items: baseline; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
   color: var(--pine); margin: 18px 0 4px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
 .list h3 span { font-variant-numeric: tabular-nums; letter-spacing: 0; color: var(--muted); }
@@ -152,12 +157,17 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 30px; line-height
     <h1>Home for the Howlidays</h1>
     <p class="about" id="about"></p>
     <div class="budget" id="budget"></div>
+    <div class="export">
+      <button id="export" type="button"><span aria-hidden="true">⤓</span> Export Word form (.docx)</button>
+      <p id="exportMsg" aria-live="polite">The filled 2026 Tree Gallery form with every item, cost and link, plus the committee notes.</p>
+    </div>
     <div class="list" id="list"></div>
     <p class="fine">Every product photo was checked against the inspiration image and prices were read from the live listings on Nov 13, 2026, so confirm them at checkout. Every item in the 3D view is drawn at its real size from the listing measurements, so the preview matches what we build. Tap one to see the listing; tap Compare to see the inspiration board. DIY items are made by the committee, and their totals are the cost of materials. Every ornament gets secured with floral wire, and there's no tree skirt (the organizers cover the base).</p>
   </aside>
 </div>
 
 <script>window.HOWL_ITEMS = __ITEMS__;</script>
+<script>window.HOWL_DOCX = "__DOCX__";</script>
 <script>window.HOWL_CUTS = __CUTS__;</script>
 <script type="importmap">
 { "imports": {
