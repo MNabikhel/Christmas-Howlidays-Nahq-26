@@ -28,11 +28,20 @@ for e in O['elements']:
         if src.exists(): o['thumb'] = thumb(src, 96)
         o.pop('needs_text', None)
 
-script = (ROOT / 'build' / 'tree.js').read_text(encoding='utf-8')
-import subprocess   # fail the build on a syntax error rather than ship a blank page
-for js in ('tree.js', 'resolve.js', 'docs_core.js'):
-    r = subprocess.run(['node', '-e', "new Function(require('fs').readFileSync(process.argv[1], 'utf8').replace(/^import .*$/mg, ''))", str(ROOT / 'build' / js)], capture_output=True, text=True)
-    if r.returncode: raise SystemExit(f'{js} has a syntax error:\n{r.stderr[-600:]}')
+# tree.js, then every build/extras_*.js (sorted by name), as ONE module script: the extras share tree.js's top-level
+# scope and call registerRoom / registerExtra with `core` (see the Extras API notes in tree.js)
+extras = sorted((ROOT / 'build').glob('extras_*.js'))
+script = '\n'.join([(ROOT / 'build' / 'tree.js').read_text(encoding='utf-8')] +
+                   [f'/* ==== {f.name} ==== */\n' + f.read_text(encoding='utf-8') for f in extras])
+import subprocess, tempfile   # fail the build on a syntax error rather than ship a blank page
+def syntax(name, src):
+    with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as t: t.write(src)
+    r = subprocess.run(['node', '-e', "new Function(require('fs').readFileSync(process.argv[1], 'utf8').replace(/^import .*$/mg, ''))", t.name], capture_output=True, text=True)
+    pathlib.Path(t.name).unlink()
+    if r.returncode: raise SystemExit(f'{name} has a syntax error:\n{r.stderr[-600:]}')
+for f in [ROOT / 'build' / 'tree.js', *extras, ROOT / 'build' / 'resolve.js', ROOT / 'build' / 'docs_core.js']:
+    syntax(f.name, f.read_text(encoding='utf-8'))
+syntax('tree.js + extras', script)   # also catches clashing top-level names between tree.js and the extras
 resolve_js = (ROOT / 'build' / 'resolve.js').read_text(encoding='utf-8')
 cuts = {}
 for f in sorted((ROOT / 'data' / 'cutouts').glob('*.webp')):
@@ -63,4 +72,4 @@ preview = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
            '<style>body{margin:0}</style></head><body>' + page + '</body></html>')
 (ROOT / 'output' / 'howlidays_tree_preview.html').write_text(preview, encoding='utf-8')
 t = json.loads((ROOT / 'data' / 'supplies.json').read_text())['totals']
-print(f"page {len(page) / 1e6:.1f} MB | elements {len(O['elements'])} | default total ${t['grand']:,.2f}, ${t['left']:,.2f} left | word builder {'in page' if builder else 'NOT embedded'}")
+print(f"page {len(page) / 1e6:.1f} MB | elements {len(O['elements'])} | extras {', '.join(f.name for f in extras) or 'none'} | default total ${t['grand']:,.2f}, ${t['left']:,.2f} left | word builder {'in page' if builder else 'NOT embedded'}")

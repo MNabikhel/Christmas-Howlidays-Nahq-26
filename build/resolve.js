@@ -41,7 +41,8 @@
       if (r.carries.length) { it.price = pyRound(r.carries.reduce((t, s) => t + S_BY[s].price * S_BY[s].qty, 0), 2); it.qty = 1; it.materials = r.carries; }
       else if (r.price !== null) it.price = r.price;
       else if (it.diy) it.price = 0;
-      const sh = pyRound((it.ship || 0) + r.carries.reduce((t, s) => t + (O.supplies[s].ship || 0), 0) + (O.supplies[id] && r.price !== null ? O.supplies[id].ship || 0 : 0), 2);
+      // delivery is counted per unit (worst case), as in build_plan.py
+      const sh = pyRound((it.ship || 0) * r.qty + r.carries.reduce((t, s) => t + (O.supplies[s].ship || 0) * S_BY[s].qty, 0) + (O.supplies[id] && r.price !== null ? (O.supplies[id].ship || 0) * r.qty : 0), 2);
       if (sh) ships.push([it.form_name || it.name, sh]);
       out.push(it);
     });
@@ -49,7 +50,7 @@
       out.push(Object.assign({}, O.catalog.shipping, {
         price: pyRound(ships.reduce((t, s) => t + s[1], 0), 2), qty: 1, store: 'Amazon.ca', url: 'https://www.amazon.ca/',
         name: 'Amazon.ca delivery on the listings that charge it ($0 with Prime)', form_name: 'Shipping (Amazon.ca)',
-        notes: 'From the listings: ' + ships.map(([n, s]) => `${n} $${s.toFixed(2)}`).join(', ') + '. Everything else ships free on an order over $35; DeSerres ships free over $149; Canadian Tire is store pickup.',
+        notes: 'From the listings, counted per unit where we buy more than one (the worst case; confirm the delivery line at checkout): ' + ships.map(([n, s]) => `${n} $${s.toFixed(2)}`).join(', ') + '. Everything else ships free on an order over $35; DeSerres ships free over $149; Canadian Tire is store pickup.',
       }));
     }
     out.forEach(it => { it.total = pyRound(it.price * it.qty, 2); });

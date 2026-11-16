@@ -71,7 +71,20 @@
      "why": "Crisp paws, but $29.13 with shipping and needs an iron; black felt paws from the felt we already buy look the same from viewing distance."
     }
    ],
-   "verified": null
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B0DQ4BXYKZ",
+      "price": 25.14,
+      "in_stock": true,
+      "arrives_by": "2026-11-22",
+      "photo_ok": true,
+      "note": "Natural 6\" jute, hemmed, not wired; xingwanworks, shipped internationally, $6.43 delivery, import fees deposit included. Fallback: the 4\" wired burlap (B0CHMLF3NP)."
+     }
+    ]
+   },
+   "notes": "Re-measured on the board: the bow is about 22\" across with tails about 0.6 of that (14\"), hanging 25-30 degrees off vertical, the two loops rising, and paws about half the ribbon width. The build now cuts a 78\" strip and an 8\" knot piece (2.4 yd), glues 24 x 3\" felt paws on the front face only, wires both back edges (the jute is not wired), seals the cut ends and traces with a white fabric marker."
   },
   "flourish": {
    "board": [
@@ -115,14 +128,15 @@
      "why": "Pale yellow Labrador, not a golden retriever; sits in side profile."
     }
    ],
-   "verified": null
+   "verified": null,
+   "notes": "The Cuddlekins is a paler, peachier gold than the board's honey puppy; tilt it back on the branch so its grey paw pads face down. Wired with doubled floral wire plus an organizer zip tie (the dog weighs about 100 g, the Miyoni 136 g); scarves are 36\" (dog) and 22\" (cat), cut from 3\" strips with every cut end fringed."
   },
   "cats": {
    "board": [
     "board_cat_a",
     "board_cat_b"
    ],
-   "board_desc": "A grey-and-white tabby sitting, white chest, red tartan scarf with fringe; and a brown tabby sitting upright higher up.",
+   "board_desc": "Two striped grey-brown tabbies with white chests, muzzles and paws, both sitting upright and facing forward: the lower one in a fringed red tartan scarf, the upper one a warmer brown. About 8-15\" tall at the board's scale.",
    "size": {
     "label": "cat height",
     "board": [
@@ -130,9 +144,10 @@
      15.2
     ],
     "ours": {
-     "fluffy": 8,
+     "miyoni": 6,
      "pocketkins": 4.7,
-     "zigby": 6
+     "zigby": 6,
+     "fluffy": 7
     }
    },
    "considered": [
@@ -177,9 +192,74 @@
      "price": 17.26,
      "photo": "p_B0G58FV7YK",
      "why": "Right coat and cheap, but lying flat: on a branch it reads as a draped toy, and the board's cats sit."
+    },
+    {
+     "asin": "B0CY2YTRRS",
+     "name": "Wild Republic Cuddlekins orange tabby, 12\", sitting",
+     "price": 28.43,
+     "photo": "p_B0CY2YTRRS",
+     "why": "The board's pose and size exactly (sits upright, striped, white chest, 12\"), and sold by Amazon.ca for Nov 20, but ginger orange: the board's cats are grey-brown. Best pick if pose matters more than colour."
+    },
+    {
+     "asin": "B0F9FHNL1J",
+     "name": "Ditucu 9\" sitting cat, grey",
+     "price": 27.99,
+     "photo": "p_B0F9FHNL1J",
+     "why": "Sits and is the right size (4.5 stars, 114, Nov 20), but a floppy teddy-style body with patchy grey fur and no tabby stripes."
+    },
+    {
+     "asin": "B07RRB5HPD",
+     "name": "Bearington Lil' Socks grey striped tabby, 9.5\"",
+     "price": 50.49,
+     "photo": "p_B07RRB5HPD",
+     "why": "Good striped grey coat and a strong brand (Amazon US, Nov 19), but lies flat with its paws forward, and costs $50."
+    },
+    {
+     "asin": "B09WV3DSNC",
+     "name": "Wild Republic Pocketkins grey tabby (larger), sitting",
+     "price": 11.33,
+     "photo": "p_B09WV3DSNC",
+     "why": "Sitting grey tabby, but \"Temporarily out of stock\" on Nov 16 with no delivery date."
     }
    ],
-   "verified": null
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B00SUECXD0",
+      "price": 33.16,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Aurora Miyoni grey tabby, 9\" x 6\" tall. Amazon US, 4.8 (2,170), only 8 left: order first. Coat matches the board; crouching, not sitting."
+     },
+     {
+      "asin": "B0H5YKFT7X",
+      "price": 34.19,
+      "in_stock": true,
+      "arrives_by": "2026-11-24",
+      "photo_ok": false,
+      "note": "FLUFFYFUN: mostly white, standing; $5.45 delivery; 4 ratings. Option only."
+     },
+     {
+      "asin": "B086H6SNL7",
+      "price": 25.19,
+      "in_stock": true,
+      "arrives_by": "2026-11-19",
+      "photo_ok": true,
+      "note": "Zigby: striped, standing; shipped internationally, $5.21. Option only."
+     },
+     {
+      "asin": "B0CVNDJS4D",
+      "price": 10.66,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Pocketkins grey tabby 5\": sitting, striped, small. Option only."
+     }
+    ]
+   },
+   "notes": "Re-searched Nov 16 (22 Amazon.ca searches plus Canadian stores) for a sitting striped grey or brown tabby of 8-12\" that reaches Edmonton by Nov 30 from a solid seller. None exists: the sitting tabbies are orange (Cuddlekins), out of stock (Pocketkins grey 8\"), 5\" (Pocketkins), floppy and unstriped (Ditucu), or arrive in December. The Aurora Miyoni has the board's coat and the strongest seller record, so it is the default and is rated close: it crouches, the board's cats sit. The FLUFFYFUN, the earlier default, is mostly white and standing, not a sitting tabby as the plan said."
   },
   "doghouses": {
    "board": [
@@ -233,7 +313,8 @@
      "why": "2.3\" tall: far too small, and plain."
     }
    ],
-   "verified": null
+   "verified": null,
+   "notes": "Every board detail is now a cut part on the template (page 8): the flat U arch trim on a cream threshold, barge boards along the front roof edges, a ridge cap and a raised 5-piece paw cut from the door offcut. The joints stay dark like the board's (dark-brick base, barn red dabbed on the faces), bricks are about 0.9 x 1.5\", and the roof undersides are painted so the overhangs do not warp. Each house weighs about 160 g, so it sits upright on an inner branch wired through its floor. The doorway is left dark like the main board photo; the glowing bed in the board's close-up panel is not made."
   },
   "paws": {
    "board": [
@@ -282,7 +363,46 @@
      "why": "The same 14-count ivory weave at twice the DeSerres price."
     }
    ],
-   "verified": null
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B088WV6BFG",
+      "price": 29.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Faylapa 6\" bamboo hoops, 16 pc, brass screw; Amazon-shipped, sold by HLSG, 4.6 stars (42). Only 3 left: order first."
+     },
+     {
+      "asin": "B0BKWY2ZMT",
+      "price": 14.88,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Black glitter cardstock, 10 sheets; BusyPet, Amazon-shipped, 4.7 stars (349)."
+     },
+     {
+      "asin": null,
+      "sku": "DeSerres:aida-fabric-white-500x600mm",
+      "price": 14.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-27",
+      "photo_ok": true,
+      "note": "Aida 14-count white, 50 x 60 cm; \"In stock, ships in 48 hours\". Tea-stained to the board's colour."
+     },
+     {
+      "asin": null,
+      "sku": "DeSerres:felt-black-9x12in",
+      "price": 0.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-27",
+      "photo_ok": true,
+      "note": "Black felt 9 x 12\" for the back circles; \"ships in 48 hours\"."
+     }
+    ]
+   },
+   "notes": "The board's face is a warm biscuit-cream, not ivory, so the Aida is tea-stained; 9 x 9\" pieces (white 14-count, 50 x 60 cm sheets, 4 per sheet) are big enough to draw drum-tight in a 6\" hoop. Only the outer ring is primed and gilded, a 6\" black felt circle finishes the back, and the Faylapa 16-pk hoops are now the default (the same ornament, $37.69 less incl. GST, here Nov 20, 6 spares)."
   },
   "bones": {
    "board": [
@@ -303,13 +423,26 @@
     }
    },
    "considered": [],
-   "verified": null
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B0F86WQG4W",
+      "price": 22.0,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "LitoJoy white foam clay 500 g, Amazon-shipped, 4.8 stars (102). 3 bags."
+     }
+    ]
+   },
+   "notes": "The board's bones are chunky biscuits: shaft about 0.24-0.27 of the length and knob span about 0.51-0.53, hanging level from two gold cords at the upper knobs. Template page 4 now has that outline (31 sq in for 9\"), and the clay is calculated from it at 1\" thick less the foil core: about 117 g a bone, so a third 500 g bag is bought. The cord's two ends are glued into holes drilled over wire anchors after drying."
   },
   "baubles": {
    "board": [
     "board_baubles"
    ],
-   "board_desc": "Big glossy and glitter red balls, champagne-gold balls, a few forest green; the biggest reds are about the size of the dog's head.",
+   "board_desc": "Big plain glossy and glitter red balls, champagne-gold balls and a few glossy dark forest-green ones; the biggest reds are about the size of the dog's head. No striped or painted balls.",
    "size": {
     "label": "biggest red ball",
     "board": [
@@ -357,15 +490,104 @@
      "price": 28.99,
      "photo": "p_B09BB4W1F3",
      "why": "The same size as our 4\" glitter set: a near-duplicate."
+    },
+    {
+     "asin": "B0HGKYHG7X",
+     "name": "The plan's old 100-pc link (shown: the red, green & gold set it used to sell)",
+     "price": 39.99,
+     "photo": "p_B0HGKYHG7X",
+     "why": "On Nov 16 this link opens the Black & Gold 100-pc set: ordering from it would ship black baubles."
+    },
+    {
+     "asin": "B0D4DHJ9NW",
+     "name": "Alupssuc 82-pc red, green & gold set",
+     "price": 49.99,
+     "photo": "p_B0D4DHJ9NW",
+     "why": "Keeps some green in the filler set, but most pieces are shaped ornaments (trains, trees, gift boxes, stars), not balls; $6 more."
+    },
+    {
+     "asin": "B0FC217TG4",
+     "name": "SUMPTUX 36-pc dark green balls (green backup)",
+     "price": 30.99,
+     "photo": "p_B0FC217TG4",
+     "why": "The named backup if the 4\" green glitter packs sell out (in stock, 4.6 stars from 323, Nov 20). Smaller (mostly 1.6-3\") and an olive-leaning dark green with some embossed patterns."
+    },
+    {
+     "asin": "B0HN1N3SQW",
+     "name": "36-pc dark green velvet balls",
+     "price": 35.99,
+     "photo": "p_B0HN1N3SQW",
+     "why": "The board's deep forest green, but flocked velvet where the board's greens are glossy, and only 9 ratings."
     }
    ],
-   "verified": null
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B0FNJXJNXQ",
+      "price": 43.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Red & Gold 100-pc set (the old link B0HGKYHG7X opens Black & Gold). Hang the striped and painted pieces deep."
+     },
+     {
+      "asin": "B0B6PKG298",
+      "price": 32.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-23",
+      "photo_ok": true,
+      "note": "Benjia 6\" reds; now Nov 22-23."
+     },
+     {
+      "asin": "B0CSYHTT86",
+      "price": 30.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Oairse 4\" red glitter, 4.7 (166)."
+     },
+     {
+      "asin": "B0H33K316H",
+      "price": 19.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-21",
+      "photo_ok": true,
+      "note": "JOYIN 4\" reds; 3.1 stars (9): inspect on arrival."
+     },
+     {
+      "asin": "B0H33B6VSH",
+      "price": 19.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-21",
+      "photo_ok": true,
+      "note": "JOYIN 4\" golds; 3.1 stars (9): inspect on arrival."
+     },
+     {
+      "asin": "B0CSYXLVCF",
+      "price": 30.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-21",
+      "photo_ok": true,
+      "note": "Dark green glitter 4\": only 9 left, order first. The only green now."
+     },
+     {
+      "asin": "B09CMDR2D6",
+      "price": 39.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Champagne glitter 3.15\", 4.6 (1,061)."
+     }
+    ]
+   },
+   "notes": "The plan's 100-pc link (B0HGKYHG7X) now opens a Black & Gold set; it is repointed to the same seller's Red & Gold set (B0FNJXJNXQ, same price). Green now comes only from the two 4\" green glitter packs (12 balls), which matches the few greens on the board; that listing had 9 left, so it is ordered first, with the SUMPTUX 36-pc dark green set as the named backup."
   },
   "ribbon": {
    "board": [
     "board_ribbon"
    ],
-   "board_desc": "4\" red-and-green tartan with a thin gold line, running top to bottom in loose waves, with big hand-tied bows along it.",
+   "board_desc": "4\" red-and-green tartan with a thin gold line, running top to bottom in loose waves with big hand-tied bows along it; solid deep red velvet bows sit among the tartan ones (\"plaid and velvet ribbons\" on the board's list).",
    "size": {
     "label": "bow width",
     "board": [
@@ -378,8 +600,37 @@
      "more": 11
     }
    },
-   "considered": [],
-   "verified": null
+   "considered": [
+    {
+     "asin": "B0FFH6C6HL",
+     "name": "MESEEY red & green plaid wired ribbon, 4\" x 10 yd (fallback)",
+     "price": 27.71,
+     "photo": "p_B0FFH6C6HL",
+     "why": "The fallback if the tartan slips: $6 a roll cheaper and 4.7 stars (287), but brighter red and green with a gold metallic edge, and also shipped from outside Canada (Nov 24)."
+    }
+   ],
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B0D7WPZDJW",
+      "price": 33.76,
+      "in_stock": true,
+      "arrives_by": "2026-11-24",
+      "photo_ok": true,
+      "note": "GiftWrap Etc., shipped internationally, $5.45 delivery per roll (worst case). 5 rolls."
+     },
+     {
+      "asin": "B09WVCQN4R",
+      "price": 29.19,
+      "in_stock": true,
+      "arrives_by": "2026-11-19",
+      "photo_ok": true,
+      "note": "Green 22-gauge floral wire, 3 x 118 yd; Amazon US (cross-border), 4.8 stars (1,208)."
+     }
+    ]
+   },
+   "notes": "Five 9\" velvet bows are tied from the spare dark red velvet (5.1 of the 13.5 spare yards), so the tree mixes velvet and tartan like the board at no extra cost. The big tartan bows are one loop each side like the board (1.8 yd each), and the five cascades now have their own build sheet (118\" each, 4 poufs, about 10 ties). A cut plan places all of it, plus box D's band and bow, on the 5 rolls (44.5 of 50 yd)."
   },
   "stockings": {
    "board": [
@@ -387,7 +638,8 @@
    ],
    "board_desc": "\"Mini pet stockings\" is on the board's list but not in any of its photos.",
    "considered": [],
-   "verified": null
+   "verified": null,
+   "notes": "A 1\" black felt paw on each cream cuff makes the plain knit minis read as pet stockings (felt and glue already bought)."
   },
   "greens": {
    "board": [
@@ -403,31 +655,166 @@
    ],
    "board_desc": "Tartan-wrapped boxes tied with cream ribbon and cream bows, and a kraft paw-print box with tartan ribbon and a cream bow.",
    "considered": [],
-   "verified": null
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B0F9P8CHMT",
+      "price": 19.79,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Red tartan wrapping paper 17\" x 33 ft; Biobrown, Amazon-shipped."
+     },
+     {
+      "asin": "B0FSXRGDGM",
+      "price": 22.71,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Kraft paw paper, 6 sheets 17 x 40\"; shipped internationally, $5.75 delivery."
+     },
+     {
+      "asin": "B09MVX5VRK",
+      "price": 18.39,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Natural 1.5\" wired burlap, 20 yd; Donmon, Amazon-shipped, 4.5 stars (262)."
+     }
+    ]
+   },
+   "notes": "Box D now matches the board: a tartan band and tartan bow plus a cream burlap band carrying the cream bow. Boxes C and D are cut down from the open bottom, the two paper widths join under the ribbon, and every bow is hot-glued on."
   },
   "floor": {
    "board": [
     "board_floor"
    ],
-   "board_desc": "A cream sherpa bone pillow with a black paw, and a glossy red bowl with white paws.",
-   "considered": [],
-   "verified": null
+   "board_desc": "A cream sherpa bone pillow with a black paw, and a straight-sided deep red dog bowl with a stainless-steel rim and white paw prints, front and centre.",
+   "considered": [
+    {
+     "asin": "B0FX23RP9K",
+     "name": "Red glazed ceramic bowl with white dots (the earlier pick)",
+     "price": 19.99,
+     "photo": "p_B0FX23RP9K",
+     "why": "A shallow scalloped polka-dot cat dish; the board's bowl is a deep straight-sided dog bowl with a steel rim. It also needed a $9.99 paint marker for the paws."
+    }
+   ],
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B0GS53B213",
+      "price": 25.91,
+      "in_stock": true,
+      "arrives_by": "2026-11-24",
+      "photo_ok": true,
+      "note": "Cream sherpa bone pillow; $6.11 delivery, shipped from outside Canada (import fees deposit included)."
+     },
+     {
+      "asin": "B001LUN3LG",
+      "price": 17.68,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Bella Bowl Merlot: deep red, steel interior, cream paws and bones. Amazon.ca, 4.6 (16,487)."
+     }
+    ]
+   },
+   "notes": "The bowl is now the Loving Pets Bella Bowl (Merlot): the board's shape, steel interior and paw prints, so no paint marker is needed."
   },
   "basket": {
    "board": [
     "board_basket"
    ],
    "board_desc": "A wicker basket with a glass jar of bone biscuits tied with a red velvet bow, a red ball, rope toys, a cream bone toy with a black paw, a pet store gift card and a red paw-print throw.",
-   "considered": [],
-   "verified": null
+   "considered": [
+    {
+     "asin": "B0GR99NF8V",
+     "name": "Plush bone toy (the earlier link)",
+     "price": 11.99,
+     "photo": "p_B0GR99NF8V",
+     "why": "The link is the Gray variant (title ends \"(Gray)\"): a smooth grey bone with a tiny paw. Seller-fulfilled with no ratings, Nov 22-25."
+    },
+    {
+     "asin": "B0GR99XYFS",
+     "name": "Same plush bone toy, other colour",
+     "price": 11.99,
+     "photo": "p_B0GR99XYFS",
+     "why": "Listed as White on Amazon.ca, smooth plush with a small brown paw; no ratings, seller-fulfilled, Nov 22-25."
+    }
+   ],
+   "verified": {
+    "date": "2026-11-16",
+    "items": [
+     {
+      "asin": "B0CW39X1ZP",
+      "price": 39.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-21",
+      "photo_ok": true,
+      "note": "Natural wicker; remove the lace liner."
+     },
+     {
+      "asin": "B07GZ76ZZ6",
+      "price": 29.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Glass jar: wider barrel shape than the board's apothecary jar (close)."
+     },
+     {
+      "asin": "B08GJDGNRC",
+      "price": 8.0,
+      "in_stock": true,
+      "arrives_by": "2026-11-25",
+      "photo_ok": true,
+      "note": "Seller-fulfilled, Nov 22-25: or buy a bone cutter locally."
+     },
+     {
+      "asin": "B0FKBGPHCV",
+      "price": 43.34,
+      "in_stock": true,
+      "arrives_by": "2026-11-22",
+      "photo_ok": true,
+      "note": "Printed flannel with paws and snowflakes; drape paw-side out. Amazon US."
+     },
+     {
+      "asin": "B000E1S8NG",
+      "price": 10.49,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Cream sherpa fleece bone; add a 3\" black felt paw."
+     },
+     {
+      "asin": "B0BBLFFB17",
+      "price": 21.99,
+      "in_stock": true,
+      "arrives_by": "2026-11-21",
+      "photo_ok": true,
+      "note": "Red, white and green ropes; 3.8 stars from 4."
+     },
+     {
+      "asin": "B0DF7SGGPQ",
+      "price": 24.96,
+      "in_stock": true,
+      "arrives_by": "2026-11-20",
+      "photo_ok": true,
+      "note": "Red tennis balls. Amazon US."
+     }
+    ]
+   },
+   "notes": "Remove the basket's lace liner (the board's basket is bare wicker). The bone toy is now Ethical Pet's cream sherpa bone with a 3\" black felt paw. Biscuits are cut with the 2.7\" cutter, nearer the board's small biscuits. Drape the throw paw-side out. The jar and the throw are close, not exact: rated close."
   },
   "pair": {
    "board": [
     "board_pets_panel"
    ],
-   "board_desc": "A golden retriever and a grey tabby side by side in fringed tartan scarves.",
+   "board_desc": "A golden retriever and a striped grey-brown tabby with a white chest, side by side in fringed red tartan scarves; both sit upright.",
    "considered": [],
-   "verified": null
+   "verified": null,
+   "notes": "Uses the same Miyoni tabby as the tree, so the pair and the tree cats match. The board's cat sits; ours crouches beside the dog. Wired with doubled floral wire plus an organizer zip tie (the dog weighs about 100 g, the Miyoni 136 g); scarves are 36\" (dog) and 22\" (cat), cut from 3\" strips with every cut end fringed."
   },
   "giant": {
    "board": [

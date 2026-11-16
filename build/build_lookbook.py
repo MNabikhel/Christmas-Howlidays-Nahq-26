@@ -76,6 +76,30 @@ def rows_of(o):
                    + (f'<br><span class="cap">materials: {esc(mats)}</span>' if mats else '') + (f'<br><span class="cap">arrives by {it["arrives_by"]}</span>' if it.get('arrives_by') else '') + '</li>')
     return ''.join(out)
 
+UNIT = {'in2': 'sq in'}
+import re
+def steps_html(how):
+    parts = re.split(r'\s(?=\(\d+\)\s)', how.strip())
+    lead = '' if re.match(r'\(\d+\)\s', parts[0]) else parts.pop(0)
+    items = ''.join(f'<li>{esc(re.sub(r"^\(\d+\)\s", "", x))}</li>' for x in parts)
+    return (f'<p class="steps">{esc(lead)}</p>' if lead else '') + (f'<ol class="steps">{items}</ol>' if items else '')
+def make_block(o):
+    """Every piece this option makes or finishes: all its materials (its share of each supply, from the build's calculation), its tools and its steps."""
+    out = []
+    for r in o['rows']:
+        it = ITEMS.get(r['id'])
+        if not it or not it.get('how') or not (it.get('diy') or it.get('projects')): continue
+        P = set(it.get('projects') or [])
+        mats = [f"{s['name']}: {round(sum(u['amount'] for u in s['uses'] if u['project'] in P), 1):g} {UNIT.get(s['unit'], s['unit'])}" for s in SUP['supplies'] if any(u['project'] in P for u in s['uses'])]
+        S_BY = {s['id']: s['name'] for s in SUP['supplies']}
+        tools = [S_BY.get(t, t) for t in it.get('tools') or []]
+        head = f"makes {it.get('made')}" if it.get('diy') else 'bought, then finished by us'
+        out.append(f'<div class="make"><p class="an">{esc(it.get("form_name") or it["name"])} <span class="cap">· {esc(head)}</span></p>'
+                   + (f'<p class="cap"><b>Materials:</b> {esc("; ".join(mats))}.</p>' if mats else '')
+                   + (f'<p class="cap"><b>Tools:</b> {esc("; ".join(tools))}.</p>' if tools else '')
+                   + steps_html(it['how']) + '</div>')
+    return ''.join(out)
+
 def verify_list(e, o):
     out = []
     for r in o['rows']:
@@ -114,10 +138,11 @@ for e in O['elements']:
   <header class="elh"><h2>{esc(e['title'])}</h2>{pill}{vstat}</header>
   <p class="vn"><b>{esc(o['label'])}.</b> {esc(o['why'])}</p>
   <div class="trio">
-    <div class="col"><h3>On the board</h3><div class="bgrid">{board}</div><p class="cap">{esc(L['board_desc'])}</p></div>
+    <div class="col"><h3>On the board</h3><div class="bgrid">{board}</div><p class="cap">{esc(L['board_desc'])}</p>{f'<p class="cap"><b>Our verdict:</b> {esc(L["notes"])}</p>' if L.get('notes') else ''}</div>
     <div class="col"><h3>What we buy or build</h3>{f'<figure>{chosen_pic}<figcaption>{"Main material; the finished piece is in the 3D preview." if ITEMS.get((o["rows"] or [{}])[0].get("id"), {}).get("diy") else "The listing photo."}</figcaption></figure>' if chosen_pic else ''}<ul class="rows">{rows_of(o) or '<li>Nothing: as the board.</li>'}</ul></div>
     <div class="col"><h3>In the 3D preview</h3>{f'<figure>{r3d}<figcaption>Close-up from the 3D page, at true size.</figcaption></figure>' if r3d else '<p class="cap">Nothing to show for this option.</p>'}</div>
   </div>
+  {f'<h3>How we make it: materials, tools and steps</h3>{make_block(o)}' if make_block(o) else ''}
   {diag}
   <h3>Swap options in the 3D page ({len(others)})</h3>
   <ul class="alts">{''.join(opt_card(e, x) for x in others)}</ul>
@@ -126,15 +151,18 @@ for e in O['elements']:
   <ul class="check">{''.join(f'<li>{esc(v)}</li>' for v in verify_list(e, o)) or '<li>Nothing to buy.</li>'}</ul>
 </section>''')
 
+N_VER = sum(1 for e in O['elements'] if (LB['elements'][e['id']].get('verified') or {}).get('date') == LB['checked'])
 JUDGMENTS = [
- ('Topper', 'Tied from 6" natural jute (B0DQ4BXYKZ), two loops and two tails, 22" across: the board\'s shape and ribbon width. No paw-print burlap is sold wider than 2.5", so 20 black felt paws are glued on, cut from the felt we already buy (saves $29 against iron-on transfers and needs no iron). Floral wire glued along the edges lets the unwired jute hold its loops.'),
- ('Pets', 'Kept the 12" Cuddlekins golden retriever. Replaced the 4.7" kittens with the 8" FLUFFYFUN grey-and-white tabby, the closest sitting tabby at the board\'s scale. A dog and a cat sit together under the tree, recreating the board\'s dog-and-cat photo.'),
- ('Doghouses', 'Built at the board\'s scale: six 10" foam-board doghouses (10 boards) instead of twelve 4.3" ones. Two face the front, like the board.'),
- ('Paw ornaments', 'Ten 6" ornaments: a DeSerres embroidery hoop painted gold (its brass screw reads as the bauble cap), ivory Aida for the woven cream face, a black glitter-cardstock paw, and a bow hand-tied from dark red wired velvet (MEEDEE). Replaces 30 flat 4" wood rounds and three packs of mini bows.'),
- ('Bones', 'Eight 9" clay bones instead of twenty-four 5" ones: the board\'s size. The two bags of clay still cover the bones and the 60 biscuits.'),
- ('Baubles', 'Big balls at the board\'s 4-6" scale: plain 6" reds (Benjia), 4" red glitter, 4" JOYIN reds and golds, the green glitter and champagne sets, and one 100-pc set to fill. Dropped the second 100-pc set, the champagne 100-pc set and the painted 3.15" reds.'),
+ ('Topper', 'Tied from 6" natural jute (B0DQ4BXYKZ): a 78" strip and an 8" knot piece, two 10" loops angled up about 20 degrees over two 14" tails, as on the board (the earlier 22" tails were 60% too long). 24 black felt paws of 3", about half the ribbon\'s width like the board\'s, on the front face only; floral wire glued along both back edges holds the unwired jute. Full cut list, knot, fray stop, tracing (white fabric marker) and fixing steps are on its page.'),
+ ('Pets', 'Kept the 12" Cuddlekins golden retriever (a paler gold than the board\'s). The cats are now the Aurora Miyoni grey tabby (9" long, 6" tall): the board\'s striped grey-brown coat with a white chest, from a seller with 2,170 ratings. The earlier FLUFFYFUN pick was mostly white and standing, not the sitting tabby the plan claimed. No sitting striped grey tabby of 8-12" reaches Edmonton by Nov 30, so the cats are rated close: ours crouch where the board\'s sit. The same tabby sits with the dog under the tree.'),
+ ('Doghouses', 'Six 10" foam-board doghouses at the board\'s scale, now with every board detail as a cut part: the flat U arch trim, barge boards, threshold, ridge cap and a raised paw (from the door offcut). Bricks score 0.9" x 1.5" through the template with an empty ballpoint, the joints stay dark (dark-brick base, barn red dabbed on the faces), roof undersides are sealed so they do not warp, and each 160 g house is wired upright through its floor. The printed cut plan fits all of it on 9 boards, so 10 still leaves a spare.'),
+ ('Paw ornaments', 'Ten 6" ornaments: a hoop with only the outer ring primed and gilded (its brass screw reads as the cap), tea-stained Aida for the board\'s warm biscuit-cream face (9 x 9" pieces so it can be drawn drum-tight), a black glitter-card paw, a black felt back so it is finished from behind, and a bow hand-tied from the dark red velvet. The Faylapa 16-pk hoops are now the default: the same ornament, $37.69 less incl. GST than eleven DeSerres hoops, here Nov 20, with 6 spares; that saving pays for the wire cutter, cutting surface, third clay bag and the bigger Aida.'),
+ ('Bones', 'Eight 9" bones at the board\'s chunky biscuit proportions (shaft 0.27, knob span 0.53 of the length, about 1" thick). Clay is calculated from the template outline (31 sq in) less the foil core: about 117 g each, so a third 500 g bag is bought (1,163 g needed for bones and biscuits). Each hangs level like the board from a gold cord whose two ends are glued into holes drilled over wire anchors in the upper knobs.'),
+ ('Baubles', 'Big balls at the board\'s 4-6" scale: plain 6" reds (Benjia), 4" red glitter, 4" JOYIN reds and golds, the green glitter and champagne sets, and one 100-pc set to fill. The old 100-pc link now opened a Black & Gold set, so it points to the same seller\'s Red & Gold set; the 12 green glitter balls give the board\'s few greens. Patterned and sequin balls hang deep, smooth ones on the tips.'),
  ('Gifts', 'Cream burlap ribbon and bows on the gifts, as on the board (1.5" x 20 yd, $18.39), instead of velvet. Tartan paper on three boxes, kraft paw paper on the fourth.'),
- ('Velvet', 'The 2.5" velvet roll and the 12 bought velvet bows are gone: the board shows no velvet bows on the tree, and its velvet is on the paw ornaments and the jar.'),
+ ('Velvet', 'The board mixes solid deep red velvet bows with the tartan ones on the tree, so five 9" velvet bows are tied from the spare 1.5" velvet (no extra cost) besides the paw-ornament and jar bows.'),
+ ('Floor and basket', 'The bowl is now a deep red Bella dog bowl with a steel interior and paw prints, like the board (no paint marker needed). The basket bone toy is a cream sherpa bone with a felt paw (the old link was the grey variant). The lace liner comes out of the basket, the biscuits use the 2.7" cutter, and the throw is draped paw-side out.'),
+ ('Vendors and delivery', "Prices re-checked on Nov 16. Delivery is counted per unit on international listings (worst case: the tartan's $5.45 on each of 5 rolls). DeSerres: every default line ships in 48 hours, as one shipment expected Nov 25-27; the committee plan's craft sessions start the clay bones, scarves and paws on Nov 20 with Amazon materials, so only painting waits for DeSerres, and Michaels Edmonton is the fallback if it has not shipped by Nov 19."),
  ('Giant doghouse, streamers, gold crown', 'Off by default: none of them are on the board. Each stays one tap away in Swap pieces.'),
 ]
 page = f'''<meta charset="utf-8">
@@ -198,6 +226,8 @@ figcaption, .cap {{ font-size: 13px; color: var(--muted); margin-top: 6px; }}
 .nophoto {{ font-size: 10.5px; color: var(--muted); background: var(--chip); border-radius: 8px; padding: 6px; display: grid; place-items: center; text-align: center; }}
 .alt p {{ margin: 0; font-size: 13px; }} .an {{ font-weight: 600; }} .ap {{ color: var(--muted); font-variant-numeric: tabular-nums; }} .aw {{ margin-top: 4px !important; }}
 .warn {{ color: var(--berry); }}
+.make {{ border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 0 0 10px; }} .make p {{ margin: 0 0 6px; overflow-wrap: anywhere; }}
+.make .steps {{ font-size: 14px; max-width: 95ch; margin: 0 0 6px; }} ol.steps {{ padding-left: 22px; display: grid; gap: 4px; }}
 .check {{ margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; overflow-wrap: anywhere; }}
 .check li::marker {{ content: "☐  "; }}
 @media (max-width: 860px) {{ .trio {{ grid-template-columns: 1fr; }} .el {{ padding: 16px; }} }}
@@ -212,7 +242,7 @@ figcaption, .cap {{ font-size: 13px; color: var(--muted); margin-top: 6px; }}
     <div class="stat"><b>{verdicts['match']} match · {verdicts['close']} close</b><span>of the board's {verdicts['match'] + verdicts['close']} elements (2 extras off)</span></div>
     <div class="stat"><b>{money(T0['grand'])}</b><span>board match, incl. GST and shipping</span></div>
     <div class="stat"><b>{money(T0['left'])}</b><span>left of $2,000 (floor: $75)</span></div>
-    <div class="stat"><b>Not yet</b><span>verified today: the Amazon checks run in the Chrome session (CLAUDE.md)</span></div>
+    <div class="stat"><b>{N_VER} of {len(O['elements'])}</b><span>elements with listings re-checked on {esc(LB['checked'])} (the rest: the Chrome session in CLAUDE.md)</span></div>
   </div>
   <section class="box key">
     <h2>The judgments I made</h2>

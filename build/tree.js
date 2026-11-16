@@ -178,22 +178,26 @@ const SZ = id => (CAT[id] && CAT[id].size_in) || {};
 
 const canvas = document.getElementById('scene');
 const stage = canvas.parentElement;
+// Quality tier: phones, small screens and low-memory devices get a lighter scene.
+const LOW = (() => { try { return matchMedia('(pointer:coarse)').matches || Math.min(innerWidth, innerHeight) < 700 || (navigator.deviceMemory || 8) <= 4; } catch (e) { return false; } })();
+const REDUCED_MOTION = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, LOW ? 1.5 : 1.75));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap;   // PCF reads shadow.radius (PCF_SOFT ignores it)
 renderer.shadowMap.autoUpdate = false;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(34, 1, 0.03, 120);
-const HOME_POS = new THREE.Vector3(0, 3.05, 13.6);
-const HOME_TARGET = new THREE.Vector3(0, 3.15, 0);
+const camera = new THREE.PerspectiveCamera(40, 1, 0.03, 120);
+// Home view: close, a little below the tree's middle, normal lens, like the board photo.
+const HOME_POS = new THREE.Vector3(0.4, 2.9, 10.0);
+const HOME_TARGET = new THREE.Vector3(0, 3.45, 0);
 camera.position.copy(HOME_POS);
 const controls = new OrbitControls(camera, canvas);
 controls.target.copy(HOME_TARGET);
-Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 1.0, maxDistance: 14.5, maxPolarAngle: Math.PI * 0.54, minPolarAngle: Math.PI * 0.1, autoRotate: true, autoRotateSpeed: 0.5, enablePan: false });
+Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 1.0, maxDistance: 10.5, maxPolarAngle: Math.PI * 0.54, minPolarAngle: Math.PI * 0.1, autoRotate: true, autoRotateSpeed: 0.5, enablePan: false });
 
 /* ---------------- Helpers ---------------- */
 function canvasTex(w, h, draw, { repeat = [1, 1], srgb = true, clamp = false } = {}) {
@@ -247,61 +251,221 @@ function instanced(geo, material, list, id, { cast = true } = {}) {
   (TARGET || scene).add(mesh); return mesh;
 }
 
-/* ---------------- Room: warm wood-panelled room with snowy windows ---------------- */
-function drawRoom(g, w, h, wallFrom, wallTo, candles = true) {
-  // vertical layout: [0, wallFrom) ceiling, [wallFrom, wallTo) wall, [wallTo, h) floor (for the env panorama)
-  const wy = y => wallFrom + (wallTo - wallFrom) * y; // y in 0..1 from top of wall to floor
-  g.fillStyle = '#0d0806'; g.fillRect(0, 0, w, h);
-  const grd = g.createLinearGradient(0, wy(0), 0, wy(1)); grd.addColorStop(0, '#1c120b'); grd.addColorStop(0.7, '#2e1d12'); grd.addColorStop(1, '#3a2416');
-  g.fillStyle = grd; g.fillRect(0, wy(0), w, wy(1) - wy(0));
-  for (let x = 0; x < w; x += w / 48) { g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(x, wy(0.74), 2, wy(1) - wy(0.74)); }         // wainscot boards
-  g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(0, wy(0.73), w, 4); g.fillStyle = 'rgba(255,190,120,.08)'; g.fillRect(0, wy(0.73) + 4, w, 2);
-  const nWin = 6;
-  for (let k = 0; k < nWin; k++) {                                    // tall windows: blue winter dusk, falling snow
-    const cx = (k + 0.5) * w / nWin, ww = w / nWin * 0.36, top = wy(0.12), bot = wy(0.66);
-    const sky = g.createLinearGradient(0, top, 0, bot); sky.addColorStop(0, '#1d2c45'); sky.addColorStop(1, '#5d7896');
-    g.fillStyle = sky; g.fillRect(cx - ww / 2, top, ww, bot - top);
-    g.fillStyle = 'rgba(235,240,255,.55)'; for (let i = 0; i < 70; i++) g.fillRect(cx - ww / 2 + Math.random() * ww, top + Math.random() * (bot - top), 1.5, 1.5);
-    g.strokeStyle = '#140c07'; g.lineWidth = Math.max(3, w / 300); g.strokeRect(cx - ww / 2, top, ww, bot - top);
-    g.beginPath(); g.moveTo(cx, top); g.lineTo(cx, bot); for (let r = 1; r < 4; r++) { g.moveTo(cx - ww / 2, top + (bot - top) * r / 4); g.lineTo(cx + ww / 2, top + (bot - top) * r / 4); } g.stroke();
-    // candles on the sill
-    if (candles) for (let c = -1; c <= 1; c += 2) { const x = cx + c * ww * 0.6, y = wy(0.7); const cg = g.createRadialGradient(x, y, 0, x, y, w / 60); cg.addColorStop(0, 'rgba(255,214,150,1)'); cg.addColorStop(0.25, 'rgba(255,170,80,.6)'); cg.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = cg; g.fillRect(x - w / 60, y - w / 60, w / 30, w / 30); }
-  }
-  if (wallTo < h) { const fg = g.createLinearGradient(0, wallTo, 0, h); fg.addColorStop(0, '#2a1a10'); fg.addColorStop(1, '#120a06'); g.fillStyle = fg; g.fillRect(0, wallTo, w, h - wallTo); }
-}
-/* Two settings at true scale: the living room from the inspiration, and an office lobby like NAHQ (36 x 36 ft, 10 ft ceiling). */
 const pmremGen = new THREE.PMREMGenerator(renderer);
+/* ================================================================
+   Settings (rooms) and scene extras.
+   Rooms and extras register themselves; the HUD "Extras ✦" popover is generated
+   from these registries. build/build_tree.py appends every build/extras_*.js after
+   this file in the same module, so they can call registerRoom / registerExtra and
+   read `core`. Extras are for fun: they never call tag(), never join pickables or
+   instancesOf, and never touch SEL, the list or the totals.
+   ================================================================ */
+const XS = { room: 'living', lights: 'steady', on: {}, ready: false, saved: null, render: null };   // extras state
+const XKEY = 'howl.extras.v1';
+try { const s = JSON.parse(localStorage.getItem(XKEY) || 'null'); if (s && typeof s === 'object') XS.saved = s; } catch (e) {}
+const ROOMS = {}, ROOM_LIST = [], EXTRAS = [];
+const core = {};   // the API handed to rooms and extras; filled in once the scene, lights and post-processing exist
+function registerRoom(def) {
+  if (!def || !def.id || ROOMS[def.id]) return;
+  const r = { order: 50, maxDist: 14.5, label: def.id, look: {}, ...def, group: null };
+  ROOMS[r.id] = r; ROOM_LIST.push(r); ROOM_LIST.sort((a, b) => a.order - b.order);
+  if (XS.ready && XS.render) XS.render();
+}
+function registerExtra(def) {
+  if (!def || !def.id || EXTRAS.some(x => x.id === def.id)) return;
+  const x = { kind: 'toggle', default: false, rooms: null, ...def, obj: null, built: false, active: false };
+  EXTRAS.push(x);
+  const sv = XS.saved && XS.saved.on && XS.saved.on[x.id];
+  XS.on[x.id] = typeof sv === 'boolean' ? sv : !!x.default;
+  if (XS.ready) { refreshExtras(); if (XS.render) XS.render(); }
+}
+
+/* ---------------- Living room: a close, cosy wood-panelled box room (true scale, 1 unit = 14 in) ----------------
+   Tree at the origin, the board's view looks toward -z. Walls are planes facing in; a wall (and everything
+   fixed to it) hides while the camera is outside it, so the room reads right from every side (dollhouse cut-away). */
+const ROOM = (() => {
+  const h = 108 * IN, sill = 30 * IN, top = 100 * IN;
+  return {
+    x0: -5, x1: 5, zBack: -4.5, zFront: 9, h,                   // inner faces of the walls; 9 ft ceiling
+    wainscot: 30 * IN,                                             // chair rail height (also the window sill line)
+    reveal: 4.5 * IN,                                              // wall depth at the windows: the glass sits this far behind the wall face
+    windows: [                                                     // on the back wall (z = zBack), facing +z
+      { x: -3.3, w: 36 * IN, y0: sill, y1: top, cols: 2, rows: 4 },
+      { x: 3.3, w: 30 * IN, y0: sill, y1: top, cols: 2, rows: 4 },
+    ],
+    sill: { top: sill + 0.5 * IN, depth: 5.5 * IN },               // the sill sticks 5.5" into the room from the wall face
+    candles: [                                                     // pillar candles on the sills (x, height in units, radius)
+      { x: -4.22, h: 8 * IN, r: 1.5 * IN, accent: 0 }, { x: -3.92, h: 5.5 * IN, r: 1.5 * IN, accent: 0 }, { x: -2.38, h: 6.5 * IN, r: 1.75 * IN, accent: 0 },
+      { x: 2.55, h: 5 * IN, r: 1.5 * IN, accent: 1 }, { x: 4.02, h: 7 * IN, r: 1.5 * IN, accent: 1 },
+    ],
+    candleZ: -4.5 - 0.06,
+    fire: { wall: 'left', x: -5, z: -2.3, w: 3.8, depth: 0.8, mantelY: 54 * IN, normal: [1, 0, 0] },   // clear slot kept for a fireplace (extras)
+    door: { wall: 'front', x: 2.9, w: 36 * IN, h: 80 * IN, normal: [0, 0, -1] },
+    backdropZ: -7, snow: { z0: -4.9, z1: -6.9 },                   // night backdrop plane behind the windows; snow slab between glass and backdrop
+    groups: {},                                                    // back, left, right, front, ceiling, floor (filled when built)
+  };
+})();
+const PANEL_IN = 54;   // the wall texture covers 54" across and the full 108" height
+const panelTex = canvasTex(1024, 2048, (g, w, h) => {
+  const px = h / 108, wain = h - ROOM.wainscot / IN * px;
+  // upper walls: vertical 6" tongue-and-groove boards in a warm stain
+  for (let x = 0, i = 0; x < w; x += 6 * px, i++) {
+    const bw = 6 * px; g.fillStyle = `hsl(${22 + Math.random() * 7}, ${46 + Math.random() * 10}%, ${29 + Math.random() * 7}%)`; g.fillRect(x, 0, bw, wain);
+    for (let k = 0; k < 70; k++) { const gx = x + Math.random() * bw, a = 0.05 + Math.random() * 0.12; g.strokeStyle = Math.random() < 0.6 ? `rgba(30,14,6,${a})` : `rgba(210,150,95,${a * 0.6})`; g.lineWidth = 0.6 + Math.random() * 1.6; g.beginPath(); g.moveTo(gx, 0); for (let y = 0; y <= wain; y += 64) g.lineTo(gx + Math.sin(y / 180 + k) * 3 + Math.sin(y / 47 + i) * 1.2, y); g.stroke(); }
+    if (Math.random() < 0.35) { const ky = Math.random() * wain * 0.9, kx = x + bw * (0.3 + Math.random() * 0.4); const kg = g.createRadialGradient(kx, ky, 0, kx, ky, 9); kg.addColorStop(0, 'rgba(40,18,8,.7)'); kg.addColorStop(1, 'rgba(40,18,8,0)'); g.fillStyle = kg; g.fillRect(kx - 10, ky - 14, 20, 28); }
+    g.fillStyle = 'rgba(8,4,2,.75)'; g.fillRect(x, 0, 3, wain); g.fillStyle = 'rgba(255,200,150,.10)'; g.fillRect(x + 3, 0, 2, wain);   // V-groove
+  }
+  // wainscot below the chair rail: stiles and rails round two raised panels, darker stain, 6" base
+  const base = 6 * px; g.fillStyle = '#2a170d'; g.fillRect(0, wain, w, h - wain);
+  noise(g, w, h, 6000, 0.12, ['#120804', '#4a2c18']);
+  const st = 3.5 * px, pw = (w - 3 * st) / 2;
+  [0, 1].forEach(k => { const x = st + k * (pw + st), y = wain + st, ph = h - base - st - y;
+    const pg = g.createLinearGradient(x, y, x + pw, y + ph); pg.addColorStop(0, '#3a2213'); pg.addColorStop(1, '#2b180c'); g.fillStyle = pg; g.fillRect(x, y, pw, ph);
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 5; g.strokeRect(x + 2, y + 2, pw - 4, ph - 4); g.strokeStyle = 'rgba(255,190,130,.10)'; g.lineWidth = 2; g.strokeRect(x + 12, y + 12, pw - 24, ph - 24); });
+  g.fillStyle = '#1d0f07'; g.fillRect(0, h - base, w, base);
+}, { repeat: [1, 1] });
+panelTex.wrapT = THREE.ClampToEdgeWrapping;
+const woodTrim = new THREE.MeshStandardMaterial({ color: 0x3a2416, roughness: 0.55, envMapIntensity: 0.4 });
+function wallUV(geo, uOf) {   // world-scale UVs: u along the wall in PANEL_IN units, v = height / ceiling height
+  const P = geo.attributes.position, uv = geo.attributes.uv;
+  for (let i = 0; i < P.count; i++) uv.setXY(i, uOf(P.getX(i), P.getY(i), P.getZ(i)) / (PANEL_IN * IN), P.getY(i) / ROOM.h);
+  uv.needsUpdate = true; return geo;
+}
+const box = (w, h, d, m, x, y, z, parent) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.receiveShadow = true; parent.add(b); return b; };
+const FLAME_MAT = new THREE.ShaderMaterial({   // candle flame: crossed quads, so it reads as a flame from any side
+  uniforms: { uTime: { value: 0 }, uOn: { value: 1 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  vertexShader: `attribute float aSeed; varying vec2 vUv; varying float vSeed; uniform float uTime;
+    void main(){ vUv = uv; vSeed = aSeed; vec3 p = position; float s = sin(uTime * 6.3 + aSeed * 7.0) * 0.6 + sin(uTime * 13.7 + aSeed * 3.0) * 0.4;
+      p.x += s * uv.y * uv.y * 0.012; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`,
+  fragmentShader: `varying vec2 vUv; varying float vSeed; uniform float uTime; uniform float uOn;
+    void main(){ vec2 q = vUv - vec2(0.5, 0.25);
+      float fl = 0.88 + 0.12 * sin(uTime * 11.0 + vSeed * 5.0) * sin(uTime * 4.3 + vSeed);
+      float ht = 0.72 * fl, w = 0.30 * (1.0 - smoothstep(-0.05, ht, q.y)) * (q.y < 0.0 ? sqrt(max(0.0, 1.0 + q.y / 0.25)) : 1.0);
+      float d = abs(q.x) / max(w, 1e-3);
+      float a = (1.0 - smoothstep(0.45, 1.0, d)) * smoothstep(-0.25, -0.15, q.y) * uOn;
+      float c = (1.0 - smoothstep(0.0, 0.75, d)) * (1.0 - smoothstep(0.0, 0.45 * fl, q.y));
+      vec3 col = mix(vec3(2.6, 0.9, 0.18), vec3(7.0, 5.2, 2.6), c);
+      col = mix(col, vec3(0.35, 0.5, 1.4), smoothstep(-0.04, -0.2, q.y) * 0.7);
+      gl_FragColor = vec4(col, a); }`,
+});
+function buildLivingRoom() {
+  const R0 = ROOM, room = new THREE.Group(); room.name = 'room.living';
+  const G = {}; ['back', 'left', 'right', 'front', 'ceiling', 'floor'].forEach(k => { G[k] = new THREE.Group(); G[k].name = 'living.' + k; room.add(G[k]); });
+  R0.groups = G;
+  const wallMat = new THREE.MeshStandardMaterial({ map: panelTex, roughness: 0.62, envMapIntensity: 0.45 });
+  const W = R0.x1 - R0.x0, D = R0.zFront - R0.zBack, Hc = R0.h, rail = R0.wainscot, cas = 3.5 * IN;
+  // back wall with the two window openings
+  const backS = new THREE.Shape(); backS.moveTo(R0.x0, 0); backS.lineTo(R0.x1, 0); backS.lineTo(R0.x1, Hc); backS.lineTo(R0.x0, Hc); backS.closePath();
+  R0.windows.forEach(wn => { const p = new THREE.Path(); p.moveTo(wn.x - wn.w / 2, wn.y0); p.lineTo(wn.x - wn.w / 2, wn.y1); p.lineTo(wn.x + wn.w / 2, wn.y1); p.lineTo(wn.x + wn.w / 2, wn.y0); p.closePath(); backS.holes.push(p); });
+  const backW = new THREE.Mesh(wallUV(new THREE.ShapeGeometry(backS), (x) => x - R0.x0), wallMat); backW.position.z = R0.zBack; backW.receiveShadow = true; G.back.add(backW);
+  // side walls (the left one keeps a clear slot for a fireplace) and the front wall with a doorway
+  const side = (sgn, grp) => { const g = new THREE.PlaneGeometry(D, Hc); g.translate(0, Hc / 2, 0); wallUV(g, x => x + D / 2); const m = new THREE.Mesh(g, wallMat); m.rotation.y = sgn * Math.PI / 2; m.position.set(sgn > 0 ? R0.x0 : R0.x1, 0, (R0.zBack + R0.zFront) / 2); m.receiveShadow = true; grp.add(m); };
+  side(1, G.left); side(-1, G.right);
+  const dr = R0.door, frontS = new THREE.Shape(); frontS.moveTo(R0.x0, 0); frontS.lineTo(R0.x1, 0); frontS.lineTo(R0.x1, Hc); frontS.lineTo(R0.x0, Hc); frontS.closePath();
+  { const p = new THREE.Path(), dx = -dr.x; p.moveTo(dx - dr.w / 2, 0); p.lineTo(dx - dr.w / 2, dr.h); p.lineTo(dx + dr.w / 2, dr.h); p.lineTo(dx + dr.w / 2, 0); p.closePath(); frontS.holes.push(p); }
+  const frontW = new THREE.Mesh(wallUV(new THREE.ShapeGeometry(frontS), x => x - R0.x0), wallMat); frontW.rotation.y = Math.PI; frontW.position.z = R0.zFront; frontW.receiveShadow = true; G.front.add(frontW);
+  // a dim hall seen through the doorway
+  const hall = new THREE.Mesh(new THREE.BoxGeometry(dr.w + 0.4, dr.h + 0.3, 2.2), new THREE.MeshStandardMaterial({ color: 0x1f140d, roughness: 0.9, side: THREE.BackSide })); hall.position.set(dr.x, (dr.h + 0.3) / 2, R0.zFront + 1.1); G.front.add(hall);
+  [[-1, 0], [1, 0]].forEach(([s]) => box(cas, dr.h + cas, 0.06, woodTrim, dr.x + s * (dr.w / 2 + cas / 2), (dr.h + cas) / 2, R0.zFront - 0.03, G.front));
+  box(dr.w + 2 * cas, cas, 0.06, woodTrim, dr.x, dr.h + cas / 2, R0.zFront - 0.03, G.front);
+  // chair rail, baseboard and crown on every wall (split round the doorway)
+  const trims = (grp, len, place) => { [[rail, 1.6 * IN, 1.0 * IN], [5.5 * IN, 5.5 * IN, 0.8 * IN], [Hc - 2.5 * IN, 5 * IN, 2.2 * IN]].forEach(([y, th, dp], k) => place(grp, len, y - (k === 0 ? th / 2 : k === 1 ? th / 2 : 0), th, dp)); };
+  trims(G.back, W, (grp, len, y, th, dp) => box(len, th, dp, woodTrim, 0, y, R0.zBack + dp / 2, grp));
+  trims(G.left, D, (grp, len, y, th, dp) => box(dp, th, len, woodTrim, R0.x0 + dp / 2, y, (R0.zBack + R0.zFront) / 2, grp));
+  trims(G.right, D, (grp, len, y, th, dp) => box(dp, th, len, woodTrim, R0.x1 - dp / 2, y, (R0.zBack + R0.zFront) / 2, grp));
+  { const l1 = (dr.x - dr.w / 2 - cas) - R0.x0, l2 = R0.x1 - (dr.x + dr.w / 2 + cas);
+    trims(G.front, 0, (grp, _, y, th, dp) => { if (y > dr.h) { box(W, th, dp, woodTrim, 0, y, R0.zFront - dp / 2, grp); return; } box(l1, th, dp, woodTrim, R0.x0 + l1 / 2, y, R0.zFront - dp / 2, grp); box(l2, th, dp, woodTrim, R0.x1 - l2 / 2, y, R0.zFront - dp / 2, grp); }); }
+  // windows: deep reveals, casings, a sill, mullions, frosted panes, and a soft night-snow backdrop behind
+  const frostTex = canvasTex(256, 256, (g, w) => {
+    g.clearRect(0, 0, w, w); const rg = g.createRadialGradient(w / 2, w / 2, w * 0.18, w / 2, w / 2, w * 0.74); rg.addColorStop(0, 'rgba(235,242,255,.06)'); rg.addColorStop(0.7, 'rgba(235,242,255,.32)'); rg.addColorStop(1, 'rgba(245,250,255,.75)'); g.fillStyle = rg; g.fillRect(0, 0, w, w);
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 1;
+    for (let i = 0; i < 120; i++) { const c = Math.random() < 0.5 ? 0 : w, r = Math.random() < 0.5 ? 0 : w, a = Math.random() * Math.PI * 2, L = 10 + Math.random() * 46; let x = c + (Math.random() - 0.5) * 60, y = r + (Math.random() - 0.5) * 60; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { x += Math.cos(a + k * 0.5) * L / 4; y += Math.sin(a + k * 0.5) * L / 4; g.lineTo(x, y); } g.stroke(); }
+  }, { clamp: false });
+  const glassZ = R0.zBack - R0.reveal + 1.2 * IN, sashM = new THREE.MeshStandardMaterial({ color: 0x2c1a10, roughness: 0.55, envMapIntensity: 0.4 });
+  const cz = R0.candleZ;
+  R0.windows.forEach(wn => {
+    const ww = wn.w, hh = wn.y1 - wn.y0, cy = (wn.y0 + wn.y1) / 2, zr = R0.zBack - R0.reveal / 2;
+    box(0.03, hh, R0.reveal, woodTrim, wn.x - ww / 2 - 0.015, cy, zr, G.back); box(0.03, hh, R0.reveal, woodTrim, wn.x + ww / 2 + 0.015, cy, zr, G.back);   // reveal sides
+    box(ww, 0.03, R0.reveal, woodTrim, wn.x, wn.y1 + 0.015, zr, G.back);                                                                                // head
+    box(cas, hh + cas, 0.055, woodTrim, wn.x - ww / 2 - cas / 2, cy + cas / 2, R0.zBack + 0.0275, G.back); box(cas, hh + cas, 0.055, woodTrim, wn.x + ww / 2 + cas / 2, cy + cas / 2, R0.zBack + 0.0275, G.back);
+    box(ww + 2 * cas, cas, 0.055, woodTrim, wn.x, wn.y1 + cas / 2, R0.zBack + 0.0275, G.back);
+    const sillD = R0.reveal + R0.sill.depth; box(ww + 2 * cas + 2 * IN, 1.25 * IN, sillD, woodTrim, wn.x, R0.sill.top - 0.625 * IN, R0.zBack - R0.reveal + sillD / 2, G.back).castShadow = true;
+    box(ww + 2 * cas, 3 * IN, 0.05, woodTrim, wn.x, R0.sill.top - 1.25 * IN - 1.5 * IN, R0.zBack + 0.025, G.back);                                     // apron
+    const bar = 1.1 * IN; for (let c = 0; c <= wn.cols; c++) box(c === 0 || c === wn.cols ? 2 * bar : bar, hh, bar, sashM, wn.x - ww / 2 + ww * c / wn.cols, cy, glassZ, G.back);
+    for (let r = 0; r <= wn.rows; r++) box(ww, r === 0 || r === wn.rows ? 2 * bar : bar, bar, sashM, wn.x, wn.y0 + hh * r / wn.rows, glassZ, G.back);
+    const ft = frostTex.clone(); ft.needsUpdate = true; ft.repeat.set(wn.cols, wn.rows);
+    const pane = new THREE.Mesh(new THREE.PlaneGeometry(ww, hh), new THREE.MeshBasicMaterial({ map: ft, color: new THREE.Color(0.9, 0.95, 1.05), transparent: true, opacity: 0.85, depthWrite: false }));
+    pane.position.set(wn.x, cy, glassZ - 0.6 * IN); pane.renderOrder = 5; G.back.add(pane);
+  });
+  // pillar candles on the sills (accent lights 0 and 1 sit over them)
+  const wax = new THREE.MeshStandardMaterial({ color: 0xf1e3c8, roughness: 0.55, emissive: 0xff9a40, emissiveIntensity: 0.06, envMapIntensity: 0.3 });
+  const flames = [], seeds = [];
+  R0.candles.forEach((c, i) => {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(c.r, c.r * 1.02, c.h, 24), wax); m.position.set(c.x, R0.sill.top + c.h / 2, cz); m.castShadow = true; m.receiveShadow = true; G.back.add(m);
+    const top = new THREE.Mesh(new THREE.CircleGeometry(c.r * 0.82, 20), new THREE.MeshStandardMaterial({ color: 0xffcf8a, emissive: 0xff8a2a, emissiveIntensity: 0.55, roughness: 0.4 })); top.rotation.x = -Math.PI / 2; top.position.set(c.x, R0.sill.top + c.h - 0.15 * IN, cz); G.back.add(top);
+    const wick = new THREE.Mesh(new THREE.CylinderGeometry(0.04 * IN, 0.04 * IN, 0.35 * IN, 5), new THREE.MeshBasicMaterial({ color: 0x1a1008 })); wick.position.set(c.x, R0.sill.top + c.h + 0.1 * IN, cz); G.back.add(wick);
+    const fw = 0.75 * IN, fh = 1.9 * IN; [0, Math.PI / 2].forEach(a => { const q = new THREE.PlaneGeometry(fw, fh); q.translate(0, fh * 0.25, 0); q.rotateY(a + 0.4); q.translate(c.x, R0.sill.top + c.h + 0.12 * IN, cz); flames.push(q); seeds.push(...Array(q.attributes.position.count).fill(i * 1.37 + 0.3)); });
+  });
+  const fg = mergeGeometries(flames); fg.setAttribute('aSeed', new THREE.Float32BufferAttribute(seeds, 1));
+  const flameMesh = new THREE.Mesh(fg, FLAME_MAT); flameMesh.renderOrder = 6; flameMesh.frustumCulled = false; G.back.add(flameMesh);
+  // the night outside: a pre-blurred backdrop with snowy spruces and soft bokeh (cheap depth of field)
+  const BX = 20, BY0 = -1, BY1 = 13;
+  const backdrop = canvasTex(2048, 1024, (g, w, h) => {
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const q = c.getContext('2d');
+    const Y = y => h * (1 - (y - BY0) / (BY1 - BY0)), X = x => (x / BX + 0.5) * w, ground = 2.55;
+    const sky = q.createLinearGradient(0, 0, 0, Y(ground)); sky.addColorStop(0, '#142039'); sky.addColorStop(0.45, '#2f4a6e'); sky.addColorStop(0.85, '#8aa2c0'); sky.addColorStop(1, '#b9c9dc');
+    q.fillStyle = sky; q.fillRect(0, 0, w, Y(ground));
+    const gr = q.createLinearGradient(0, Y(ground), 0, h); gr.addColorStop(0, '#c7d4e3'); gr.addColorStop(1, '#7f93ad'); q.fillStyle = gr; q.fillRect(0, Y(ground), w, h - Y(ground));
+    [['#8197b3', 0.9, 1.6, 70, 2.75], ['#4e6584', 1.3, 2.6, 46, 2.62], ['#22324a', 1.8, 3.6, 26, 2.5]].forEach(([col, h0, h1, n, gy]) => {
+      for (let i = 0; i < n; i++) { const x = Math.random() * w, th = (h0 + Math.random() * (h1 - h0)) * (h / (BY1 - BY0)), bw = th * 0.42, by = Y(gy) + Math.random() * 6;
+        for (let t = 0; t < 4; t++) { const ty = by - th * t / 4.2, tw = bw * (1 - t / 4.6); q.fillStyle = col; q.beginPath(); q.moveTo(x - tw / 2, ty); q.lineTo(x, ty - th * 0.42); q.lineTo(x + tw / 2, ty); q.fill();
+          q.fillStyle = 'rgba(232,240,250,.55)'; q.beginPath(); q.moveTo(x - tw * 0.3, ty - th * 0.12); q.lineTo(x, ty - th * 0.36); q.lineTo(x + tw * 0.25, ty - th * 0.14); q.fill(); } } });
+    g.filter = 'blur(9px)'; g.drawImage(c, 0, 0); g.filter = 'none';
+    const hex = (x, y, r, col) => { g.fillStyle = col; g.beginPath(); for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 + 0.3; g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } g.fill(); };
+    for (let i = 0; i < 9; i++) hex(X(-9 + Math.random() * 18), Y(2.7 + Math.random() * 1.2), 10 + Math.random() * 14, `rgba(255,196,120,${0.25 + Math.random() * 0.25})`);   // far house lights
+    for (let i = 0; i < 110; i++) hex(Math.random() * w, Math.random() * Y(ground), 5 + Math.random() * 16, `rgba(220,234,255,${0.06 + Math.random() * 0.14})`);  // out-of-focus flakes
+  }, { clamp: true });
+  const bd = new THREE.Mesh(new THREE.PlaneGeometry(BX, BY1 - BY0), new THREE.MeshBasicMaterial({ map: backdrop, color: new THREE.Color(1.05, 1.05, 1.1) }));
+  bd.position.set(0, (BY0 + BY1) / 2, R0.backdropZ); G.back.add(bd); R0.backdropMat = bd.material;
+  // oak floor, planks running front to back
+  const floorTex = canvasTex(1024, 1024, (g, w) => {
+    const px = w / 54, pw = 4.5 * px;
+    for (let x = 0; x < w; x += pw) { let y = -Math.random() * 40 * px;
+      while (y < w) { const L = (24 + Math.random() * 40) * px; g.fillStyle = `hsl(${21 + Math.random() * 7}, ${40 + Math.random() * 10}%, ${15 + Math.random() * 7}%)`; g.fillRect(x, y, pw, L);
+        for (let i = 0; i < 30; i++) { g.fillStyle = Math.random() < .5 ? 'rgba(0,0,0,.16)' : 'rgba(190,130,80,.09)'; g.fillRect(x + Math.random() * pw, y + Math.random() * L, 1, 20 + Math.random() * 90); }
+        g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(x, y, pw, 2); y += L; }
+      g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(x, 0, 2, w); }
+  }, { repeat: [W / (54 * IN), D / (54 * IN)] });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.58, envMapIntensity: 0.55 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, (R0.zBack + R0.zFront) / 2); floor.receiveShadow = true; G.floor.add(floor);
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshStandardMaterial({ color: 0x8a6a52, map: panelTex, roughness: 0.8, envMapIntensity: 0.3 }));
+  wallUV(ceil.geometry, x => x); ceil.geometry.attributes.uv.array.forEach((v, i, a) => { if (i % 2) a[i] = 0.35; }); ceil.geometry.attributes.uv.needsUpdate = true;   // boards only, no wainscot
+  ceil.rotation.x = Math.PI / 2; ceil.position.set(0, Hc, (R0.zBack + R0.zFront) / 2); G.ceiling.add(ceil);
+  // dollhouse cut-away: hide a wall (and what is fixed to it) while the camera is outside it
+  R0.cut = [[G.back, [0, 0, 1], [0, 0, R0.zBack]], [G.left, [1, 0, 0], [R0.x0, 0, 0]], [G.right, [-1, 0, 0], [R0.x1, 0, 0]], [G.front, [0, 0, -1], [0, 0, R0.zFront]], [G.ceiling, [0, -1, 0], [0, Hc, 0]]]
+    .map(([g, n, p]) => ({ g, n: new THREE.Vector3(...n), p: new THREE.Vector3(...p) }));
+  room.traverse(o => { if (o.isMesh) o.castShadow = o.castShadow && o.geometry.type === 'CylinderGeometry'; });
+  return room;
+}
+// living-room reflections: panelled walls, two cool windows, warm bulbs (LDR; a placeholder until an HDR env replaces it)
 const ENV = {};
-{ // living room reflections
+{
   const envTex = canvasTex(1024, 512, (g, w, h) => {
-    drawRoom(g, w, h, h * 0.22, h * 0.56);
+    g.fillStyle = '#1a110b'; g.fillRect(0, 0, w, h * 0.3);
+    const wg = g.createLinearGradient(0, h * 0.3, 0, h * 0.56); wg.addColorStop(0, '#4a2e1b'); wg.addColorStop(1, '#6a4428'); g.fillStyle = wg; g.fillRect(0, h * 0.3, w, h * 0.26);
+    const fg = g.createLinearGradient(0, h * 0.56, 0, h); fg.addColorStop(0, '#2e1d12'); fg.addColorStop(1, '#110a06'); g.fillStyle = fg; g.fillRect(0, h * 0.56, w, h * 0.44);
+    [[0.149, 0.06], [0.351, 0.05]].forEach(([u, du]) => { const sg = g.createLinearGradient(0, h * 0.3, 0, h * 0.52); sg.addColorStop(0, '#5f7798'); sg.addColorStop(1, '#a9bbd0'); g.fillStyle = sg; g.fillRect((u - du / 2) * w, h * 0.3, du * w, h * 0.22); });
+    for (let i = 0; i < 6; i++) { const x = (0.12 + i * 0.01) * w + (i > 2 ? 0.2 * w : 0), y = h * 0.53; const cg = g.createRadialGradient(x, y, 0, x, y, 6); cg.addColorStop(0, 'rgba(255,225,170,1)'); cg.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = cg; g.fillRect(x - 6, y - 6, 12, 12); }
     for (let i = 0; i < 90; i++) { const x = Math.random() * w, y = h * (0.3 + Math.random() * 0.3), r = 3 + Math.random() * 9; const cg = g.createRadialGradient(x, y, 0, x, y, r); cg.addColorStop(0, 'rgba(255,215,150,1)'); cg.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = cg; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
   });
   envTex.mapping = THREE.EquirectangularReflectionMapping; ENV.living = pmremGen.fromEquirectangular(envTex).texture;
 }
-const ROOM_R = 16, ROOM_H = 12;
-const livingRoom = new THREE.Group(); scene.add(livingRoom);
-{
-  const wallTex = canvasTex(4096, 1024, (g, w, h) => {   // drawn soft-focus, like a photo background
-    const c = document.createElement('canvas'); c.width = w; c.height = h; drawRoom(c.getContext('2d'), w, h, 0, h, false);
-    g.filter = 'blur(7px)'; g.drawImage(c, 0, 0); g.filter = 'none';
-    for (let k = 0; k < 6; k++) for (let j = 0; j < 3; j++) { const x = (k + 0.5) * w / 6 + (j - 1) * w / 40, y = h * 0.72, r = 26; const cg = g.createRadialGradient(x, y, 0, x, y, r); cg.addColorStop(0, 'rgba(255,210,140,.95)'); cg.addColorStop(1, 'rgba(255,160,70,0)'); g.fillStyle = cg; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
-  }, { repeat: [1, 1] });
-  const wall = new THREE.Mesh(new THREE.CylinderGeometry(ROOM_R, ROOM_R, ROOM_H, 96, 1, true), new THREE.MeshBasicMaterial({ map: wallTex, side: THREE.BackSide }));
-  wall.position.y = ROOM_H / 2; livingRoom.add(wall);
-  const floorTex = canvasTex(1024, 1024, (g, w) => {
-    for (let y = 0; y < w; y += 64) {                      // 4.5" oak planks with staggered joints
-      g.fillStyle = `hsl(${22 + Math.random() * 6}, ${38 + Math.random() * 10}%, ${14 + Math.random() * 7}%)`; g.fillRect(0, y, w, 63);
-      for (let i = 0; i < 160; i++) { g.fillStyle = Math.random() < .5 ? 'rgba(0,0,0,.18)' : 'rgba(180,120,70,.10)'; g.fillRect(Math.random() * w, y + Math.random() * 63, 20 + Math.random() * 90, 1); }
-      g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(0, y + 63, w, 1); const j = Math.random() * w; g.fillRect(j, y, 1, 63); g.fillRect((j + w / 2) % w, y, 1, 63);
-    }
-  }, { repeat: [10, 10] });
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(ROOM_R, 96), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.38, metalness: 0.0, envMapIntensity: 0.6 }));
-  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; livingRoom.add(floor);
-}
+const LIVING_BG = canvasTex(16, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#120b07'); gr.addColorStop(0.6, '#1d120b'); gr.addColorStop(1, '#0a0604'); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, { clamp: true });
+/* Office lobby like NAHQ (36 x 36 ft, 10 ft ceiling), built the first time it is chosen. */
 const OFFICE = { w: 36 * 12 * IN, d: 36 * 12 * IN, h: 120 * IN };   // 36 x 36 ft lobby, 10 ft ceiling
-const officeRoom = new THREE.Group(); officeRoom.visible = false; scene.add(officeRoom);
-{
+function buildOffice() {
+  const officeRoom = new THREE.Group(); officeRoom.name = 'room.office';
+  {
   const { w: OW, d: OD, h: OH } = OFFICE;
   const soft = (px, draw) => (g, w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); g.filter = `blur(${px}px)`; g.drawImage(c, 0, 0); g.filter = 'none'; };
   // carpet tiles: 24" quarter-turned tiles in charcoal & slate (texture = 8 x 8 ft)
@@ -393,9 +557,8 @@ const officeRoom = new THREE.Group(); officeRoom.visible = false; scene.add(offi
   });
   envTex.mapping = THREE.EquirectangularReflectionMapping; ENV.office = pmremGen.fromEquirectangular(envTex).texture;
 }
-scene.environment = ENV.living;
-scene.environmentIntensity = 0.9;
-scene.background = new THREE.Color(0x0d0806);
+  return officeRoom;
+}
 
 // soft contact shadows under things that sit on the floor
 const SHADOW_TEX = canvasTex(128, 128, (g) => { const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(0,0,0,.75)'); r.addColorStop(0.55, 'rgba(0,0,0,.35)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); }, { clamp: true });
@@ -404,13 +567,18 @@ function contactShadow(x, z, w, d, ry = 0, o = 0.8) {
   m.rotation.set(-Math.PI / 2, 0, ry); m.position.set(x, 0.004, z); (TARGET || scene).add(m);
 }
 
-/* ---------------- Lighting: warm room + glow from inside the tree ---------------- */
-const hemi = new THREE.HemisphereLight(0xffd9b0, 0x20140c, 0.35); scene.add(hemi);
-const key = new THREE.DirectionalLight(0xffd6a8, 1.1);
-key.position.set(4, 9, 7); key.castShadow = true; key.shadow.mapSize.set(2048, 2048);
-Object.assign(key.shadow.camera, { left: -4.5, right: 4.5, top: 8.5, bottom: -0.5, near: 1, far: 25 }); key.shadow.bias = -0.0005; key.shadow.radius = 4;
+/* ---------------- Lighting: one fixed pool ----------------
+   Every light is created once here; rooms and modes change only intensity, colour, angle and position.
+   (Light counts are shader defines: adding or removing a light would recompile every material.)
+   Pool: 1 hemisphere, 1 spot `key` (the only shadow caster), 1 directional `rim`, 8 point lights
+   (5 inside the tree, `base` at the foot, `accent[0..1]` for candles or a fire). */
+const hemi = new THREE.HemisphereLight(0xffd9b0, 0x20140c, 0.15); scene.add(hemi);
+const key = new THREE.SpotLight(0xffcf9a, 70, 0, 0.55, 0.9, 2);   // a warm ceiling pot light aimed at the tree
+key.position.set(1.5, 9, 5); key.target.position.set(0, 3, 0); scene.add(key.target);
+key.castShadow = true; key.shadow.mapSize.set(LOW ? 1024 : 2048, LOW ? 1024 : 2048); key.shadow.bias = -0.0005; key.shadow.radius = 4;
+key.shadow.camera.near = 2; key.shadow.camera.far = 24;
 scene.add(key);
-const fill = new THREE.DirectionalLight(0x8fa6d6, 0.18); fill.position.set(-6, 5, -6); scene.add(fill);   // cool window light from behind
+const rim = new THREE.DirectionalLight(0x8fa6d6, 0.18); rim.position.set(-6, 5, -6); scene.add(rim);   // cool window light from behind-left
 
 /* ---------------- Tree ---------------- */
 const Y0 = 12 * IN, YTOP = 90 * IN, RB = 26 * IN;            // foliage starts 12" up, 90" tall, 52" wide
@@ -441,7 +609,9 @@ NEEDLE.wrapS = NEEDLE.wrapT = THREE.ClampToEdgeWrapping;
   const a = new THREE.PlaneGeometry(0.5, 1); a.translate(0, 0.5, 0);
   const b = a.clone(); b.rotateY(Math.PI / 2);
   const geo = mergeGeometries([a, b]);
-  const m = new THREE.MeshStandardMaterial({ map: NEEDLE, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.78, envMapIntensity: 0.35 });
+  // alpha-to-coverage turns the alpha edge into MSAA coverage (rt has 4 samples): soft, stable needle edges while orbiting.
+  // alphaTest stays above 0 so the shadow pass still cuts the card shapes out.
+  const m = new THREE.MeshStandardMaterial({ map: NEEDLE, alphaTest: 0.2, alphaToCoverage: true, side: THREE.DoubleSide, roughness: 0.78, envMapIntensity: 0.35 });
   const up = new THREE.Vector3(0, 1, 0), d = new THREE.Object3D(), col = new THREE.Color();
   [[2600, 0.12, 0.7, 0.62], [3400, 0.45, 0.98, 0.85], [2600, 0.82, 1.06, 1.05]].forEach(([n, f0, f1, bright]) => {
     const mesh = new THREE.InstancedMesh(geo, m, n);
@@ -455,38 +625,78 @@ NEEDLE.wrapS = NEEDLE.wrapT = THREE.ClampToEdgeWrapping;
       d.quaternion.setFromUnitVectors(up, dir); d.rotateY(R(0, Math.PI));
       const wd = Math.min(0.75, 0.3 + len * 0.5);
       d.scale.set(wd, len, wd); d.updateMatrix(); mesh.setMatrixAt(i, d.matrix);
-      mesh.setColorAt(i, col.setRGB(1, 1, 1).multiplyScalar(bright * R(0.85, 1.15)).lerp(new THREE.Color(1.1, 1.05, 0.8), R(0, 0.15)));
+      // baked ambient occlusion: needles deep inside the tree are darker than the tips at the surface
+      const ao = THREE.MathUtils.lerp(0.55, 1.1, Math.min(1, (r0 + 0.6 * len) / rT));
+      mesh.setColorAt(i, col.setRGB(1, 1, 1).multiplyScalar(Math.sqrt(bright) * ao * R(0.85, 1.15)).lerp(new THREE.Color(1.1, 1.05, 0.8), R(0, 0.15)));
     }
+    if (LOW) mesh.count = Math.round(n * 0.65);   // fewer needle cards on phones (all are generated, so the random layout matches desktop)
     mesh.castShadow = mesh.receiveShadow = true; treeGroup.add(mesh);
   });
 }
 const coreGeo = new THREE.ConeGeometry(RB * 0.6, YTOP - Y0, 32, 1, true); coreGeo.translate(0, (YTOP + Y0) / 2, 0);
-const core = new THREE.Mesh(coreGeo, new THREE.MeshStandardMaterial({ color: 0x0a170e, roughness: 1, side: THREE.DoubleSide }));
-core.userData.occluder = true; treeGroup.add(core);
+// inner shell that fills the gaps between branches: dense dark needles rather than a flat colour
+const CORE_TEX = canvasTex(256, 256, (g, w) => { g.fillStyle = '#0a1a0e'; g.fillRect(0, 0, w, w); for (let i = 0; i < 900; i++) { const x = Math.random() * w, y = Math.random() * w, a = Math.random() * Math.PI; g.strokeStyle = ['#12301b', '#173a21', '#0d2414', '#1f4429'][(Math.random() * 4) | 0]; g.lineWidth = 1 + Math.random(); g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * 14, y + Math.sin(a) * 14); g.stroke(); } }, { repeat: [10, 7] });
+const coreCone = new THREE.Mesh(coreGeo, new THREE.MeshStandardMaterial({ map: CORE_TEX, color: 0xb0b8b0, roughness: 1, side: THREE.DoubleSide, envMapIntensity: 0.15 }));
+coreCone.userData.occluder = true; treeGroup.add(coreCone);
 const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, Y0 + 0.2, 10), new THREE.MeshStandardMaterial({ color: 0x3B2A1E, roughness: 0.9 })); trunk.position.y = (Y0 + 0.2) / 2; treeGroup.add(trunk);
 contactShadow(0, 0, RB * 2.6, RB * 2.6, 0, 0.9);
-// warm glow from inside the branches (the tree is pre-lit)
+// warm glow from inside the branches (the tree is pre-lit): 5 interior point lights (part of the fixed pool)
+const INTERIOR = [], INTERIOR_I = [];
 [[1.4, 0.55], [2.4, 0.45], [3.4, 0.38], [4.4, 0.3], [5.4, 0.22]].forEach(([y, f], i) => {
-  const l = new THREE.PointLight(0xffa24a, 7 - i * 0.6, rAt(y) * 2.6, 2); l.position.set(Math.cos(i * 2.1) * rAt(y) * f, y, Math.sin(i * 2.1) * rAt(y) * f); scene.add(l);
+  const l = new THREE.PointLight(0xffb870, 7 - i * 0.6, rAt(y) * 2.6, 2); l.position.set(Math.cos(i * 2.1) * rAt(y) * f, y, Math.sin(i * 2.1) * rAt(y) * f); scene.add(l);
+  INTERIOR.push(l); INTERIOR_I.push(l.intensity);
 });
-const front = new THREE.PointLight(0xffb060, 2.2, 4.0, 2); front.position.set(0.6, 2.2, 3.2); scene.add(front);
-// pre-lit warm white bulbs + soft halos
+const base = new THREE.PointLight(0xffb070, 3, 3.5, 2); base.position.set(0, 0.6, 0.4); scene.add(base);   // low, wide glow onto the presents
+const accent = [0, 1].map(() => { const l = new THREE.PointLight(0xff9a40, 0, 3, 2); l.position.set(0, 2.6, -4.3); scene.add(l); return l; });   // candles / fire; parked at the sill
+// pre-lit warm white bulbs: small round HDR bulbs (they bloom) + soft additive halos. Steady, as delivered.
 const LIGHT_N = 650;
-const lights = new THREE.InstancedMesh(new THREE.SphereGeometry(0.02, 8, 6), new THREE.MeshBasicMaterial({ toneMapped: false }), LIGHT_N);
-const lightPhase = [];
+const lights = new THREE.InstancedMesh(new THREE.SphereGeometry(0.02, 16, 12), new THREE.MeshBasicMaterial(), LIGHT_N);
+const BULB_BASE = new Float32Array(LIGHT_N * 3), BULB_POS = new Float32Array(LIGHT_N * 3);
+let halos;
 {
-  const d = new THREE.Object3D(); const halo = new Float32Array(LIGHT_N * 3);
+  const d = new THREE.Object3D(), c = new THREE.Color();
   for (let i = 0; i < LIGHT_N; i++) {
     const y = Y0 + 0.1 + (YTOP - Y0 - 0.2) * (1 - Math.sqrt(rand())); const th = rand() * Math.PI * 2; const r = rAt(y) * R(0.62, 0.97);
     d.position.set(Math.cos(th) * r, y, Math.sin(th) * r); d.updateMatrix(); lights.setMatrixAt(i, d.matrix);
-    lights.setColorAt(i, new THREE.Color(3.4, 2.4, 1.2)); lightPhase.push(rand() * Math.PI * 2);
-    halo.set([d.position.x, d.position.y, d.position.z], i * 3);
+    const k = R(0.85, 1.15); c.setRGB(9 * k, 6 * k, 3 * k); lights.setColorAt(i, c); BULB_BASE.set([c.r, c.g, c.b], i * 3);   // one rand() per bulb, as before, so placements downstream don't move
+    BULB_POS.set([d.position.x, d.position.y, d.position.z], i * 3);
   }
-  const hg = new THREE.BufferGeometry(); hg.setAttribute('position', new THREE.BufferAttribute(halo, 3));
-  const ht = canvasTex(64, 64, (g) => { const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,220,160,.9)'); r.addColorStop(0.2, 'rgba(255,180,90,.35)'); r.addColorStop(1, 'rgba(255,160,60,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); }, { clamp: true });
-  
+  // soft halos: one instanced camera-facing quad per bulb (one draw call); additive, depth-tested so foliage hides the ones behind
+  const hg = new THREE.InstancedBufferGeometry(); const q = new THREE.PlaneGeometry(1, 1);
+  hg.index = q.index; hg.setAttribute('position', q.attributes.position); hg.setAttribute('uv', q.attributes.uv);
+  hg.setAttribute('aPos', new THREE.InstancedBufferAttribute(BULB_POS, 3)); hg.instanceCount = LIGHT_N;
+  halos = new THREE.Mesh(hg, new THREE.ShaderMaterial({
+    uniforms: { uSize: { value: 0.18 }, uColor: { value: new THREE.Color(2.2, 1.5, 0.8) } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: 'attribute vec3 aPos; uniform float uSize; varying vec2 vUv; void main(){ vUv = uv; vec4 mv = modelViewMatrix * vec4(aPos, 1.0); mv.xy += position.xy * uSize; mv.z += uSize * 0.5; gl_Position = projectionMatrix * mv; }',
+    fragmentShader: 'uniform vec3 uColor; varying vec2 vUv; void main(){ float d = length(vUv - 0.5) * 2.0; float a = 0.9 * exp(-d * d * 22.0) + 0.3 * pow(max(0.0, 1.0 - d), 2.0); gl_FragColor = vec4(uColor * vec3(1.0, 0.82, 0.6), a); }',
+  }));
+  halos.frustumCulled = false;
+  halos.renderOrder = 3; treeGroup.add(halos);
 }
 treeGroup.add(lights);
+// Tree-light modes: 'steady' (as delivered, pre-lit), 'twinkle' (fun: ~3% of bulbs flare and fade), 'off' (daytime look).
+const bulbs = { mesh: lights, halos, positions: BULB_POS, count: LIGHT_N, mode: 'steady', flare: new Float32Array(LIGHT_N), live: new Set() };
+bulbs.write = (i, k) => { lights.instanceColor.setXYZ(i, BULB_BASE[i * 3] * k, BULB_BASE[i * 3 + 1] * k, BULB_BASE[i * 3 + 2] * k); };
+bulbs.resetAll = () => { lights.instanceColor.array.set(BULB_BASE); lights.instanceColor.clearUpdateRanges(); lights.instanceColor.needsUpdate = true; bulbs.flare.fill(0); bulbs.live.clear(); };
+bulbs.setMode = m => {
+  if (!['steady', 'twinkle', 'off'].includes(m)) return bulbs.mode;
+  if (m === 'twinkle' && REDUCED_MOTION) m = 'steady';
+  bulbs.mode = m; bulbs.resetAll();
+  lights.visible = halos.visible = m !== 'off';
+  if (typeof applyLook === 'function' && XS.ready) applyLook();
+  return m;
+};
+bulbs.tick = (t, dt) => {
+  if (bulbs.mode !== 'twinkle' || !dt) return;
+  const touched = [], decay = Math.exp(-dt * 3.2);
+  bulbs.live.forEach(i => { bulbs.flare[i] *= decay; if (bulbs.flare[i] < 0.02) { bulbs.flare[i] = 0; bulbs.live.delete(i); bulbs.write(i, 1); } else bulbs.write(i, 1 + 0.8 * bulbs.flare[i]); touched.push(i); });
+  for (let n = LIGHT_N * 0.05 * dt, k = 0; k < 8 && Math.random() < n; k++, n -= 1) { const i = (Math.random() * LIGHT_N) | 0; bulbs.flare[i] = 1; bulbs.live.add(i); bulbs.write(i, 1.8); touched.push(i); }
+  if (!touched.length) return;
+  const ic = lights.instanceColor; ic.clearUpdateRanges(); touched.sort((a, b) => a - b);
+  const ranges = []; touched.forEach(i => { const r = ranges[ranges.length - 1]; if (r && i <= r[1] + 1) r[1] = i; else ranges.push([i, i]); });
+  if (ranges.length <= 24) ranges.forEach(([a, b]) => ic.addUpdateRange(a * 3, (b - a + 1) * 3));   // upload only the bulbs that changed
+  ic.needsUpdate = true;
+};
 
 /* ---------------- Placement ---------------- */
 // Each option avoids the board-match pieces of every other element, and its own pieces, but not the
@@ -686,7 +896,7 @@ BUILD.paws = (r, id) => {
   } else {                   // 4" painted wood rounds with a mini velvet bow (the earlier design)
     const h = 4.3 * IN, geo = new THREE.PlaneGeometry(h * CUT.paw_disc.w / CUT.paw_disc.h, h); geo.translate(0, -h / 2, 0);
     for (let i = 0; i < r.n; i++) { const { p } = spot(h * 1.1, Y0 + 0.3, YTOP - 0.5, 0.99); list.push({ p, rot: new THREE.Euler(R(-0.1, 0.05), faceY(p) + R(-0.35, 0.35), R(-0.12, 0.12)) }); }
-    instanced(geo, mat(id, THREE.MeshStandardMaterial, { map: photoTex('paw_disc'), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.65 }), list, id);
+    instanced(geo, mat(id, THREE.MeshStandardMaterial, { map: photoTex('paw_disc'), alphaTest: 0.2, alphaToCoverage: true, side: THREE.DoubleSide, roughness: 0.65 }), list, id);
     instanced(bowGeo({ ribbon: 1, span: 3.5, tail: 2.5, seed: 11 }), velvet('mini_bows'), list.map(({ p, rot }) => ({ p: p.clone().add(new THREE.Vector3(0, 0.1 * IN, 0)).addScaledVector(new THREE.Vector3(Math.sin(rot.y), 0, Math.cos(rot.y)), 0.012), rot })), 'mini_bows');
   }
 };
@@ -813,8 +1023,8 @@ function photoCard(name, id, heightIn, pos, { anchor = 'bottom', mark = true, de
   const nx = 40, ny = Math.max(8, Math.round(40 * h / w));
   const front = new THREE.PlaneGeometry(w, h, nx, ny), back = new THREE.PlaneGeometry(w, h, nx, ny); back.rotateY(Math.PI);
   const tex = photoTex(name);
-  const mF = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.5, roughness: 0.92, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.08, envMapIntensity: 0.35 });
-  const mB = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.5, roughness: 0.95, color: 0xb8b0a6, envMapIntensity: 0.25 });
+  const mF = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.2, alphaToCoverage: true, roughness: 0.92, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.08, envMapIntensity: 0.35 });
+  const mB = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.2, alphaToCoverage: true, roughness: 0.95, color: 0xb8b0a6, envMapIntensity: 0.25 });
   const grp = new THREE.Group(); const meshes = [new THREE.Mesh(front, mF), new THREE.Mesh(back, mB)];
   meshes.forEach(m => { m.position.y = dy; m.castShadow = true; m.receiveShadow = true; m.userData.itemId = id; pickables.push(m); grp.add(m); });
   grp.position.copy(pos);
@@ -1068,7 +1278,10 @@ const MEASURE = [
 const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
 const composer = new EffectComposer(renderer, rt);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.75, 0.5, 0.82);
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.9, 0.75, 1.25);   // only HDR sources bloom (bulbs, flames, glints), never plush or paper
+// three's blur kernels stop at one sigma, so they act like box filters and a tiny HDR bulb blooms into a square.
+// Re-weight them as a Gaussian that fades to ~4% at the kernel edge: round glows.
+bloom.separableBlurMaterials.forEach(m => { const K = m.defines.KERNEL_RADIUS, sg = K / 2.5; m.uniforms.gaussianCoefficients.value = Array.from({ length: K }, (_, i) => Math.exp(-0.5 * i * i / (sg * sg))); });
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 const grade = new ShaderPass({
@@ -1148,7 +1361,7 @@ function focusOn(ids) {
   const startAz = camAz; let dAz = ((az1 - startAz + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
   const narrow = !window.matchMedia('(min-width: 900px)').matches;
   const startT = controls.target.clone(); const endT = new THREE.Vector3(0, narrow ? Math.max(-0.6, best.y - 1.4) : THREE.MathUtils.clamp(best.y, 1.2, 5.5), 0);
-  const startDist = dist; const endDist = THREE.MathUtils.clamp(dist, 9, 12.5);
+  const startDist = dist; const endDist = THREE.MathUtils.clamp(dist, 7.5, controls.maxDistance);
   const startY = camera.position.y - controls.target.y; const endY = best.y < 1 ? 2.6 : 1.1;
   const t0 = performance.now(); const dur = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 900;
   anim = (now) => {
@@ -1167,7 +1380,7 @@ function pick(ev) {
   const r = canvas.getBoundingClientRect();
   ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
-  const hits = ray.intersectObjects([...pickables, core], false).filter(h => shown(h.object));
+  const hits = ray.intersectObjects([...pickables, coreCone], false).filter(h => shown(h.object));
   if (!hits.length || hits[0].object.userData.occluder) return null;
   return hits[0].object.userData.itemId || null;
 }
@@ -1176,6 +1389,7 @@ canvas.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.client
 canvas.addEventListener('pointerup', e => {
   if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
   if (moved > 6) return;
+  if (tapExtra(e)) return;   // extras with their own tap (they never select a shopping item)
   const id = pick(e); select(id); if (id) stopSpin();
 });
 let hoverQueued = null;
@@ -1206,47 +1420,194 @@ function resize() {
   const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
   renderer.setSize(w, h, false); composer.setSize(w, h); bloom.setSize(w, h);
   camera.aspect = w / h;
-  camera.fov = w / h < 0.8 ? 46 : 36;
+  camera.fov = w / h < 0.8 ? 50 : 40;
   camera.updateProjectionMatrix();
 }
 new ResizeObserver(resize).observe(stage); resize();
 
-const tmpCol = new THREE.Color();
 const clock = new THREE.Clock();
+let lastT = 0;
 renderer.shadowMap.needsUpdate = true;
 function frame() {
-  const t = clock.getElapsedTime();
+  const t = clock.getElapsedTime(), dt = Math.min(0.1, Math.max(0, t - lastT)); lastT = t;
   if (anim) anim(performance.now());
   controls.update();
   updateCards();
-  frameHooks.forEach(f => f());
+  frameHooks.forEach(f => f(t, dt));
+  tickScene(t, dt);
   grade.uniforms.uTime.value = t % 10;
   doHover();
-  for (let i = 0; i < LIGHT_N; i++) { const k = 0.75 + 0.25 * Math.sin(t * 1.6 + lightPhase[i]); lights.setColorAt(i, tmpCol.setRGB(3.2 * k, 2.15 * k, 1.05 * k)); }
-  lights.instanceColor.needsUpdate = true;
   const pulse = 0.26 + 0.04 * Math.sin(t * 4);
   markerGroup.children.forEach(s => s.scale.setScalar(pulse));
   composer.render();
 }
 renderer.setAnimationLoop(frame);
 document.getElementById('loading').remove();
-{ // compare with the inspiration board
+
+/* ---------------- Settings (rooms), tree-light modes and scene extras ---------------- */
+const extrasGroup = new THREE.Group(); extrasGroup.name = 'extras'; scene.add(extrasGroup);
+const ACCENT_OWNER = [null, null];
+const envOf = e => (typeof e === 'function' ? e(core) : e) || ENV.living;
+const BG_COLOR = new THREE.Color();
+// Apply the chosen room's light design to the fixed pool, then the tree-light mode on top.
+function applyLook() {
+  const room = ROOMS[XS.room] || ROOMS.living, L = room.look || {}, day = bulbs.mode === 'off', D = L.day || {};
+  scene.environment = envOf(L.env);
+  if (L.bg && L.bg.isTexture) scene.background = L.bg; else { BG_COLOR.set(L.bg ?? 0x0d0806); scene.background = BG_COLOR; }
+  const hm = L.hemi || [0xffd9b0, 0x20140c, 0.15]; hemi.color.set(hm[0]); hemi.groundColor.set(hm[1]); hemi.intensity = hm[2] + (day ? (D.hemi ?? 0.45) : 0);
+  const K = { color: 0xffcf9a, intensity: 70, angle: 0.55, penumbra: 0.9, decay: 2, pos: [1.5, 9, 5], target: [0, 3, 0], ...(L.key || {}) };
+  key.color.set(K.color); key.intensity = K.intensity * (day ? (D.key ?? 1.25) : 1); key.angle = K.angle; key.penumbra = K.penumbra; key.decay = K.decay;
+  key.position.set(...K.pos); key.target.position.set(...K.target); key.target.updateMatrixWorld();
+  const rm = L.rim || [0x8fa6d6, 0.18]; rim.color.set(rm[0]); rim.intensity = rm[1] + (day ? (D.rim ?? 0.25) : 0);
+  INTERIOR.forEach((l, i) => { l.color.set(L.interiorColor ?? 0xffb870); l.intensity = day ? 0 : INTERIOR_I[i] * (L.interior ?? 1); });
+  const bs = L.base || [0xffb070, 3]; base.color.set(bs[0]); base.intensity = day ? 0 : bs[1];
+  accent.forEach((l, i) => { if (ACCENT_OWNER[i]) return; const a = (L.accent || [])[i] || [0xff9a40, 0, [0, 2.6, -4.3]]; l.color.set(a[0]); l.userData.base = a[1]; l.intensity = a[1]; if (a[2]) l.position.set(...a[2]); });
+  renderer.toneMappingExposure = (L.exp ?? 1.2) * (day ? (D.exp ?? 1.05) : 1);
+  bloom.strength = Math.max(0, (L.bloom ?? 0.9) - (day ? 0.3 : 0)); grade.uniforms.uWarm.value = L.warm ?? 0.6;
+  controls.maxDistance = room.maxDist ?? 14.5;
+  if (room.setMode) try { room.setMode(bulbs.mode, core); } catch (e) { console.error(e); }
+  renderer.shadowMap.needsUpdate = true;
+}
+function setRoom(name, { persist = true } = {}) {
+  const room = ROOMS[name]; if (!room) return XS.room;
+  if (!room.group) { try { room.group = room.build(core) || new THREE.Group(); } catch (e) { console.error('room', name, e); room.group = new THREE.Group(); } room.group.name ||= 'room.' + name; scene.add(room.group); }
+  ROOM_LIST.forEach(r => { if (r.group) r.group.visible = r.id === name; });
+  XS.room = name; applyLook(); refreshExtras();
+  if (persist) saveExtras(); if (XS.render) XS.render();
+  return name;
+}
+// Extras switch on lazily (built the first time they are shown) and only in the rooms they list.
+function refreshExtras() {
+  EXTRAS.forEach(x => {
+    const want = !!XS.on[x.id] && (!x.rooms || x.rooms.includes(XS.room));
+    if (want && !x.built) { x.built = true; try { const o = x.build ? x.build(core) : null; if (o) { x.obj = o; if (!o.parent) extrasGroup.add(o); } } catch (e) { console.error('extra', x.id, e); x.tick = null; } }
+    if (x.obj) x.obj.visible = want;
+    if (want !== x.active) { x.active = want; if (x.setOn) try { x.setOn(want, core); } catch (e) { console.error('extra', x.id, e); } renderer.shadowMap.needsUpdate = true; }
+  });
+}
+function saveExtras() { try { localStorage.setItem(XKEY, JSON.stringify({ room: XS.room, lights: bulbs.mode, on: XS.on })); } catch (e) {} }
+const extrasState = () => ({ room: XS.room, lights: bulbs.mode, on: { ...XS.on } });
+// setExtras({ all: false }) gives the clean board view: Living room, steady pre-lit lights, no extras.
+// Other keys: room ('living' | 'office' | any registered room), lights ('steady' | 'twinkle' | 'off'), and <extra id>: true/false.
+function setExtras(o = {}, { persist = true } = {}) {
+  if ('all' in o) { EXTRAS.forEach(x => { XS.on[x.id] = !!o.all; }); if (!o.all) o = { room: 'living', lights: 'steady', ...o }; }
+  EXTRAS.forEach(x => { if (typeof o[x.id] === 'boolean') XS.on[x.id] = o[x.id]; });
+  if (o.lights && o.lights !== bulbs.mode) bulbs.setMode(o.lights);
+  if (o.room && ROOMS[o.room]) setRoom(o.room, { persist: false }); else { applyLook(); refreshExtras(); }
+  if (persist) saveExtras(); if (XS.render) XS.render();
+  return extrasState();
+}
+function tickScene(t, dt) {
+  bulbs.tick(t, dt);
+  const room = ROOMS[XS.room];
+  if (room && room.tick) try { room.tick(t, dt, core); } catch (e) { console.error('room tick', e); room.tick = null; }
+  for (const x of EXTRAS) if (x.active && x.tick) try { x.tick(t, dt, core); } catch (e) { console.error('extra tick', x.id, e); x.tick = null; }
+}
+// Taps on extras (e.g. a mailbox flag) go to their own handlers and never select a shopping item.
+const TAPS = [];
+function tapExtra(ev) {
+  if (!TAPS.length) return false;
+  const r = canvas.getBoundingClientRect(); ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, camera);
+  const objs = TAPS.map(t => t.obj).filter(o => shown(o)); if (!objs.length) return false;
+  const hx = ray.intersectObjects(objs, true)[0]; if (!hx) return false;
+  const ht = ray.intersectObjects([...pickables, coreCone], false).filter(h => shown(h.object))[0];
+  if (ht && ht.distance < hx.distance) return false;
+  const t = TAPS.find(t => { for (let o = hx.object; o; o = o.parent) if (o === t.obj) return true; return false; });
+  if (t) { try { t.fn(hx); } catch (e) { console.error(e); } return true; }
+  return false;
+}
+const toastEl = (() => { const d = document.createElement('div'); d.className = 'xtoast'; d.hidden = true; d.setAttribute('role', 'status'); stage.append(d); return d; })();
+let toastTimer = null;
+function toast(msg, ms = 2600) { toastEl.textContent = msg; toastEl.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastEl.hidden = true; }, ms); }
+
+const CUT_V = new THREE.Vector3();
+// The living room and the office register like any other room, so extras_*.js can add more the same way.
+registerRoom({
+  id: 'living', label: 'Living room', order: 0, maxDist: 10.5, build: buildLivingRoom,
+  look: { env: ENV.living, bg: LIVING_BG, hemi: [0xffd9b0, 0x2a1a10, 0.35], key: { color: 0xffcf9a, intensity: 70, angle: 0.55, penumbra: 0.9, decay: 2 }, rim: [0x8fa6d6, 0.18],
+    base: [0xffb070, 2.2], interior: 1, accent: [[0xff9a40, 1.1, [-3.55, 2.75, -4.15]], [0xff9a40, 0.7, [3.3, 2.7, -4.15]]], exp: 1.2, bloom: 0.9, warm: 0.6,
+    day: { hemi: 0.5, key: 1.2, rim: 0.3, exp: 1.05 } },
+  setMode(mode) { if (ROOM.backdropMat) ROOM.backdropMat.color.setRGB(...(mode === 'off' ? [1.7, 1.75, 1.85] : [1.05, 1.05, 1.1])); },
+  tick(t, dt, c) {
+    const cam = camera.position, v = CUT_V;
+    (ROOM.cut || []).forEach(w => { w.g.visible = v.subVectors(cam, w.p).dot(w.n) > -0.02; });   // dollhouse cut-away
+    FLAME_MAT.uniforms.uTime.value = REDUCED_MOTION ? 0 : t; FLAME_MAT.uniforms.uOn.value = 1;
+    accent.forEach((l, i) => { if (ACCENT_OWNER[i]) return; const b = l.userData.base || 0; l.intensity = REDUCED_MOTION ? b : b * (1 + 0.2 * Math.sin(t * 9.1 + i * 2) * Math.sin(t * 3.7 + i) + 0.06 * Math.sin(t * 23 + i)); });
+  },
+});
+registerRoom({
+  id: 'office', label: 'Office', order: 90, maxDist: 14.5, build: buildOffice,
+  look: { env: () => ENV.office, bg: 0x2a2d31, hemi: [0xf3f5fb, 0x5a5650, 1.15], key: { color: 0xfff2e2, intensity: 1.3, angle: 1.1, penumbra: 0.5, decay: 0 }, rim: [0xd8e2ff, 0.5],
+    base: [0xffb070, 3], interior: 1, accent: [[0xff9a40, 0], [0xff9a40, 0]], exp: 1.0, bloom: 0.5, warm: 0.2, day: { hemi: 0.15, key: 1.0, rim: 0, exp: 1.0 } },
+});
+Object.assign(core, {
+  THREE, scene, camera, controls, renderer, IN, rAt, Y0, YTOP, RB, treeGroup, extrasGroup, frameHooks, ROOM, ROOMS, get LOOK() { return Object.fromEntries(ROOM_LIST.map(r => [r.id, r.look])); },
+  hemi, key, rim, base, accent, interior: INTERIOR, bloom, grade, composer, pmremGen, ENV, canvasTex, drawPaw, tartanTex, noise, rng, mergeGeometries, bowGeo, SHADOW_TEX, contactShadow,
+  bulbs, LOW, reducedMotion: REDUCED_MOTION, setRoom, setExtras, applyLook, toast, state: extrasState, registerRoom, registerExtra,
+  get room() { return XS.room; }, get time() { return clock.getElapsedTime(); },
+  claimAccent(i, owner) { ACCENT_OWNER[i] = owner || true; return accent[i]; },
+  releaseAccent(i, owner) { if (!owner || ACCENT_OWNER[i] === owner || ACCENT_OWNER[i] === true) { ACCENT_OWNER[i] = null; applyLook(); } },
+  addTapTarget(obj, fn) { TAPS.push({ obj, fn }); },
+  shadowsDirty() { renderer.shadowMap.needsUpdate = true; },
+});
+setRoom('living', { persist: false });
+
+/* ---------------- HUD: the "Extras ✦" popover, generated from the registries ---------------- */
+{
+  const btn = document.getElementById('extrasBtn'), pop = document.getElementById('extras');
+  const LIGHTS = [['steady', 'Steady', 'As delivered: the tree comes pre-lit'], ['twinkle', 'Twinkle', 'Just for fun: a few bulbs sparkle'], ['off', 'Daytime', 'Lights off, daytime look']];
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const onlyIn = x => x.rooms && x.rooms.length ? ` <span class="xonly">(${x.rooms.map(r => (ROOMS[r] ? ROOMS[r].label : r).replace(/ room$/, '').toLowerCase()).join(', ')} only)</span>` : '';
+  const chk = x => `<label class="xchk${x.rooms && !x.rooms.includes(XS.room) ? ' xoff' : ''}"><input type="checkbox" data-xid="${esc(x.id)}"${XS.on[x.id] ? ' checked' : ''}> <span>${esc(x.label || x.id)}${onlyIn(x)}</span></label>`;
+  XS.render = () => {
+    if (!pop) return;
+    const room = EXTRAS.filter(x => x.kind === 'setting'), fun = EXTRAS.filter(x => x.kind !== 'setting');
+    pop.innerHTML = `<div class="xh"><b>Scene extras</b><button type="button" class="xclose" aria-label="Close">✕</button></div>
+      <div class="xsec"><span class="xl" id="xlRoom">Setting</span><div class="xchips" role="group" aria-labelledby="xlRoom">${ROOM_LIST.map(r => `<button type="button" data-xroom="${esc(r.id)}" aria-pressed="${r.id === XS.room}">${esc(r.label)}</button>`).join('')}</div></div>
+      <div class="xsec"><span class="xl" id="xlLights">Tree lights</span><div class="xchips" role="group" aria-labelledby="xlLights">${LIGHTS.map(([m, l, tt]) => `<button type="button" data-xlights="${m}" title="${tt}" aria-pressed="${bulbs.mode === m}"${m === 'twinkle' && REDUCED_MOTION ? ' disabled' : ''}>${l}</button>`).join('')}</div>
+        <p class="xnote">${{ steady: 'Steady is the tree as delivered: it comes pre-lit.', twinkle: 'Twinkle is just for fun; the delivered lights are steady.', off: 'Daytime look: the pre-lit lights switched off.' }[bulbs.mode]}</p></div>
+      ${room.length ? `<div class="xsec"><span class="xl">In the room</span>${room.map(chk).join('')}</div>` : ''}
+      ${fun.length ? `<div class="xsec"><span class="xl">Fun extras</span>${fun.map(chk).join('')}</div>` : ''}
+      <button type="button" class="xalloff">All extras off</button>
+      <p class="xcap">Scene extras are for fun and aren't on the shopping list.</p>`;
+    btn.classList.toggle('xact', XS.room !== 'living' || bulbs.mode !== 'steady' || EXTRAS.some(x => XS.on[x.id]));
+  };
+  const place = () => { const s = stage.getBoundingClientRect(), b = btn.getBoundingClientRect(), top = Math.round(b.bottom - s.top + 8); pop.style.top = top + 'px'; pop.style.maxHeight = Math.max(160, s.height - top - 14) + 'px'; };
+  const open = on => { pop.hidden = !on; btn.setAttribute('aria-expanded', String(on)); if (on) { XS.render(); place(); } };
+  if (btn && pop) {
+    btn.onclick = () => open(pop.hidden);
+    pop.addEventListener('click', e => {
+      const r = e.target.closest('[data-xroom]'), l = e.target.closest('[data-xlights]');
+      if (e.target.closest('.xclose')) { open(false); btn.focus(); return; }
+      if (e.target.closest('.xalloff')) { setExtras({ all: false }); return; }
+      if (r) { setRoom(r.dataset.xroom); return; }
+      if (l) setExtras({ lights: l.dataset.xlights });
+    });
+    pop.addEventListener('change', e => { const c = e.target.closest('[data-xid]'); if (c) setExtras({ [c.dataset.xid]: c.checked }); });
+    document.addEventListener('pointerdown', e => { if (!pop.hidden && !pop.contains(e.target) && !btn.contains(e.target)) open(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !pop.hidden) { open(false); btn.focus(); } });
+    new ResizeObserver(() => { if (!pop.hidden) place(); }).observe(stage);
+  }
+}
+// After every extras_*.js has registered (they run later in this same module), restore the saved choices.
+queueMicrotask(() => {
+  XS.ready = true;
+  const s = XS.saved || {};
+  if (s.lights && s.lights !== 'steady') bulbs.setMode(s.lights);
+  setRoom(ROOMS[s.room] ? s.room : 'living', { persist: false });
+  if (XS.render) XS.render();
+});
+{ // compare with the inspiration board: the clean board view while it is open (extras off), then back
   const btn = document.getElementById('compare'), box = document.getElementById('insp');
-  if (btn && box && CUT.inspiration) { box.querySelector('img').src = CUT.inspiration.src; btn.onclick = () => { const on = box.hidden; box.hidden = !on; btn.setAttribute('aria-pressed', String(on)); }; box.querySelector('button').onclick = () => btn.click(); }
+  let stash = null;
+  if (btn && box && CUT.inspiration) {
+    box.querySelector('img').src = CUT.inspiration.src;
+    btn.onclick = () => { const on = box.hidden; box.hidden = !on; btn.setAttribute('aria-pressed', String(on));
+      if (on) { stash = extrasState(); setExtras({ all: false }, { persist: false }); } else if (stash) { setExtras({ ...stash.on, room: stash.room, lights: stash.lights }, { persist: false }); stash = null; } };
+    box.querySelector('button').onclick = () => btn.click();
+  }
 }
-/* ---------------- Settings: living room or office; person for scale ---------------- */
-const LOOK = {
-  living: { env: ENV.living, envI: 0.9, bg: 0x0d0806, hemi: [0xffd9b0, 0x20140c, 0.35], key: [0xffd6a8, 1.1], fill: [0x8fa6d6, 0.18], exp: 1.2, bloom: 0.75, warm: 0.6 },
-  office: { env: ENV.office, envI: 0.7, bg: 0x2a2d31, hemi: [0xf3f5fb, 0x5a5650, 1.15], key: [0xfff2e2, 1.3], fill: [0xd8e2ff, 0.5], exp: 1.0, bloom: 0.5, warm: 0.2 },
-};
-function setRoom(name) {
-  const L = LOOK[name]; livingRoom.visible = name === 'living'; officeRoom.visible = name === 'office';
-  scene.environment = L.env; scene.environmentIntensity = L.envI; scene.background.set(L.bg);
-  hemi.color.set(L.hemi[0]); hemi.groundColor.set(L.hemi[1]); hemi.intensity = L.hemi[2]; key.color.set(L.key[0]); key.intensity = L.key[1]; fill.color.set(L.fill[0]); fill.intensity = L.fill[1];
-  renderer.toneMappingExposure = L.exp; bloom.strength = L.bloom; grade.uniforms.uWarm.value = L.warm; renderer.shadowMap.needsUpdate = true;
-  document.querySelectorAll('[data-room]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.room === name)));
-}
-document.querySelectorAll('[data-room]').forEach(b => { b.onclick = () => setRoom(b.dataset.room); });
+/* ---------------- Person for scale ---------------- */
 {
   const pb = document.getElementById('personBtn'), sel = document.getElementById('personH'), layer = document.getElementById('measures');
   MEASURE.forEach(m => { m.el = document.createElement('div'); m.el.className = 'measure'; layer.append(m.el); });
@@ -1280,4 +1641,5 @@ let applySel = function ({ focusEl } = {}) {
   const prev = applySel; applySel = (...a) => { prev(...a); sync(); };
 }
 applySel();
-window.__howl = { select, instancesOf, pickables, stop: () => renderer.setAnimationLoop(null), frame, camera, controls, setSel: s => { SEL = { ...SEL, ...s }; applySel(); }, sel: () => ({ ...SEL }), totals: () => CUR.totals, groups: GROUPS };
+window.__howl = { select, instancesOf, pickables, stop: () => renderer.setAnimationLoop(null), frame, camera, controls, setSel: s => { SEL = { ...SEL, ...s }; applySel(); }, sel: () => ({ ...SEL }), totals: () => CUR.totals, groups: GROUPS,
+  setExtras, setRoom: name => setRoom(name), extras: extrasState, renderer, scene, core, home: { pos: HOME_POS, target: HOME_TARGET }, bulbs };

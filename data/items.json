@@ -2,7 +2,7 @@
  {
   "id": "topper",
   "section": "Tree ornaments",
-  "name": "Tree topper (makes 1): 22\" burlap bow, two loops and two tails, 6\" natural jute with black felt paws, wired edges",
+  "name": "Tree topper (makes 1): 22\" burlap bow, two upswept loops and two 14\" tails, 6\" natural jute with 3\" black felt paws, wired edges",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B0DQ4BXYKZ",
   "diy": true,
@@ -20,17 +20,32 @@
   "match": "match",
   "checked_on": "2026-11-16",
   "arrives_by": "2026-11-22",
-  "notes": "The board's bow: natural burlap about 6\" wide, two big loops and two long tails, black paws. No paw-print burlap is sold at this width, so we add felt paws; floral wire glued along the back edges lets it hold its shape like the board.",
+  "notes": "The board's bow: natural burlap about 6\" wide, two big upswept loops over shorter tails, black paws about half the ribbon's width. No paw-print burlap is sold at this width, so we glue on 3\" felt paws; floral wire glued along the back edges lets the unwired jute hold its shape like the board. Vendor: the 6\" jute (B0DQ4BXYKZ) is sold by xingwanworks (18 ratings) and shipped by Amazon from outside Canada, $6.43, Nov 22; the 4\" wired burlap (B0CHMLF3NP, Nov 20) is the fallback. The jute is not wired, so the glued edge wire is essential.",
   "verdict_before": "no",
   "action": "DIY",
   "photo": "https://m.media-amazon.com/images/I/81p175ygSKL._AC_SX679_.jpg",
   "size_in": {
    "w": 22,
-   "ribbon": 6
+   "ribbon": 6,
+   "tail": 14,
+   "paw": 3
   },
   "form_name": "Burlap paw-print bow topper, 22\" (DIY)",
-  "how": "Cut 2.7 yd of the 6\" burlap. Hot-glue 22-gauge floral wire along both back edges. Cut 20 paws from black felt with the 2.2\" paw template (page 3) and glue them on with fabric glue about every 5\", on both loops, both tails and the knot; dry flat overnight. Make two 10\" loops, pinch the centre with floral wire, wrap an 8\" piece round it as the knot, and leave two 22\" tails with V-notched ends. Zip-tie it to the top and shape the loops and tails like the board.",
+  "how": "Cut list from the 6\" jute (12 yd roll): one 78\" bow strip and one 8\" knot piece (2.4 yd with the notches). Work on the drop sheet. (1) Edge wire: on the back face, hot-glue a 79\" length of floral wire 1/4\" in from each long edge, folding the last 1/2\" of wire back at each end so it cannot poke out. The jute is not wired, so this is what holds the loops. (2) Paws, front face only: trace 24 paws on the black felt with the 3\" template (page 3) and the white fabric marker (or tape the paper paw to the felt and cut round it). Each paw is 5 pieces: a pad and four toes. Glue 23 on the front face of the strip with fabric glue, alternating left and right of the centre line about every 3.4\", none in the middle 4\" where the bow is pinched; glue the 24th in the middle of the knot piece. Dry flat overnight. (3) Fray stop: the long edges are hemmed; run a thin bead of fabric glue across the cut ends of the strip and the knot piece. (4) Tie, paws facing you: leave a 14\" tail, make a 10\" loop to the left (about 22\" of ribbon) and a 10\" loop to the right, angling both loops up about 20 degrees, and pinch the centre with an 18\" piece of floral wire; the second 14\" tail hangs down. Fold the knot piece lengthwise in half (3\" wide, paw out), wrap it round the pinch and hot-glue it at the back. V-notch both tails 1\" deep and seal the notch with fabric glue. (5) Fix: zip-tie it to the top stem with two of the organizers' zip ties and twist the 18\" wire ends round the stem (two more 18\" wires if it leans). Shape the loops up and round and let the tails hang about 25 degrees off vertical, like the board: about 22\" across with 14\" tails.",
   "photo_file": "r3d_topper",
+  "projects": [
+   "topper"
+  ],
+  "tools": [
+   "wire_cutter",
+   "glue_gun",
+   "fabric_marker",
+   "ruler",
+   "cut_board",
+   "drop_sheet",
+   "Scissors (office)",
+   "Zip ties (2, supplied with the tree)"
+  ],
   "materials": [
    "burlap6"
   ],
@@ -55,8 +70,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
-  "notes": "Wild Republic Cuddlekins 12\" (about 11\" tall sitting). Wired round the body to the trunk under its tartan scarf.",
+  "arrives_by": "2026-11-20",
+  "notes": "Wild Republic Cuddlekins 12\" (about 11\" tall sitting). A paler, peachier gold than the board's honey-gold puppy, and its grey felt paw pads face forward: wire it tilted back with the hind feet tucked onto the branch so the pads face down, and drape the scarf ends over the front paws. Wired round the body to the trunk under its tartan scarf. Amazon.ca seller, 4.4 stars (47), $19.37, Nov 17-20.",
   "verdict_before": "close",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/71W5NrxDdUL._AC_SX679_.jpg",
@@ -66,39 +81,57 @@
    "d": 11
   },
   "form_name": "Golden retriever plush, sitting 12\"",
+  "projects": [
+   "plush_dogs",
+   "pair"
+  ],
+  "tools": [
+   "wire_cutter",
+   "Zip ties (supplied with the tree)"
+  ],
+  "how": "Each dog (about 100 g): fold a 72\" floral wire in half, wrap the doubled wire round the belly under the scarf and twist both ends round a main branch near the trunk; add one of the organizers' zip ties round the body and branch, since the tree is moved several times. Sit it tilted back with the hind feet tucked onto the branch so the grey pads face down, and drape the scarf ends over the front paws. Under the tree, the dog and the cat sit side by side by the basket, wired to each other and to the basket handle with two 18\" floral wires hidden under the scarves.",
   "total": 58.11
  },
  {
-  "id": "cat_fluffy",
+  "id": "cat_miyoni",
   "section": "Tree ornaments",
-  "name": "Grey tabby cat plush, sitting, 8\" (FLUFFYFUN realistic)",
-  "form_name": "Grey tabby cat plush, 8\"",
-  "url": "https://www.amazon.ca/dp/B0H5YKFT7X",
-  "price": 34.19,
-  "ship": 5.45,
-  "arrives_by": "2026-11-24",
-  "match": "match",
+  "name": "Grey tabby kitten plush, 9\" long x 6\" tall, crouching (Aurora Miyoni Tots)",
+  "form_name": "Grey tabby kitten plush, 9\" (Aurora Miyoni)",
+  "url": "https://www.amazon.ca/dp/B00SUECXD0",
+  "price": 33.16,
+  "arrives_by": "2026-11-20",
+  "match": "close",
   "size_in": {
-   "h": 8,
-   "w": 5,
-   "d": 7
+   "h": 6,
+   "l": 9,
+   "w": 4.5,
+   "d": 9
   },
-  "photo_file": "p_B0H5YKFT7X",
-  "notes": "Grey-and-white tabby with a white muzzle and chest, sitting: the board's cats. 8\" is inside the board's 8-15\" range.",
+  "photo_file": "p_B00SUECXD0",
+  "look": "Strongly striped grey-brown tabby with a white chest, muzzle and paws, in a fringed tartan scarf.",
+  "notes": "The board's coat: strong grey-brown mackerel stripes with a white chest, muzzle and paws. It crouches (front paws forward, head up) where the board's cats sit upright, so it lies along a branch on the tree. Snip off the gold Miyoni tag; the scarf covers the spot. Sold by Amazon US (cross-border, no import fee shown), 4.8 stars from 2,170 ratings, free delivery Nov 20, but only 8 left on Nov 16: order it first.",
   "store": "Amazon.ca",
   "checked_on": "2026-11-16",
   "status": "listed",
   "image_checked": true,
+  "projects": [
+   "plush_cats",
+   "pair"
+  ],
+  "tools": [
+   "wire_cutter",
+   "Scissors (office)"
+  ],
+  "how": "Each cat (about 136 g): snip off the gold Miyoni tag. Fold a 48\" floral wire in half, wrap the doubled wire round the body behind the front legs, under the scarf, and twist both ends round a sturdy branch so the cat lies along it, face out. Under the tree it sits beside the dog (see the golden retriever).",
   "qty": 3,
-  "total": 102.57,
+  "total": 99.48,
   "reference_crops": [],
-  "look": "",
   "viz": null
  },
  {
   "id": "doghouse",
   "section": "Tree ornaments",
-  "name": "Doghouse ornaments (makes 6): 10\" foam-board doghouses, red brick walls, cream shingle roof, arched door with cream trim, cream paw on the gable",
+  "name": "Doghouse ornaments (makes 6): 10\" foam-board doghouses, dark-jointed red brick walls, cream plank roof with barge boards and ridge cap, arched door with flat cream trim and threshold, raised cream paw on the gable",
   "store": "DeSerres",
   "url": "https://www.deserres.ca/products/foam-board-white-16x20",
   "diy": true,
@@ -116,8 +149,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-16",
-  "arrives_by": "2026-11-26",
-  "notes": "Built at the board's scale: its doghouse is about as tall as the dog beside it (10-15\"). Foam board keeps each one near 90 g, light enough for a sturdy branch.",
+  "arrives_by": "2026-11-27",
+  "notes": "Built at the board's scale: its doghouse is about as tall as the dog beside it (10-15\"). Each weighs about 160 g (about 350 sq in of 3/16\" foam board, 50 g of paint, 4 glue sticks), so it sits upright on a sturdy inner branch, wired through the floor, like the board's, with the gold loop as a safety tie.",
   "verdict_before": "no",
   "action": "redesigned",
   "photo": null,
@@ -127,55 +160,79 @@
    "d": 6
   },
   "form_name": "Doghouse ornaments, 10\" (DIY)",
-  "how": "Print the template (pages 1-2, actual size, 11x17) and cut 6 sets from the foam board with a fresh blade: front with the arched door, back, two sides, two roof panels, floor, and the trim strips. Score brick lines on the walls and shingle rows on the roof with a ballpoint pen. Hot-glue the walls to the floor, thread a 30 cm gold loop through the ridge and glue on the roof (3/4\" overhang). Paint the walls mortar grey (gesso + a drop of black), then sponge-dab barn red (Naphthol Red + Crimson 1:1) so the scored lines stay grey. Paint inside the door dark brown, the roof, corner trims and door arch cream, and stencil a 2.5\" cream paw on the gable. About 25 min each once cut.",
+  "how": "Print pages 1, 2 and 8 at Actual size (check the 1\" square). Cut on the flattened moving box with a fresh blade against the steel ruler; mark in pencil, never pen. Test the glue gun on an offcut first and glue onto the paper faces, not the bare foam edge (the hot gun melts the foam core). (1) Cut, per house, following the page-2 cut plan (boards 1-9 hold all six houses; board 10 is spare; measure each board first and if it is under 16\" trim the difference off the roof overhang): front with the arched door (keep the door piece), back, two sides, two roofs, floor (page 2), four corner trims (page 2), and from page 8 the flat U-shaped arch trim (cut as one piece), two barge boards (flip one), the threshold and two ridge caps. Cut the 2.5\" gable paw (pad + 4 toes, page 8) from the door piece. (2) Score while the template is still taped on: press the grey brick lines (page 1: courses about 0.9\", bricks 1.5\", staggered) and the roof board lines (page 2: every 1.25\" parallel to the eave, joints every 1.5\") through the paper with the empty ballpoint. Score the two plank lines on the threshold. (3) Paint flat, before assembly: the inside faces of the walls and the undersides of both roofs burnt sienna (stops the foam board warping; dark through the door); the roof tops, trims, threshold and paw one coat of cream (cream = 1/2 cup (120 ml) gesso + 1 tsp deep ochre + a pea-sized dab of burnt sienna; mix one batch for all six houses in a lidded cup and stir with a wood stick). (4) Assemble with hot glue: the walls round the floor (the floor sits inside the walls), then a toothpick across the inside of the two gable peaks with a 60 cm gold cord tied round it, the doubled loop coming out at the ridge, then the two roofs (3/4\" overhang all round) either side of the cord. Poke two holes through the floor 2\" apart with a toothpick. (5) Walls: brush the outside dark brick (dark brick = Crimson + Lamp Black about 10:1) and let it dry, then sponge-dab barn red = Naphthol Red + Crimson 1:1 over the brick faces only, twice, so the scored joints stay dark like the board's. (6) Second cream coat on the roof, trims, threshold and paw; dry-brush a little sienna along the roof boards for grain. Paint the ridge caps barn red with a touch of sienna. (7) Trims: glue the four corner trims on the wall corners, the threshold flat at the foot of the door (back edge against the wall, top level with the floor, sticking out 3/4\"), the U arch trim round the door with its legs standing on the threshold, the barge boards along the two front roof edges meeting at the peak, the ridge caps as a peak over the ridge either side of the cord, and the five paw pieces on the front gable centred 2.84\" below the peak (dotted on page 1). Darken the inside of the door opening with a little Lamp Black. (8) Hang: push a 10\" floral wire through each floor hole, sit the house upright on a sturdy inner branch near the trunk and twist the wires round the branch; tie the gold loop to the branch above as a safety tie. About 40 min each once cut.",
   "photo_file": "r3d_doghouse_iso",
+  "projects": [
+   "doghouse"
+  ],
+  "tools": [
+   "knife",
+   "ruler",
+   "cut_board",
+   "glue_gun",
+   "brushes",
+   "foam_brush1",
+   "foam_brush2",
+   "sponge",
+   "sticks",
+   "wire_cutter",
+   "drop_sheet",
+   "Pencil and an empty ballpoint pen (office)",
+   "Toothpicks (6) (office)"
+  ],
   "materials": [
    "foam_board"
   ],
   "total": 59.9
  },
  {
-  "id": "paw_disc",
-  "section": "Tree ornaments",
-  "name": "Paw ornaments (makes 10): 6\" hoops painted gold, ivory Aida face, black glitter paw, dark red velvet bow",
-  "store": "DeSerres",
-  "url": "https://www.deserres.ca/products/embroidery-hoop-round-15-2cm",
-  "diy": true,
-  "made": 10,
-  "price": 89.87,
-  "qty": 1,
-  "status": "listed",
-  "viz": "Cream discs with a black paw",
-  "look": "Round cream/ivory disc (3-4 in), textured or quilted look, large black (glittery) paw print in the centre, gold cap and loop, deep-red velvet bow on top. Currently DIY; a bought ornament is fine if it matches.",
-  "reference_crops": [
-   "paw_ornament",
-   "tree_bottom"
-  ],
-  "priority": "high",
-  "image_checked": true,
+  "id": "paw_disc_fay",
+  "store": "Amazon.ca",
+  "url": "https://www.amazon.ca/dp/B088WV6BFG",
+  "arrives_by": "2026-11-20",
   "match": "match",
-  "checked_on": "2026-11-16",
-  "arrives_by": "2026-11-26",
-  "notes": "The board's paw ornament is a cream, textured disc in a gold rim with a gold cap, a black sparkly paw and a deep red velvet bow. A 6\" embroidery hoop gives the gold rim, and its brass screw sits where the cap is; ivory Aida gives the fine woven texture.",
-  "verdict_before": "no",
-  "action": "DIY",
-  "photo": "https://m.media-amazon.com/images/I/61bJqwBX-oL._AC_SX679_.jpg",
   "size_in": {
    "d": 6
   },
+  "name": "Paw ornaments (makes 10): Faylapa 6\" bamboo hoops (16-pk) painted gold, tea-stained Aida face, black glitter paw, felt back, velvet bow",
   "form_name": "Paw-print hoop ornaments, 6\" (DIY)",
-  "how": "Paint the outer face and front edge of both hoop rings gold, 3 coats; leave the brass screw. Stretch a 7.5 x 9\" piece of Aida drum-tight in each hoop with the screw at the top, trim the back to 1/2\" and glue the edge inside the inner ring. Cut 10 paws from the black glitter cardstock with the 3.6\" paw template (page 3) and glue one to the centre of each with fabric glue. Tie a 9\" bow from 37\" of the velvet (two 4.5\" loops, 8\" tails with V-notches), wire it just above the screw, and tie a 25 cm gold cord loop through the screw to hang it.",
-  "photo_file": "p_hoops_ds",
+  "photo_file": "p_B088WV6BFG",
+  "projects": [
+   "paw_disc"
+  ],
+  "tools": [
+   "brushes",
+   "foam_brush1",
+   "glue_gun",
+   "fabric_marker",
+   "wire_cutter",
+   "cut_board",
+   "Scissors (office)",
+   "Black tea bags, a kettle and a bowl (office kitchen)"
+  ],
+  "notes": "The same ornament with Amazon hoops: 6\" bamboo with a brass screw, 16 in the pack (6 spare), $29.99 against $65.89 for eleven DeSerres hoops, and here Nov 20 instead of with the DeSerres parcel (Nov 25-27), so the hoops can be primed first. Only 3 packs were left on Nov 16 (Amazon-shipped, sold by HLSG, 4.6 stars from 42): order it first. If it sells out, choose the DeSerres-hoop option.",
+  "how": "Per ornament (template pages 3 and 9). (1) Hoop: paint the outer ring only. Prime its outside face and front edge with gesso, then 2 coats of gold; leave the inner ring, the outer ring's inside face and the brass screw bare (paint there makes the clamp too tight and scuffs off). Paint one spare hoop with them. Cure 24 h. (2) Face: cut the Aida into 9 x 9\" pieces (4 per sheet, 2 spare). Tea-stain them: 4 black tea bags in 1 L of just-boiled water for 10 min, soak the pieces 10 min, rinse once and dry flat under a towel (no tea: 1/4 tsp deep ochre and a drop of burnt sienna in 1 cup of water). Stain an offcut strip first and let it dry to check: it should be the board's warm biscuit-cream, not white. (3) Hoop it: lay a piece over the inner ring, press the outer ring down with the screw at the top, pull the edges evenly all round until drum-tight and tighten the screw. On the back trim the Aida to 1/2\" outside the ring and hot-glue that margin to the inside of the inner ring. (4) Paw: cut a 3.6\" paw (pad + 4 toes, page 3) from the black glitter cardstock and glue it to the centre with fabric glue. (5) Back: trace a 6\" circle (page 9) on black felt with the white fabric marker, cut it out and hot-glue it to the back edge of the inner ring over the trimmed Aida, so the ornament is finished from behind. (6) Bow and hanger: tie a 9\" bow from 37\" of the velvet (two 4.5\" loops, 8\" tails, V-notched), wire it just above the screw with 8\" of floral wire, and tie a 25 cm gold cord loop through the screw to hang it; twist the wire ends round the branch.",
+  "section": "Tree ornaments",
+  "diy": true,
+  "status": "listed",
+  "image_checked": true,
+  "checked_on": "2026-11-16",
+  "qty": 1,
+  "made": 10,
+  "price": 74.96,
   "materials": [
-   "hoops_ds",
+   "hoops_fay",
    "aida"
   ],
-  "total": 89.87
+  "total": 74.96,
+  "reference_crops": [],
+  "look": "",
+  "viz": null
  },
  {
   "id": "bones",
   "section": "Tree ornaments",
-  "name": "Bone ornaments (makes 8): 9\" puffy bones of air-dry foam clay over a foil core, painted biscuit-cream, sealed",
+  "name": "Bone ornaments (makes 8): 9\" puffy biscuit bones of air-dry foam clay over a foil core, painted biscuit, sealed, hung level from two gold cords",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B0F86WQG4W",
   "diy": true,
@@ -194,41 +251,55 @@
   "match": "match",
   "checked_on": "2026-11-16",
   "arrives_by": "2026-11-20",
-  "notes": "The board's bones are about as long as the dog is tall: 7-11\". Foam clay over a foil core keeps each near 75 g.",
+  "notes": "The board's bones are about as long as the dog is tall (7-11\"), chunky like a biscuit (shaft about 0.27 of the length, knob span about 0.53), and hang level from two gold cords. Each takes about 117 g of wet foam clay over a foil core and weighs about 100 g dry.",
   "verdict_before": "no",
   "action": "DIY",
   "photo": "https://m.media-amazon.com/images/I/71N9Mto+9iL._AC_SX679_.jpg",
   "size_in": {
    "l": 9,
-   "w": 3.4,
-   "d": 1.3
+   "w": 4.77,
+   "d": 1.0
   },
   "form_name": "Dog-bone ornaments, 9\" (DIY)",
-  "how": "For each bone scrunch a 6\" foil log with a foil ball at each corner, wrap in 1/4\" of foam clay, shape four round knobs and a 1.3\" thick puffy shaft, 9\" long against the template (page 4). Push a 25 cm gold cord loop into one end. Dry 48 h, paint cream twice, dry-brush burnt sienna on the edges, seal with Mod Podge.",
+  "how": "Per bone (template page 4: 9\" long, knob span 4.8\", shaft 2.4\", about 1\" thick). Start the day the clay lands: only the painting waits for the DeSerres parcel. (1) Core: scrunch a 12 x 18\" sheet of foil into a flat bone about 1/2\" thick and 1/4\" inside the page-4 outline all round, with a firm ball in each of the four knobs. Wire anchors: twist a small loop at one end of a 4\" piece of floral wire and wrap its tail tightly round the foil inside each of the two upper knobs, with the loop just under the surface at the red marks. (2) Clay: on a piece of the drop sheet, lay two pencils 5\" apart as 1/4\" thickness guides (or two of the 6 mm wood sticks once DeSerres arrives) and press about 120 g of foam clay between them into a 1/4\" sheet with a flat flap cut from the XL moving box. Wrap the core, smooth the seams with a damp finger and shape four round knobs and a flat-faced shaft against the page-4 outline. Dry 48 h, turning once. (3) Paint: 2 coats of the biscuit mix (1/2 cup gesso + 2 tsp deep ochre + 1 tsp burnt sienna); dry-brush burnt sienna on the edges and knobs; 1 coat of Mod Podge. (4) Hang with two cords, level, like the board: drill a hole about 3/4\" deep at each red mark by twisting a toothpick down to the wire anchor. Cut a 50 cm gold cord, knot each end twice, fill each hole with hot glue and push one knotted end into each, so the glue grips the anchor. The two cords rise from the upper knobs and the bone hangs level; hang it from the middle of the cord and wire the cord to the branch with 8\" of floral wire.",
   "photo_file": null,
+  "projects": [
+   "bones"
+  ],
+  "tools": [
+   "brushes",
+   "foam_brush1",
+   "glue_gun",
+   "wire_cutter",
+   "drop_sheet",
+   "Aluminum foil (about 12 ft) (office)",
+   "Toothpicks (16) (office)",
+   "Two pencils (thickness guides) (office)",
+   "cut_board"
+  ],
   "total": 0.0
  },
  {
   "id": "baubles_rgg",
   "section": "Tree ornaments",
-  "name": "Shatterproof baubles – red, forest green & gold (100-pc set)",
+  "name": "Shatterproof baubles, red & gold (100-pc set: 32 x 2.4\", 36 x 1.6\", 32 x 1.2\")",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/Green-Gold-Shatterproof-Hand-Painted-Decorations/dp/B0HGKYHG7X",
+  "url": "https://www.amazon.ca/dp/B0FNJXJNXQ",
   "price": 43.99,
   "qty": 1,
   "status": "listed",
   "viz": "Red, green and gold baubles all over the tree",
-  "look": "Shatterproof round baubles in glossy and glitter red, deep forest green and gold, mixed 1.5-3 in, with gold caps.",
+  "look": "Red and gold shatterproof balls in shiny, matte and glitter, with gold caps.",
   "reference_crops": [
    "tree_top",
    "tree_bottom"
   ],
   "priority": "medium",
   "image_checked": true,
-  "match": "match",
-  "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
-  "notes": "Red, green & gold mix with glitter, gold caps and a few tartan-print balls; matches the tree palette.",
+  "match": "close",
+  "checked_on": "2026-11-16",
+  "arrives_by": "2026-11-20",
+  "notes": "Red and gold only (the board's fill is mostly red and gold); the forest green comes from the two 4\" green glitter packs. About a third of the set is striped, diamond-painted or tartan-painted: hang those deep in the branches or leave them out, since the board's balls are plain. Ships from Amazon, sold by Flag Pro LLC, 4.6 stars (26), free delivery Nov 20.",
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/81t4QG8HhCL._AC_SX679_.jpg",
@@ -246,9 +317,17 @@
      1.2,
      32
     ]
+   ],
+   "palette": [
+    "#b8121f",
+    "#b8121f",
+    "#9e0f1c",
+    "#d7a64a",
+    "#c9a14a"
    ]
   },
-  "form_name": "Shatterproof baubles, red/green/gold (100 pc)",
+  "form_name": "Shatterproof baubles, red & gold (100 pc)",
+  "photo_file": "p_B0FNJXJNXQ",
   "total": 43.99
  },
  {
@@ -258,13 +337,13 @@
   "form_name": "Red baubles, 6\" (4 pc)",
   "url": "https://www.amazon.ca/dp/B0B6PKG298",
   "price": 32.99,
-  "arrives_by": "2026-11-21",
+  "arrives_by": "2026-11-23",
   "match": "match",
   "size_in": {
    "d": 6
   },
   "photo_file": "p_B0B6PKG298",
-  "notes": "Plain red at the board's biggest size: the big red balls under the topper and beside the doghouse.",
+  "notes": "Plain red at the board's biggest size: the big red balls under the topper and beside the doghouse. Ships from Amazon (Thousea), 4.2 stars (558), free delivery Nov 22-23.",
   "store": "Amazon.ca",
   "checked_on": "2026-11-16",
   "status": "listed",
@@ -288,7 +367,7 @@
    "d": 3.94
   },
   "photo_file": "p_B0CSYHTT86",
-  "notes": "The board's big red glitter balls, at the board's scale (4\" vs 3.15\" before).",
+  "notes": "The board's big red glitter balls, at the board's scale (4\" vs 3.15\" before). The sequin texture is chunkier and a little brighter than the board's: hang them a little deeper and keep the smooth JOYIN and Benjia reds on the tips.",
   "store": "Amazon.ca",
   "checked_on": "2026-11-16",
   "status": "listed",
@@ -312,7 +391,7 @@
    "d": 4
   },
   "photo_file": "p_B0H33K316H",
-  "notes": "Plain glossy and mirror reds, like the shiny balls near the board's topper.",
+  "notes": "Plain glossy and mirror reds, like the shiny balls near the board's topper. Only 3.1 stars (9 ratings): inspect on arrival and keep the 30-day return; the Oairse 4\" sets (4.7 stars, 166) are the fallback.",
   "store": "Amazon.ca",
   "checked_on": "2026-11-16",
   "status": "listed",
@@ -336,7 +415,7 @@
    "d": 4
   },
   "photo_file": "p_B0H33B6VSH",
-  "notes": "Champagne-gold balls like the board's left side, at its scale.",
+  "notes": "Champagne-gold balls like the board's left side, at its scale. Only 3.1 stars (9 ratings): inspect on arrival and keep the 30-day return; the Oairse 4\" sets (4.7 stars, 166) are the fallback.",
   "store": "Amazon.ca",
   "checked_on": "2026-11-16",
   "status": "listed",
@@ -363,9 +442,9 @@
   "price": 30.99,
   "qty": 2,
   "priority": "medium",
-  "match": "match",
-  "arrives_by": "2026-11-17",
-  "notes": "Deep forest-green glitter, 3.94\"; the inspiration has big dark green glitter balls among the red and gold.",
+  "match": "close",
+  "arrives_by": "2026-11-21",
+  "notes": "Deep forest-green 4\" balls with a chunky sequin texture, a little brighter than the board's smooth glossy greens: hang them deeper in the branches and keep the smooth reds and golds on the outer tips. The only green in the plan, and only 9 left on Nov 16: order first. Backup: SUMPTUX 36-pc dark green set (B0FC217TG4, $30.99, Nov 20).",
   "size_in": {
    "d": 3.94
   },
@@ -394,7 +473,7 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
+  "arrives_by": "2026-11-20",
   "notes": "Old listing unavailable. New: champagne glitter 3.15\" balls with sequin texture.",
   "verdict_before": "no",
   "action": "replaced",
@@ -421,10 +500,10 @@
   ],
   "priority": "medium",
   "image_checked": true,
-  "match": "match",
+  "match": "close",
   "checked_on": "2026-11-13",
   "arrives_by": "2026-11-17",
-  "notes": "Old plaid set unavailable. New: cable-knit minis in red, forest green and cream with fluffy cuffs.",
+  "notes": "Cable-knit minis in red, forest green and cream with fluffy cuffs. Generic knit, so we add a small black felt paw to each cuff to make them pet stockings.",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/71scdvqwj1L._AC_SX679_.jpg",
@@ -433,12 +512,22 @@
    "w": 3.9
   },
   "form_name": "Mini knit stockings, 4\" (12 pc)",
+  "how": "Trace 12 paws with the 1\" template (page 3) on the black felt with the white fabric marker and cut them out. Glue one on each cream cuff: a dot of hot glue under the pad and toes, a bead of fabric glue round the edges. Wire each stocking to a branch through its loop with 6\" of floral wire.",
+  "projects": [
+   "stockings"
+  ],
+  "tools": [
+   "fabric_marker",
+   "glue_gun",
+   "wire_cutter",
+   "Scissors (office)"
+  ],
   "total": 22.99
  },
  {
   "id": "bandanas",
   "section": "Tree ornaments",
-  "name": "Red tartan fringed scarf, 12 x 72\" (cut lengthwise into 3\" strips: fringed scarves for every plush pet)",
+  "name": "Red tartan fringed scarf, 12 x 66\" (cut lengthwise into 3\" strips: fringed scarves for 3 dogs and 3 cats)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B075ZCW8JD",
   "price": 35.28,
@@ -453,8 +542,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-16",
-  "notes": "Cut lengthwise into four 3 x 72\" strips, so every piece keeps fringe on its ends: 36\" pieces for the three dogs, 18\" for the four cats. Seal the cut edges with fabric glue.",
+  "arrives_by": "2026-11-19",
+  "notes": "Woven viscose/wool tartan, fringed on both short ends; the listing's body is 66\" x 12\" (167.6 x 30.5 cm), plus fringe. Six pets wear one: 3 goldens (2 on the tree, 1 under it) and 3 Miyoni tabbies (2 on the tree, 1 under it). Ships from and sold by Amazon US (cross-border), $35.28, free delivery Nov 19.",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/81ZkWCSgqJL._AC_SY879_.jpg",
@@ -463,7 +552,51 @@
    "len": 72
   },
   "form_name": "Tartan scarf for the pet scarves",
+  "projects": [
+   "pet_scarves"
+  ],
+  "tools": [
+   "Scissors (office)",
+   "Pencil (office)",
+   "Toothpicks (2) (office)"
+  ],
+  "how": "(1) Lay the scarf flat and cut it lengthwise into four 3\"-wide strips with sharp scissors, following a straight line of the tartan pattern (mark it in pencil if the pattern does not fall at 3\"). (2) From each of strips 1-3, cut a 36\" dog scarf from one fringed end and a 22\" cat scarf from the other fringed end (8\" left over); strip 4 is spare. (3) On each bare cut end, pull out the cross threads for 1.25\" with a toothpick so it gets the same fringe as the factory end. Run a thin bead of fabric glue across the scarf just above each new fringe and along both long cut edges; dry 24 h. (4) Tie once round the neck at the side with both fringed ends hanging in front, over the wire.",
   "total": 35.28
+ },
+ {
+  "id": "cascades",
+  "section": "Ribbon & bows",
+  "store": "Amazon.ca",
+  "url": "https://www.amazon.ca/dp/B0D7WPZDJW",
+  "arrives_by": "2026-11-24",
+  "match": "match",
+  "size_in": {
+   "l": 118,
+   "ribbon": 4
+  },
+  "name": "Tartan ribbon cascades (makes 5): 4\" tartan from under the topper to the bottom branches, with poufs",
+  "form_name": "Tartan ribbon cascades (DIY)",
+  "photo_file": "r3d_ribbon_full",
+  "projects": [
+   "cascades"
+  ],
+  "tools": [
+   "wire_cutter",
+   "Scissors (office)"
+  ],
+  "notes": "The board's tartan runs from the topper to the bottom branches in loose poufs, with the big bows sitting on it. Five cascades, evenly round the tree, so the back is decorated too.",
+  "how": "(1) Cut five 118\" lengths of the 4\" tartan (rolls 1 and 2 of the cut plan under the big bows). V-notch one end of each and seal it with a thin bead of fabric glue. (2) Space them evenly round the tree, about 72 degrees apart. Tuck the square end under the topper bow, about 8\" below the tip, and wire it to the top stem with 6\" of floral wire. (3) Work down and slightly round the tree: let the ribbon lie over the branch tips for about 12\", then pinch it up into a pouf about 3\" proud (about 8\" of ribbon) and wire the pinch to a branch with 6\" of floral wire. Make 4 poufs per cascade, about 10 ties in all, and finish at the bottom branches about 12\" off the floor with the notched tail hanging free. (4) Wire 2-3 of the big tartan bows onto each cascade at a pouf, as on the board.",
+  "diy": true,
+  "status": "listed",
+  "image_checked": true,
+  "checked_on": "2026-11-16",
+  "qty": 1,
+  "made": 5,
+  "price": 0.0,
+  "total": 0.0,
+  "reference_crops": [],
+  "look": "",
+  "viz": null
  },
  {
   "status": "listed",
@@ -475,7 +608,7 @@
   ],
   "id": "big_bows",
   "section": "Ribbon & bows",
-  "name": "Big tartan bows, 11\" with 18\" tails (hand-tied from the 4\" tartan)",
+  "name": "Big tartan bows, 11\" with 15\" tails (hand-tied from the 4\" tartan, one loop each side)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B0D7WPZDJW",
   "price": 0.0,
@@ -484,8 +617,8 @@
   "made": 14,
   "priority": "high",
   "match": "match",
-  "arrives_by": "2026-11-21",
-  "notes": "Hand-tied from our own tartan, so every bow matches the cascades.",
+  "arrives_by": "2026-11-24",
+  "notes": "Hand-tied from our own tartan, so every bow matches the cascades. One loop each side, as on the board.",
   "size_in": {
    "w": 11,
    "h": 18
@@ -495,13 +628,57 @@
   "photo": "https://m.media-amazon.com/images/I/61otY0qPR-L._AC_SX679_.jpg",
   "verdict_before": "new",
   "form_name": "Big tartan bows, 11\" (DIY)",
-  "how": "Each bow: 1.5 yd of the 4\" tartan. Two 5\" loops each side, pinch with floral wire, wrap the centre, two 18\" tails with V-notches.",
+  "how": "Cut plan for the five 10-yd tartan rolls: roll 1 = three 118\" cascades; roll 2 = two cascades, one 65\" bow length and the 40\" band for gift D; rolls 3-5 = five 65\" bow lengths each (16 bows: 14 for the tree, 1 on top of gift D, 1 spare). Each bow: from a 65\" (1.8 yd) length, cut a 6\" knot piece. Leave a 15\" tail, make one 5\" loop to the left (about 11\" of ribbon) and one to the right, pinch the centre with a 12\" piece of floral wire, wrap the knot piece round the pinch and hot-glue it at the back, and leave a second 15\" tail. V-notch both tails and run a thin bead of fabric glue along each notch. Twist the wire ends round a cascade pouf or a branch.",
+  "projects": [
+   "big_bows"
+  ],
+  "tools": [
+   "wire_cutter",
+   "glue_gun",
+   "Scissors (office)"
+  ],
   "total": 0.0
+ },
+ {
+  "id": "velvet_tree_bows",
+  "section": "Ribbon & bows",
+  "store": "Amazon.ca",
+  "url": "https://www.amazon.ca/dp/B09XPW59VV",
+  "arrives_by": "2026-11-21",
+  "match": "match",
+  "size_in": {
+   "w": 9,
+   "h": 12,
+   "ribbon": 1.5
+  },
+  "name": "Velvet bows for the tree, 9\" with 8\" tails (hand-tied from the 1.5\" dark red velvet)",
+  "form_name": "Velvet tree bows, 9\" (DIY)",
+  "photo_file": "p_B09XPW59VV",
+  "projects": [
+   "velvet_tree_bows"
+  ],
+  "tools": [
+   "wire_cutter",
+   "Scissors (office)"
+  ],
+  "notes": "The board mixes solid deep red velvet bows with the tartan ones on the tree. Tied from the velvet roll we already buy, so they cost nothing extra.",
+  "how": "Each bow: 37\" of the 1.5\" velvet: two 4.5\" loops and 8\" tails with V-notches, pinched with a 12\" floral wire (as the paw-ornament bows). Wire them between the tartan bows, mostly on the right side and lower half like the board.",
+  "diy": true,
+  "status": "listed",
+  "image_checked": true,
+  "checked_on": "2026-11-16",
+  "qty": 1,
+  "made": 5,
+  "price": 0.0,
+  "total": 0.0,
+  "reference_crops": [],
+  "look": "",
+  "viz": null
  },
  {
   "id": "velvet_ribbon",
   "section": "Ribbon & bows",
-  "name": "Dark red wired velvet ribbon, 1.5\" x 25 yd (bows on the paw ornaments and the jar)",
+  "name": "Dark red wired velvet ribbon, 1.5\" x 25 yd (bows on the paw ornaments, the tree and the jar)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B09XPW59VV",
   "price": 36.07,
@@ -518,7 +695,7 @@
   "match": "match",
   "checked_on": "2026-11-16",
   "arrives_by": "2026-11-21",
-  "notes": "The board's paw-ornament and jar bows are deep red wired velvet with soft loops and long tails. MEEDEE \"dark red\" is that colour; hand-tied, a 9\" bow uses about 1 yd.",
+  "notes": "The board mixes solid deep red velvet bows with the tartan on the tree, and its paw-ornament and jar bows are the same velvet with soft loops and long tails. MEEDEE \"dark red\" is that colour; hand-tied, a 9\" bow uses about 1 yd. Ships from and sold by Amazon US (cross-border; 4.6 stars from 1,350): check the checkout for an import-fee line.",
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/7134bl6oDzL._AC_SX679_.jpg",
@@ -535,7 +712,7 @@
   "name": "Red/green/black tartan wired ribbon, 4\" x 10 yd",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B0D7WPZDJW",
-  "price": 33.68,
+  "price": 33.76,
   "qty": 5,
   "status": "listed",
   "viz": "Cascading tartan ribbon",
@@ -548,8 +725,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-21",
-  "notes": "4\" wired tartan: the board's red-and-green plaid with a thin gold line. Cascades, hand-tied bows and the paw-paper gift's ribbon.",
+  "arrives_by": "2026-11-24",
+  "notes": "4\" wired tartan: the board's red-and-green plaid with a thin gold line. Cascades, hand-tied bows and the paw-paper gift's ribbon. Sold by GiftWrap Etc. and shipped by Amazon from outside Canada (4.7 stars, 146): $5.45 delivery, Nov 24. Order it first. The plan counts the $5.45 once per roll (worst case); confirm the delivery line at checkout. Fallback: MESEEY B0FFH6C6HL (brighter red and green with a gold edge, $27.71 + $5.35, Nov 24, also international).",
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/61otY0qPR-L._AC_SX679_.jpg",
@@ -559,7 +736,7 @@
   },
   "form_name": "Tartan wired ribbon, 4\" x 10 yd",
   "ship": 5.45,
-  "total": 168.4
+  "total": 168.8
  },
  {
   "id": "burlap_ribbon",
@@ -591,7 +768,7 @@
   "name": "Gold glitter berry stems (28-pk)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/ROSELEAF-Artificial-Ornaments-Christmas-Decoration/dp/B0C965KSQG",
-  "price": 20.4,
+  "price": 20.8,
   "qty": 1,
   "status": "listed",
   "viz": "Gold sprays",
@@ -603,8 +780,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-23",
-  "notes": "Gold glitter sprays: 12 fan out behind the topper bow as a gold crown, 16 tucked through the tree. One pack of 28 covers both.",
+  "arrives_by": "2026-11-24",
+  "notes": "Gold glitter sprays: the pack of 28 goes through the tree (greens, full); the gold crown option adds a second pack for its 12 sprays. Seller-fulfilled (New Romantic), free delivery Nov 19-24: order early.",
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/71S70YCkJ2L._AC_SX679_.jpg",
@@ -612,7 +789,7 @@
    "h": 17
   },
   "form_name": "Gold glitter berry sprays (28 pc)",
-  "total": 20.4
+  "total": 20.8
  },
  {
   "id": "pine_picks",
@@ -620,7 +797,7 @@
   "name": "Pine cone, holly & red berry evergreen picks (24-pk)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/KY-Tech-Christmas-Artificial-Supplies-Decorations/dp/B0CF19PZKZ",
-  "price": 26.99,
+  "price": 30.99,
   "qty": 1,
   "status": "listed",
   "viz": "Pine cones and holly",
@@ -633,7 +810,7 @@
   "match": "match",
   "checked_on": "2026-11-13",
   "arrives_by": "2026-11-18",
-  "notes": "Pine sprigs with pinecones and red berries.",
+  "notes": "Pine sprigs with pine cones and red berries. Price up from $26.99 on Nov 16.",
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/81pKBuL-lWL._AC_SX679_.jpg",
@@ -642,7 +819,7 @@
    "w": 3
   },
   "form_name": "Pine cone & berry picks (24 pc)",
-  "total": 26.99
+  "total": 30.99
  },
  {
   "status": "listed",
@@ -686,8 +863,8 @@
   "priority": "low",
   "image_checked": true,
   "match": "match",
-  "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
+  "checked_on": "2026-11-16",
+  "arrives_by": "2026-11-20",
   "action": "new",
   "notes": "1 mm black felt; cut a 4\" paw and glue it to the sherpa pillow.",
   "size_in": {
@@ -700,7 +877,7 @@
   "photo": "https://m.media-amazon.com/images/I/71DA89e+QOL._AC_SX679_.jpg",
   "verdict_before": "new",
   "form_name": "Black felt sheets (7 pc)",
-  "how": "Cut 20 paws of 2.2\" for the topper and one 4.5\" paw for the bone pillow (template page 3); glue with fabric glue.",
+  "how": "One pack of 8 x 12\" black felt covers every felt paw: 24 x 3\" for the topper, 1 x 3\" for the basket bone toy, 12 x 1\" for the stocking cuffs and 1 x 4.5\" for the bone pillow (all on template page 3). Trace with the white fabric marker; the hoop-ornament back circles use the DeSerres 9 x 12\" sheets.",
   "total": 8.5
  },
  {
@@ -714,39 +891,41 @@
   "form_name": "Craft paints, glue & tools (DeSerres)",
   "store": "DeSerres",
   "url": "https://www.deserres.ca/",
-  "price": 204.75,
+  "price": 203.68,
   "qty": 1,
   "match": "match",
-  "arrives_by": "2026-11-26",
+  "arrives_by": "2026-11-27",
   "action": "new",
   "verdict_before": "new",
-  "notes": "22 lines, every quantity calculated from the builds (see output/item_audit.md). Order total with the foam board is over $149, so standard shipping to Alberta is free; no oversized items. Ships in 48 h; allow 5-7 business days to Edmonton.",
+  "notes": "Every quantity calculated from the builds (see output/item_audit.md). Over $149, so standard shipping to Alberta is free. On Nov 16 every line in the default order showed \"Ships in 48 hours\" once the slow lines were swapped (Student burnt sienna 250 ml and 18-count Aida instead of the 3-5 day Basics sienna and 14-count Aida; no paint marker or kraft paper from DeSerres). Order today as ONE shipment (two shipments costs $24.99). Canada Post from Quebec: expect Nov 25-27. DeSerres shows \"In stock\" even on backorder, so read the confirmation email; if it has not shipped by Nov 19, buy hoops, acrylics and foam brushes at Michaels Edmonton instead.",
   "reference_crops": [],
   "look": "",
   "viz": null,
   "materials": [
    "fabric_glue",
    "glue_sticks",
-   "gesso",
-   "red1",
-   "red2",
    "sienna",
+   "gesso",
+   "ochre",
+   "red2",
    "black",
+   "red1",
    "gold_cord",
-   "film",
    "gold",
+   "felt_ds",
    "podge",
-   "enamel_pen",
-   "kraft",
+   "sticks",
    "glue_gun",
    "knife",
    "ruler",
    "brushes",
    "foam_brush2",
    "foam_brush1",
-   "sponge"
+   "sponge",
+   "wire_cutter",
+   "fabric_marker"
   ],
-  "total": 204.75
+  "total": 203.68
  },
  {
   "id": "floral_wire",
@@ -754,7 +933,7 @@
   "name": "Green floral wire, 22-gauge (3 rolls), required to secure every ornament",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/Floral-Wire-22-Gauge-Arrangements/dp/B09WVCQN4R",
-  "price": 29.92,
+  "price": 29.19,
   "qty": 1,
   "status": "listed",
   "viz": null,
@@ -764,14 +943,14 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-16",
-  "notes": "Green 22-gauge paddle wire, 3 spools.",
+  "arrives_by": "2026-11-19",
+  "notes": "Green 22-gauge paddle wire, 3 spools of 118 yd. Sold by Amazon US (cross-border), 4.8 stars from 1,208, $29.19, free delivery Nov 19 (re-checked Nov 16).",
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/715LG1i1U7L._SX522_.jpg",
   "size_in": {},
   "form_name": "Green floral wire, 22 gauge (3 rolls)",
-  "total": 29.92
+  "total": 29.19
  },
  {
   "id": "glitter_card",
@@ -803,13 +982,13 @@
   "price": 22.0,
   "arrives_by": "2026-11-20",
   "match": "match",
-  "notes": "Light enough to hang: a 9\" bone weighs about 75 g.",
+  "notes": "LitoJoy, Amazon-shipped, 4.8 stars (102), $22.00, Nov 20 (re-checked Nov 16). Three bags: the 8 bones at board proportions take about 940 g and the 64 biscuits about 225 g.",
   "store": "Amazon.ca",
   "status": "listed",
   "image_checked": true,
-  "checked_on": "2026-11-13",
-  "qty": 2,
-  "total": 44.0,
+  "checked_on": "2026-11-16",
+  "qty": 3,
+  "total": 66.0,
   "reference_crops": [],
   "look": "",
   "viz": null
@@ -825,27 +1004,28 @@
   "form_name": "Tape & drop sheet (Canadian Tire)",
   "store": "Canadian Tire",
   "url": "https://www.canadiantire.ca/en/pdp/bennett-light-weight-plastic-drop-sheets-8-ft-x-12-ft-0494804p.html",
-  "price": 13.97,
+  "price": 21.46,
   "qty": 1,
   "match": "match",
   "arrives_by": "2026-11-17",
   "action": "new",
   "verdict_before": "new",
-  "notes": "Pick up with the moving boxes.",
+  "notes": "Pick up at Canadian Tire Edmonton South (2110 101 St NW) with the moving boxes. Scotch Magic Tape is $4.99 on sale until Nov 18 ($7.49 after); the plan counts $7.49.",
   "reference_crops": [],
   "look": "",
   "viz": null,
   "materials": [
    "packing_tape",
    "magic_tape",
-   "drop_sheet"
+   "drop_sheet",
+   "cut_board"
   ],
-  "total": 13.97
+  "total": 21.46
  },
  {
   "id": "gift_boxes",
   "section": "Under-tree display",
-  "name": "Wrapped gifts (makes 4): moving boxes in tartan and kraft paw paper, cream burlap ribbon and bows",
+  "name": "Wrapped gifts (makes 4): moving boxes in tartan and kraft paw paper, cream burlap ribbon and bows, a tartan band and bow on the kraft box",
   "store": "Canadian Tire",
   "url": "https://www.canadiantire.ca/en/pdp/canadian-tire-small-moving-storage-box-100-recycled-cardboard-18-x-11-x-12-in-0676043p.html",
   "price": 8.8,
@@ -861,7 +1041,7 @@
   "match": "match",
   "checked_on": "2026-11-16",
   "arrives_by": "2026-11-17",
-  "notes": "Like the board: tartan boxes tied with cream ribbon, a kraft paw-print box with tartan ribbon, a cream bow on each. Four bought boxes of known size, so paper and ribbon are calculated.",
+  "notes": "Like the board: tartan boxes tied with cream ribbon and cream bows, and a kraft paw-print box with a tartan band and bow and a cream band with its own bow. Four bought boxes of known size, so paper and ribbon are calculated.",
   "verdict_before": "no",
   "action": "redesigned",
   "photo": null,
@@ -892,7 +1072,19 @@
    ]
   },
   "form_name": "Wrapped display gifts (DIY)",
-  "how": "Cut box C down to 10\" and box D to 7\" tall; tape all four shut. Wrap A, B and C in tartan paper (two 17\" widths each, seam underneath) and D in kraft paw paper (tape two sheets together). Ribbon: 1.5\" cream burlap both ways on A, B and C; 4\" tartan one way round D. Tie a 10\" cream burlap bow (40\") for every box.",
+  "how": "Boxes: A = small (18 x 11 x 12\") as is, B = medium (16\") as is, C = medium cut to 10\" tall, D = small cut to 7\" tall. (1) Fold and packing-tape the top flaps of all four shut. For C and D, mark the new height up from the open bottom on each corner, rule a pencil line round the box and cut the walls down along it with the art knife against the ruler, on the cutting box. The open bottom sits on the floor, hidden. (2) Tartan paper on A, B and C: cut two lengths of the box's girth (A 48\", B 66\", C 54\") from the 17\" roll and Magic-Tape them edge to edge on the back (1/2\" overlap). Wrap so this join runs round the middle of the box, where the cream ribbon will cover it, with the girth overlap underneath; fold the ends like a parcel and tape (B's ends overlap only about 3/4\": tape them well). (3) Kraft paw paper on D: two 17 x 40\" sheets taped side by side, wrapped the same way with the join under the tartan band. (4) Ribbon: 1.5\" cream burlap both ways round A, B and C, crossing on top over the paper join, ends taped underneath. On D, a 40\" tartan band round the girth over the join and a 62\" cream burlap band round the four sides, ends taped at the back. (5) Bows: tie a 10\" cream burlap bow (40\": two 5\" loops, 6\" tails, V-notched, pinched with 6\" of floral wire) for each box and hot-glue it at the ribbon crossing (on D, on the front of the cream band). Tie one big tartan bow (as the tree bows) and hot-glue it on top of D at the tartan band.",
+  "projects": [
+   "gift_boxes"
+  ],
+  "tools": [
+   "knife",
+   "ruler",
+   "cut_board",
+   "glue_gun",
+   "wire_cutter",
+   "Scissors (office)",
+   "Pencil (office)"
+  ],
   "materials": [
    "box_small",
    "box_medium"
@@ -905,7 +1097,7 @@
   "name": "Cream sherpa bone pillow, 15\" (black felt paw added)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B0GS53B213",
-  "price": 26.57,
+  "price": 25.91,
   "qty": 1,
   "status": "listed",
   "viz": "Plush bone pillows",
@@ -918,8 +1110,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-21",
-  "notes": "Curly cream sherpa bone like the big pillow under the tree in the inspiration; glue on a 4\" black felt paw. $6.11 shipping on this listing.",
+  "arrives_by": "2026-11-24",
+  "notes": "Curly cream sherpa bone like the big pillow under the board's tree; glue on a black felt paw. Shipped by Amazon from outside Canada (import fees deposit included), $6.11 delivery Nov 24. If it slips, buy a cream bone pillow at Homes Alive Pets South Edmonton on the gift-card trip.",
   "verdict_before": "close",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/81-fleiyBPL._AC_SX679_.jpg",
@@ -930,38 +1122,47 @@
   },
   "form_name": "Cream sherpa bone pillow, 15\"",
   "ship": 6.11,
-  "total": 26.57
+  "projects": [
+   "bone_pillow"
+  ],
+  "tools": [
+   "fabric_marker",
+   "glue_gun",
+   "Scissors (office)"
+  ],
+  "how": "It arrives vacuum-packed: unroll it 2-3 days before decorating so it fluffs up. Trace the 4.5\" paw (template page 3) on the black felt with the white fabric marker and cut it out. Part the curly pile, put a dot of hot glue under the pad and each toe and press 30 s, then run a thin bead of fabric glue round the edges; dry flat.",
+  "total": 25.91
  },
  {
   "id": "bowl",
   "section": "Under-tree display",
-  "name": "Red glazed ceramic pet bowl with white dots",
+  "name": "Deep red dog bowl with a steel interior and cream paw prints, 8.5\" (Loving Pets Bella Bowl, Merlot)",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/dp/B0FX23RP9K",
-  "price": 19.99,
+  "url": "https://www.amazon.ca/dp/B001LUN3LG",
+  "price": 17.68,
   "qty": 1,
   "status": "listed",
   "viz": "Red pet bowl",
-  "look": "Deep red glossy ceramic pet bowl with a white paw print on the side.",
+  "look": "Straight-sided deep red bowl with a stainless-steel inner bowl and cream paw prints and bones on the side.",
   "reference_crops": [
    "tree_bottom"
   ],
   "priority": "high",
   "image_checked": true,
   "match": "match",
-  "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
-  "notes": "Glossy red ceramic with white dots (no red bowl with a white paw exists on Amazon.ca). We paint two white paws on the side with the cream paint, like the bowl under the tree in the inspiration.",
+  "checked_on": "2026-11-16",
+  "arrives_by": "2026-11-20",
+  "notes": "The board's bowl: straight-sided deep red with a steel interior and paw prints. The paws are cream rather than pure white, close enough; nothing to paint. Sold by Amazon.ca, 4.6 stars from 16,487, free delivery Nov 20.",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/61hHZgycaXL._AC_SX679_.jpg",
   "size_in": {
-   "h": 1.8,
-   "w": 5.9
+   "w": 8.5,
+   "h": 2.5
   },
-  "form_name": "Red ceramic pet bowl",
-  "how": "Stencil two 1.5\" white paws on the outside with the oil-based paint marker (display only).",
-  "total": 19.99
+  "form_name": "Red paw-print dog bowl, 8.5\"",
+  "photo_file": "p_B001LUN3LG",
+  "total": 17.68
  },
  {
   "id": "tartan_wrap",
@@ -980,8 +1181,8 @@
   "priority": "low",
   "image_checked": true,
   "match": "match",
-  "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
+  "checked_on": "2026-11-16",
+  "arrives_by": "2026-11-20",
   "notes": "Old roll was green with tan check. New: red tartan with green & white lines, like the boxes in the photo.",
   "verdict_before": "no",
   "action": "replaced",
@@ -999,7 +1200,7 @@
   "name": "Kraft wrapping paper with black paw prints",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B0FSXRGDGM",
-  "price": 22.68,
+  "price": 22.71,
   "qty": 1,
   "status": "listed",
   "viz": "Kraft paw-print box",
@@ -1010,9 +1211,9 @@
   "priority": "medium",
   "image_checked": true,
   "match": "match",
-  "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-18",
-  "notes": "Old listing unavailable (and was red bones). New: brown kraft with black paws, exactly the boxes in the photo.",
+  "checked_on": "2026-11-16",
+  "arrives_by": "2026-11-20",
+  "notes": "Old listing unavailable (and was red bones). New: brown kraft with black paws, exactly the boxes in the photo. Shipped internationally (Unclev): $22.71 + $5.75, Nov 20 (re-checked Nov 16). 6 sheets of 17 x 40\": 2 wrap box D, 3 crumpled make the jar core, 1 spare.",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/71AUbqW7srL._AC_SX679_.jpg",
@@ -1022,12 +1223,12 @@
   },
   "form_name": "Kraft paw-print wrapping paper",
   "ship": 5.75,
-  "total": 22.68
+  "total": 22.71
  },
  {
   "id": "basket",
   "section": "Gift basket",
-  "name": "Natural wicker gift basket with handle & lace liner, 13\" x 10.5\" x 6\"",
+  "name": "Natural wicker gift basket with handle, 13\" x 10.5\" x 6\" (remove the lace liner)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B0CW39X1ZP",
   "price": 39.99,
@@ -1042,8 +1243,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
-  "notes": "Light natural willow like the inspiration basket (the old one was dark burgundy wicker). 11\" tall to the handle.",
+  "arrives_by": "2026-11-21",
+  "notes": "Light natural willow like the board's honey wicker basket. It comes with a tie-in cream eyelet liner with a lace edge: untie and remove it (or swap in an offcut of the tartan scarf) so the basket reads as bare wicker, as on the board. 11\" tall to the handle.",
   "verdict_before": "close",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/71u21p7Hy4L._AC_SX679_.jpg",
@@ -1054,6 +1255,13 @@
    "handle_h": 11
   },
   "form_name": "Natural wicker gift basket",
+  "projects": [
+   "basket"
+  ],
+  "tools": [
+   "wire_cutter"
+  ],
+  "how": "Untie and remove the lace liner. Wire the jar (to the handle), the bone toy, the rope and the ball in with 12\" floral wires through the wicker. Twist a 12\" floral wire into a flat spiral card holder, push its stem into the wicker at the front and slip a gift card in so its face shows (the second card behind it), as on the board. Fold the throw paw-side out over the front edge and wire it at two corners.",
   "total": 39.99
  },
  {
@@ -1072,10 +1280,10 @@
   ],
   "priority": "high",
   "image_checked": true,
-  "match": "match",
+  "match": "close",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
-  "notes": "Old link was a 40 lb steel food bin. New: clear glass jar with knob lid, like the photo. No treats (auction is 2027).",
+  "arrives_by": "2026-11-20",
+  "notes": "Clear glass jar with a glass lid, like the board's treat jar, but a wider barrel shape with a flat lid and a small knob where the board's is a straight apothecary jar with a tall knob. No treats (auction is 2027).",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/51xVrkIusNL._AC_SX679_.jpg",
@@ -1089,24 +1297,25 @@
  {
   "id": "faux_treats",
   "section": "Gift basket",
-  "name": "Faux dog biscuits (makes 60): foam clay cut with the bone cutters, painted biscuit-tan, sealed; fill the jar round a kraft-paper core",
-  "store": "Amazon.ca (cutters)",
+  "name": "Faux dog biscuits (makes 64): foam clay cut with the 2.7\" bone cutter, painted tan, sealed; set ring by ring against the glass of the jar",
+  "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B08GJDGNRC",
   "price": 0.0,
   "qty": 1,
   "diy": true,
-  "made": 60,
+  "made": 64,
   "status": "listed",
   "priority": "high",
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-16",
-  "arrives_by": "2026-11-17",
+  "arrives_by": "2026-11-25",
   "action": "new",
-  "notes": "30 would fill only a fifth of a 7 x 9.9\" jar. 48 line the glass (6 per ring x 6 rings + 12 on top) round a crumpled kraft core, so the jar reads full like the board. Inedible, so they last until the 2027 auction.",
+  "notes": "The board's biscuits are small and tan in a 7\" jar, so we cut them with the smallest bone cutter (2.7\"), not the 3\". 7 per ring x 7 rings line the glass, plus 12 on top: 61; we make 64. Inedible, so they last until the 2027 auction.",
   "size_in": {
-   "w": 3,
-   "h": 1.2
+   "w": 2.7,
+   "h": 1.08,
+   "d": 0.25
   },
   "look": "Biscuit-coloured bone treats filling the glass jar.",
   "reference_crops": [
@@ -1116,7 +1325,20 @@
   "photo": "https://m.media-amazon.com/images/I/71jfakagczL._AC_SX679_.jpg",
   "verdict_before": "new",
   "form_name": "Faux dog biscuits (DIY)",
-  "how": "Roll clay 1/4\" thick, cut 60 bones with the 3\" cutter, poke dots with a toothpick, dry, paint tan (gesso + burnt sienna) and seal. Stand a crumpled kraft-paper log in the jar and fill the gap between it and the glass with biscuits, flat against the glass; pile the rest on top.",
+  "how": "(1) Biscuits: on a piece of the drop sheet, press foam clay into a 1/4\" sheet between two 6 mm wood sticks with a foam-board offcut, cut 64 bones with the 2.7\" cutter (no cutter yet? trace the 3\" outline on page 4 and cut with the knife), poke 3 dots in each with a toothpick and dry 24 h flat, turning once. Paint 2 coats of the tan mix (1/4 cup gesso + 2 tsp deep ochre + 1 tsp burnt sienna), then 1 coat of Mod Podge. (2) Jar, ring by ring: stand 7 biscuits flat against the glass (long side level, face out), stuff crumpled kraft paw paper (3 spare sheets, brown side out) behind them until they press on the glass, and repeat for 7 rings up to the shoulder; pile the last 12 on top. Nudge them into place through the mouth with a wood stick. (3) Wrap a 22\" velvet band round the shoulder and hot-glue it at the back, tie a bow over the seam (44\": two 5\" loops, 9\" tails), and fix the lid with 3 dots of hot glue (peels off later).",
+  "projects": [
+   "faux_treats",
+   "jar"
+  ],
+  "tools": [
+   "brushes",
+   "glue_gun",
+   "drop_sheet",
+   "The 2.7\" bone cutter (on the list)",
+   "Toothpicks (3) (office)",
+   "sticks",
+   "A foam-board offcut (on the list) to press the clay"
+  ],
   "total": 0.0
  },
  {
@@ -1125,16 +1347,16 @@
   "name": "Bone cookie cutters, 2.7\"/3\"/3.3\" (for the faux biscuits)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B08GJDGNRC",
-  "price": 8.92,
+  "price": 8.0,
   "qty": 1,
   "status": "listed",
   "priority": "low",
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-17",
+  "arrives_by": "2026-11-25",
   "action": "new",
-  "notes": "Metal cutters with soft coating; cut biscuit shapes from the leftover foam clay.",
+  "notes": "Metal cutters, 2.7\", 3\" and 3.3\" bones (soft coating). Seller-fulfilled (Kunqing1126), free delivery Nov 22-25: order today, or buy any bone cutter at Michaels or Bulk Barn in Edmonton so the biscuits can start on Nov 20 when the clay lands.",
   "size_in": {
    "w": 3.3
   },
@@ -1144,7 +1366,7 @@
   "photo": "https://m.media-amazon.com/images/I/71jfakagczL._AC_SX679_.jpg",
   "verdict_before": "new",
   "form_name": "Bone cookie cutters (3 pc)",
-  "total": 8.92
+  "total": 8.0
  },
  {
   "id": "blanket",
@@ -1164,8 +1386,8 @@
   "image_checked": true,
   "match": "close",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-19",
-  "notes": "Old one was snowflakes only. New: red with white paws (plus snowflakes); photo is red knit with white paws.",
+  "arrives_by": "2026-11-22",
+  "notes": "Bright red printed flannel with white paws and about as many snowflakes; the board's throw is a deep red chunky knit with cream paws only. Fold it so a paw-heavy section shows over the basket edge and tuck the snowflake areas under. Sold by Amazon US (cross-border), 10 ratings, Nov 22.",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/71pVd4nSuQL._AC_SX679_.jpg",
@@ -1179,33 +1401,43 @@
  {
   "id": "holiday_toy",
   "section": "Gift basket",
-  "name": "Plush bone toy, cream with black paw (for the basket)",
+  "name": "Cream sherpa fleece bone, 9\" (black felt paw added)",
   "store": "Amazon.ca",
-  "url": "https://www.amazon.ca/dp/B0GR99NF8V",
-  "price": 11.99,
+  "url": "https://www.amazon.ca/dp/B000E1S8NG",
+  "price": 10.49,
   "qty": 1,
   "status": "listed",
   "viz": "Holiday plush toy",
-  "look": "The photo shows a cream plush bone toy with a black paw print in the basket. Replace the current generic holiday plush with that if found.",
+  "look": "Curly cream sherpa bone with a big black paw on its face.",
   "reference_crops": [
    "gift_basket"
   ],
   "priority": "high",
   "image_checked": true,
   "match": "match",
-  "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-24",
-  "notes": "Old toy was Santa-in-chimney. Now a cream bone with black paw, as in the basket photo.",
+  "checked_on": "2026-11-16",
+  "arrives_by": "2026-11-20",
+  "notes": "The board's basket toy is a curly cream sherpa bone with a big black paw. Ethical Pet's cream fleece bone has that texture and colour; glue a 3\" black felt paw on its face. The earlier link (B0GR99NF8V) was the Gray variant, and its sibling B0GR99XYFS is listed as White. Sold by Amazon.ca, 3.8 stars from 1,437, free delivery Nov 20.",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/71lta6DXkgL._AC_SX679_.jpg",
   "size_in": {
-   "h": 1.8,
-   "w": 8.7,
-   "d": 5.7
+   "h": 2.25,
+   "w": 9,
+   "d": 4.5
   },
-  "form_name": "Plush bone dog toy",
-  "total": 11.99
+  "form_name": "Cream fleece bone toy, 9\"",
+  "photo_file": "p_B000E1S8NG",
+  "how": "Trace one 3\" paw (template page 3) on the black felt with the white fabric marker and cut it out (pad + 4 toes). Part the sherpa pile, put a dot of hot glue under the pad and each toe and press 30 s, then run a thin bead of fabric glue round the edges; dry flat. Wire it into the basket with 12\" of floral wire.",
+  "projects": [
+   "holiday_toy"
+  ],
+  "tools": [
+   "fabric_marker",
+   "glue_gun",
+   "Scissors (office)"
+  ],
+  "total": 10.49
  },
  {
   "id": "rope",
@@ -1225,8 +1457,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-18",
-  "notes": "Old rope was navy/yellow. New set is red, white and green braided ropes.",
+  "arrives_by": "2026-11-21",
+  "notes": "Red, white and green braided ropes, as in the basket. Amazon-shipped (HQTD Digital), 3.8 stars from only 4 ratings, Nov 21.",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/71k5KfmM3hL._AC_SX679_.jpg",
@@ -1254,8 +1486,8 @@
   "image_checked": true,
   "match": "match",
   "checked_on": "2026-11-13",
-  "arrives_by": "2026-11-18",
-  "notes": "Old KONG balls were yellow-green. These are red felt with white seams, as in the basket.",
+  "arrives_by": "2026-11-20",
+  "notes": "Red felt tennis balls with white seams, as in the basket. Sold by Amazon US (cross-border).",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/91c4ZS4+rPL._AC_SX679_.jpg",
@@ -1268,14 +1500,14 @@
  {
   "id": "gift_card",
   "section": "Gift basket",
-  "name": "Homes Alive Pets gift card, $100 (Edmonton-based, buy in-store)",
-  "store": "Homes Alive Pets, South Edmonton (5611 104 St NW)",
-  "url": "https://www.homesalive.ca/south-edmonton",
+  "name": "Homes Alive Pets gift card, $100 (buy in store at South Edmonton, 5611 104 St NW)",
+  "store": "Homes Alive Pets",
+  "url": "https://www.homesalive.ca/locations/south-edmonton",
   "price": 100.0,
   "qty": 2,
   "status": "face",
   "viz": "Gift cards",
-  "look": "Physical gift card from a local Edmonton pet store. Face value, GST-exempt.",
+  "look": "Physical gift card from Homes Alive Pets (a western Canadian pet chain with Edmonton stores). Face value, GST-exempt.",
   "reference_crops": [
    "gift_basket"
   ],
@@ -1284,7 +1516,7 @@
   "match": "match",
   "checked_on": "2026-11-13",
   "arrives_by": null,
-  "notes": "Buy in store at Homes Alive Pets.",
+  "notes": "Buy in store at Homes Alive Pets South Edmonton (5611 104 St NW, T6H 2K1); call (780) 800-9961 first to confirm they have $100 cards or can load any amount. Gift cards are non-refundable: keep the receipt. Basket tag: \"Redeem at any Homes Alive Pets store. Gift cards cannot be used online, but customer service can load this card onto your online account.\"",
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://www.homesalive.ca/static/version1794513699/frontend/Gorilla/homesalive/en_CA/images/og-default.png",
@@ -1307,16 +1539,16 @@
   "form_name": "Shipping (Amazon.ca)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/",
-  "price": 29.19,
+  "price": 45.54,
   "qty": 1,
   "match": null,
   "arrives_by": null,
   "action": "new",
   "verdict_before": "new",
-  "notes": "From the listings: Burlap paw-print bow topper, 22\" (DIY) $6.43, Grey tabby cat plush, 8\" $5.45, Cream sherpa bone pillow, 15\" $6.11, Tartan wired ribbon, 4\" x 10 yd $5.45, Kraft paw-print wrapping paper $5.75. Everything else ships free on an order over $35; DeSerres ships free over $149; Canadian Tire is store pickup.",
+  "notes": "From the listings, counted per unit where we buy more than one (the worst case; confirm the delivery line at checkout): Burlap paw-print bow topper, 22\" (DIY) $6.43, Cream sherpa bone pillow, 15\" $6.11, Tartan wired ribbon, 4\" x 10 yd $27.25, Kraft paw-print wrapping paper $5.75. Everything else ships free on an order over $35; DeSerres ships free over $149; Canadian Tire is store pickup.",
   "reference_crops": [],
   "look": "",
   "viz": null,
-  "total": 29.19
+  "total": 45.54
  }
 ]

@@ -17,16 +17,16 @@
    "qty": 1,
    "per": 12,
    "unit": "yd",
-   "need": 2.7,
+   "need": 2.4,
    "have": 12,
-   "spare": 344,
+   "spare": 400,
    "carrier": "topper",
    "ok": true,
    "uses": [
     {
      "project": "topper",
-     "amount": 2.7,
-     "how": "bow: loops, knot and tails (97\")"
+     "amount": 2.4,
+     "how": "bow strip, knot piece and V-notches (86\")"
     }
    ]
   },
@@ -39,21 +39,31 @@
    "qty": 1,
    "per": 7,
    "unit": "sheets",
-   "need": 2.6,
+   "need": 4.1,
    "have": 7,
-   "spare": 169,
+   "spare": 71,
    "carrier": "felt",
    "ok": true,
    "uses": [
     {
      "project": "topper",
-     "amount": 1.6,
-     "how": "20 paws of 2.2\" cut from 2.4\" squares, 75% of the sheet usable"
+     "amount": 3.4,
+     "how": "24 paws of 3\" (front face only)"
+    },
+    {
+     "project": "stockings",
+     "amount": 0.2,
+     "how": "12 paws of 1\""
     },
     {
      "project": "bone_pillow",
-     "amount": 1.0,
+     "amount": 0.3,
      "how": "one 4.5\" paw"
+    },
+    {
+     "project": "holiday_toy",
+     "amount": 0.1,
+     "how": "one 3\" paw"
     }
    ]
   },
@@ -66,16 +76,21 @@
    "qty": 1,
    "per": 118,
    "unit": "ml",
-   "need": 33.8,
+   "need": 57.4,
    "have": 118,
-   "spare": 249,
+   "spare": 106,
    "carrier": "craft_supplies",
    "ok": true,
    "uses": [
     {
      "project": "topper",
-     "amount": 10.0,
+     "amount": 12.0,
      "how": "felt paws"
+    },
+    {
+     "project": "topper",
+     "amount": 1.5,
+     "how": "fray stop on the cut ends"
     },
     {
      "project": "paw_disc",
@@ -83,14 +98,34 @@
      "how": "glue the paws on"
     },
     {
+     "project": "cascades",
+     "amount": 1.5,
+     "how": "seal the notch"
+    },
+    {
+     "project": "big_bows",
+     "amount": 7.0,
+     "how": "seal the tail notches"
+    },
+    {
+     "project": "stockings",
+     "amount": 3.0,
+     "how": "12 cuff paws, bead round the edges"
+    },
+    {
      "project": "bone_pillow",
      "amount": 3.0,
-     "how": "felt paw"
+     "how": "bead round the edges"
+    },
+    {
+     "project": "holiday_toy",
+     "amount": 2.0,
+     "how": "bead round the edges"
     },
     {
      "project": "pet_scarves",
-     "amount": 10.8,
-     "how": "3 lengthwise cuts x 72\", thin bead to stop fraying"
+     "amount": 17.4,
+     "how": "thin bead on the raw long edges and above each pulled fringe (3 dog + 3 cat scarves)"
     }
    ]
   },
@@ -99,45 +134,55 @@
    "name": "Green floral wire 22 gauge, 3 x 118 yd",
    "store": "Amazon.ca",
    "url": "https://www.amazon.ca/Floral-Wire-22-Gauge-Arrangements/dp/B09WVCQN4R",
-   "price": 29.92,
+   "price": 29.19,
    "qty": 1,
    "per": 354,
    "unit": "yd",
-   "need": 83.3,
+   "need": 96.8,
    "have": 354,
-   "spare": 325,
+   "spare": 266,
    "carrier": "floral_wire",
    "ok": true,
    "uses": [
     {
      "project": "topper",
-     "amount": 8.4,
-     "how": "wire along both back edges + ties to the top"
+     "amount": 4.4,
+     "how": "edge wire: two 79\" lengths along the back (the jute is not wired)"
     },
     {
-     "project": "plush",
-     "amount": 1.3,
-     "how": "round the body to the trunk"
+     "project": "topper",
+     "amount": 1.5,
+     "how": "18\" to pinch the centre + 2 x 18\" to the top stem"
     },
     {
-     "project": "plush",
-     "amount": 1.1,
-     "how": "round the body to a sturdy branch"
+     "project": "plush_dogs",
+     "amount": 4.0,
+     "how": "doubled 36\" round the belly to a main branch, plus an organizer zip tie"
+    },
+    {
+     "project": "plush_cats",
+     "amount": 2.7,
+     "how": "doubled 24\" round the body to a sturdy branch"
     },
     {
      "project": "doghouse",
-     "amount": 1.3,
-     "how": "8\" each"
+     "amount": 3.3,
+     "how": "6 x 2 x 10\" through the floor onto a sturdy branch (about 160 g each)"
     },
     {
      "project": "paw_disc",
      "amount": 2.2,
-     "how": "8\" each"
+     "how": "8\" each (bow + branch)"
     },
     {
      "project": "bones",
      "amount": 1.8,
-     "how": "8\" each"
+     "how": "two 4\" wire anchors per bone, round the foil in the upper knobs"
+    },
+    {
+     "project": "bones",
+     "amount": 1.8,
+     "how": "cord to the branch, 8\" each"
     },
     {
      "project": "baubles",
@@ -146,12 +191,17 @@
     },
     {
      "project": "cascades",
-     "amount": 8.3,
-     "how": "10 ties per cascade"
+     "amount": 9.2,
+     "how": "1 top tie + 10 pouf ties per cascade"
     },
     {
      "project": "big_bows",
      "amount": 4.7,
+     "how": "12\" each"
+    },
+    {
+     "project": "velvet_tree_bows",
+     "amount": 1.7,
      "how": "12\" each"
     },
     {
@@ -165,9 +215,34 @@
      "how": "per stem"
     },
     {
+     "project": "gift_boxes",
+     "amount": 0.8,
+     "how": "6\" pinch wire per bow"
+    },
+    {
      "project": "basket",
      "amount": 1.7,
      "how": "jar and toys wired into the basket"
+    },
+    {
+     "project": "basket",
+     "amount": 0.3,
+     "how": "spiral gift-card holder"
+    },
+    {
+     "project": "plush_dogs",
+     "amount": 2.0,
+     "how": "doubled 36\" round the belly, to the basket handle"
+    },
+    {
+     "project": "plush_cats",
+     "amount": 1.3,
+     "how": "doubled 24\" round the body"
+    },
+    {
+     "project": "pair",
+     "amount": 1.0,
+     "how": "dog and cat wired to each other and to the basket handle"
     }
    ]
   },
@@ -180,26 +255,71 @@
    "qty": 1,
    "per": 96,
    "unit": "sticks",
-   "need": 44.0,
+   "need": 79.0,
    "have": 96,
-   "spare": 118,
+   "spare": 22,
    "carrier": "craft_supplies",
    "ok": true,
    "uses": [
     {
      "project": "topper",
-     "amount": 6.0,
+     "amount": 5.0,
      "how": "edge wire"
     },
     {
+     "project": "topper",
+     "amount": 1.0,
+     "how": "knot"
+    },
+    {
      "project": "doghouse",
-     "amount": 18.0,
-     "how": "per house"
+     "amount": 24.0,
+     "how": "walls, roof, trims and paw"
     },
     {
      "project": "paw_disc",
      "amount": 10.0,
-     "how": "Aida edge inside the ring"
+     "how": "back circle on the inner ring"
+    },
+    {
+     "project": "paw_disc",
+     "amount": 10.0,
+     "how": "Aida margin inside the ring"
+    },
+    {
+     "project": "bones",
+     "amount": 4.0,
+     "how": "fills the two cord holes"
+    },
+    {
+     "project": "big_bows",
+     "amount": 7.0,
+     "how": "knots"
+    },
+    {
+     "project": "stockings",
+     "amount": 2.0,
+     "how": "hot-glue dots under the paws (the cuffs are fluffy)"
+    },
+    {
+     "project": "gift_boxes",
+     "amount": 3.0,
+     "how": "5 bows onto the ribbon"
+    },
+    {
+     "project": "bone_pillow",
+     "amount": 1.0,
+     "how": "hot-glue dots under the pad and toes (fabric glue alone grips only the pile tips)"
+    },
+    {
+     "project": "jar",
+     "amount": 1.0,
+     "how": "band seam + 3 dots on the lid"
+    },
+    {
+     "project": "holiday_toy",
+     "amount": 1.0,
+     "how": "hot-glue dots under the pad and toes (fabric glue alone grips only the pile tips)"
     },
     {
      "project": "misc",
@@ -217,7 +337,7 @@
    "qty": 10,
    "per": 320,
    "unit": "in2",
-   "need": 2890.3,
+   "need": 2880.0,
    "have": 3200,
    "spare": 11,
    "carrier": "doghouse",
@@ -225,50 +345,183 @@
    "uses": [
     {
      "project": "doghouse",
-     "amount": 2890.3,
-     "how": "6 sets x 385 in2 of parts / 80% packing"
+     "amount": 2880.0,
+     "how": "6 sets x 421 sq in of parts incl. arch U, barge boards, threshold and ridge caps / 88% packing (page-2 cut plan: 9 boards for 6 houses, 1 spare)"
     }
    ]
   },
   {
-   "id": "gesso",
-   "name": "White gesso 948 ml (primer, mortar grey and cream when tinted)",
+   "id": "sienna",
+   "name": "Student acrylic Burnt Sienna 250 ml (ships in 48 h)",
    "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/white-gesso-948ml",
-   "price": 19.99,
+   "url": "https://www.deserres.ca/products/student-acrylic-burnt-sienna-250ml",
+   "price": 12.99,
    "qty": 1,
-   "per": 948,
+   "per": 250,
    "unit": "ml",
-   "need": 314.1,
-   "have": 948,
-   "spare": 202,
+   "need": 164.5,
+   "have": 250,
+   "spare": 52,
    "carrier": "craft_supplies",
    "ok": true,
    "uses": [
     {
      "project": "doghouse",
      "amount": 96.8,
-     "how": "mortar grey, 1 coat on 6 x 194 in2 of walls"
+     "how": "inside faces, 1 coat before assembly (6 x 194 sq in): stops warping, dark through the door"
     },
     {
      "project": "doghouse",
-     "amount": 98.8,
-     "how": "cream roofs, 2 coats on 6 x 99 in2"
+     "amount": 49.4,
+     "how": "roof undersides, 1 coat before assembly (6 x 99 sq in): stops the overhangs cupping"
     },
     {
      "project": "doghouse",
-     "amount": 12.0,
-     "how": "cream trims and gable paw"
+     "amount": 4.4,
+     "how": "a dab in the cream + dry-brushed roof grain"
     },
     {
      "project": "bones",
-     "amount": 76.0,
-     "how": "cream, 2 coats on 8 x 57 in2"
+     "amount": 8.9,
+     "how": "biscuit tint + dry-brushed edges"
     },
     {
      "project": "faux_treats",
-     "amount": 30.5,
-     "how": "tan (gesso + burnt sienna), 1 coat"
+     "amount": 5.1,
+     "how": "tan tint"
+    }
+   ]
+  },
+  {
+   "id": "gesso",
+   "name": "White gesso 948 ml (primer; the white in the cream, biscuit and tan mixes)",
+   "store": "DeSerres",
+   "url": "https://www.deserres.ca/products/white-gesso-948ml",
+   "price": 19.99,
+   "qty": 1,
+   "per": 948,
+   "unit": "ml",
+   "need": 335.6,
+   "have": 948,
+   "spare": 182,
+   "carrier": "craft_supplies",
+   "ok": true,
+   "uses": [
+    {
+     "project": "doghouse",
+     "amount": 98.8,
+     "how": "cream roof tops, 2 coats on 6 x 99 sq in"
+    },
+    {
+     "project": "doghouse",
+     "amount": 40.6,
+     "how": "cream trims, threshold and gable paw, 2 coats (41 sq in each incl. edges)"
+    },
+    {
+     "project": "paw_disc",
+     "amount": 17.5,
+     "how": "primer on the outer ring only (19 sq in), 10 + the spare"
+    },
+    {
+     "project": "bones",
+     "amount": 118.1,
+     "how": "biscuit, 2 coats on 8 x 89 sq in"
+    },
+    {
+     "project": "faux_treats",
+     "amount": 60.6,
+     "how": "tan, 2 coats on 64 x 5.7 sq in"
+    }
+   ]
+  },
+  {
+   "id": "ochre",
+   "name": "Americana acrylic Deep Ochre 59 ml (tints gesso to cream, biscuit and tan)",
+   "store": "DeSerres",
+   "url": "https://www.deserres.ca/products/americana-acrylic-deep-ochre-59ml",
+   "price": 2.99,
+   "qty": 1,
+   "per": 59,
+   "unit": "ml",
+   "need": 25.7,
+   "have": 59,
+   "spare": 129,
+   "carrier": "craft_supplies",
+   "ok": true,
+   "uses": [
+    {
+     "project": "doghouse",
+     "amount": 5.8,
+     "how": "cream tint, 1 tsp per 1/2 cup of gesso"
+    },
+    {
+     "project": "bones",
+     "amount": 9.8,
+     "how": "biscuit tint (2 tsp per 1/2 cup)"
+    },
+    {
+     "project": "faux_treats",
+     "amount": 10.1,
+     "how": "tan tint (2 tsp per 1/4 cup)"
+    }
+   ]
+  },
+  {
+   "id": "red2",
+   "name": "Student acrylic Crimson 250 ml (1:1 with Naphthol Red = barn red)",
+   "store": "DeSerres",
+   "url": "https://www.deserres.ca/products/student-acrylic-crimson-250ml",
+   "price": 12.99,
+   "qty": 1,
+   "per": 250,
+   "unit": "ml",
+   "need": 161.8,
+   "have": 250,
+   "spare": 55,
+   "carrier": "craft_supplies",
+   "ok": true,
+   "uses": [
+    {
+     "project": "doghouse",
+     "amount": 88.0,
+     "how": "dark brick base coat on 6 x 194 sq in (Crimson 10 : black 1): the scored joints stay dark like the board's"
+    },
+    {
+     "project": "doghouse",
+     "amount": 64.5,
+     "how": "barn red (other half)"
+    },
+    {
+     "project": "doghouse",
+     "amount": 9.3,
+     "how": "ridge caps, barn red + a touch of sienna"
+    }
+   ]
+  },
+  {
+   "id": "black",
+   "name": "Americana acrylic Lamp Black 60 ml",
+   "store": "DeSerres",
+   "url": "https://www.deserres.ca/products/americana-acrylic-lamp-black-60ml",
+   "price": 2.99,
+   "qty": 1,
+   "per": 60,
+   "unit": "ml",
+   "need": 12.4,
+   "have": 60,
+   "spare": 384,
+   "carrier": "craft_supplies",
+   "ok": true,
+   "uses": [
+    {
+     "project": "doghouse",
+     "amount": 8.8,
+     "how": "dark brick base coat (1 part in 11)"
+    },
+    {
+     "project": "doghouse",
+     "amount": 3.6,
+     "how": "darkens the door opening"
     }
    ]
   },
@@ -290,83 +543,7 @@
     {
      "project": "doghouse",
      "amount": 64.5,
-     "how": "red bricks, 2 dabbed coats (half from each red)"
-    }
-   ]
-  },
-  {
-   "id": "red2",
-   "name": "Student acrylic Crimson 250 ml (1:1 with Naphthol Red = barn red)",
-   "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/student-acrylic-crimson-250ml",
-   "price": 12.99,
-   "qty": 1,
-   "per": 250,
-   "unit": "ml",
-   "need": 64.5,
-   "have": 250,
-   "spare": 288,
-   "carrier": "craft_supplies",
-   "ok": true,
-   "uses": [
-    {
-     "project": "doghouse",
-     "amount": 64.5,
-     "how": "red bricks (other half)"
-    }
-   ]
-  },
-  {
-   "id": "sienna",
-   "name": "Basics acrylic Burnt Sienna 8 oz (236 ml)",
-   "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/basics-acrylic-8oz-burnt-sienna",
-   "price": 19.99,
-   "qty": 1,
-   "per": 236,
-   "unit": "ml",
-   "need": 115.8,
-   "have": 236,
-   "spare": 104,
-   "carrier": "craft_supplies",
-   "ok": true,
-   "uses": [
-    {
-     "project": "doghouse",
-     "amount": 96.8,
-     "how": "inside faces, 1 coat (stops warping, dark through the door)"
-    },
-    {
-     "project": "bones",
-     "amount": 4.0,
-     "how": "dry-brushed edges"
-    },
-    {
-     "project": "faux_treats",
-     "amount": 15.0,
-     "how": "tan tint"
-    }
-   ]
-  },
-  {
-   "id": "black",
-   "name": "Americana acrylic Lamp Black 60 ml",
-   "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/americana-acrylic-lamp-black-60ml",
-   "price": 2.99,
-   "qty": 1,
-   "per": 60,
-   "unit": "ml",
-   "need": 3.6,
-   "have": 60,
-   "spare": 1567,
-   "carrier": "craft_supplies",
-   "ok": true,
-   "uses": [
-    {
-     "project": "doghouse",
-     "amount": 3.6,
-     "how": "darkens the door opening"
+     "how": "barn red dabbed on the brick faces, 2 coats (half from each red)"
     }
    ]
   },
@@ -379,16 +556,16 @@
    "qty": 1,
    "per": 25,
    "unit": "m",
-   "need": 6.3,
+   "need": 10.1,
    "have": 25,
-   "spare": 297,
+   "spare": 148,
    "carrier": "craft_supplies",
    "ok": true,
    "uses": [
     {
      "project": "doghouse",
-     "amount": 1.8,
-     "how": "6 loops x 30 cm"
+     "amount": 3.6,
+     "how": "6 safety loops x 60 cm (doubled) round a toothpick bar across the gable peaks"
     },
     {
      "project": "paw_disc",
@@ -397,79 +574,52 @@
     },
     {
      "project": "bones",
-     "amount": 2.0,
-     "how": "8 loops x 25 cm"
+     "amount": 4.0,
+     "how": "8 two-cord hangers x 50 cm, both ends glued into the upper knobs"
     }
    ]
   },
   {
-   "id": "film",
-   "name": "Drafting film 8.5 x 11\" (cut our own paw stencils)",
-   "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/drafting-film-0-003-matte-on-2-sides-8-5x11",
-   "price": 1.99,
+   "id": "hoops_fay",
+   "name": "Faylapa 6\" bamboo embroidery hoops, 16-pk",
+   "store": "Amazon.ca",
+   "url": "https://www.amazon.ca/dp/B088WV6BFG",
+   "price": 29.99,
    "qty": 1,
-   "per": 6,
-   "unit": "stencils",
-   "need": 2.0,
-   "have": 6,
-   "spare": 200,
-   "carrier": "craft_supplies",
-   "ok": true,
-   "uses": [
-    {
-     "project": "doghouse",
-     "amount": 1.0,
-     "how": "2.5\" gable paw stencil"
-    },
-    {
-     "project": "bowl",
-     "amount": 1.0,
-     "how": "1.5\" paw stencil"
-    }
-   ]
-  },
-  {
-   "id": "hoops_ds",
-   "name": "Embroidery hoop, round, 15.2 cm (6\")",
-   "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/embroidery-hoop-round-15-2cm",
-   "price": 5.99,
-   "qty": 10,
-   "per": 1,
+   "per": 16,
    "unit": "hoops",
-   "need": 10.0,
-   "have": 10,
-   "spare": 0,
-   "carrier": "paw_disc",
+   "need": 11.0,
+   "have": 16,
+   "spare": 45,
+   "carrier": "paw_disc_fay",
    "ok": true,
    "uses": [
     {
      "project": "paw_disc",
-     "amount": 10.0,
-     "how": "10 hoops"
+     "amount": 11.0,
+     "how": "10 hoops + 1 spare (a cracked ring would leave the tree a paw short)"
     }
    ]
   },
   {
    "id": "aida",
-   "name": "Aida fabric 14ct, 38 x 46 cm (15 x 18\"), antique white",
+   "name": "Aida fabric 14ct, white, 50 x 60 cm (19.7 x 23.6\": four 9 x 9\" pieces per sheet; tea-stained to the board's warm cream; ships in 48 h)",
    "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/aida-fabric-14ct-38-1-x-45-7cm-antique-white",
-   "price": 9.99,
+   "url": "https://www.deserres.ca/products/aida-fabric-white-500x600mm",
+   "price": 14.99,
    "qty": 3,
    "per": 4,
    "unit": "pc",
    "need": 10.0,
    "have": 12,
    "spare": 20,
-   "carrier": "paw_disc",
+   "carrier": "paw_disc_fay",
    "ok": true,
    "uses": [
     {
      "project": "paw_disc",
      "amount": 10.0,
-     "how": "10 pieces 7.5 x 9\" (4 per 15 x 18\" sheet)"
+     "how": "10 pieces 9 x 9\" (a 6\" hoop needs about 8\" to grip and trim; 4 per 50 x 60 cm sheet)"
     }
    ]
   },
@@ -482,16 +632,16 @@
    "qty": 1,
    "per": 60,
    "unit": "ml",
-   "need": 47.8,
+   "need": 35.0,
    "have": 60,
-   "spare": 26,
+   "spare": 71,
    "carrier": "craft_supplies",
    "ok": true,
    "uses": [
     {
      "project": "paw_disc",
-     "amount": 47.8,
-     "how": "both rings, outer face and front edge (19 in2), 3 coats"
+     "amount": 35.0,
+     "how": "outer ring outside face and front edge only, 2 coats over the gesso"
     }
    ]
   },
@@ -518,6 +668,28 @@
    ]
   },
   {
+   "id": "felt_ds",
+   "name": "Felt sheet, black, 9 x 12\" (backs for the paw ornaments: two 6\" circles per sheet)",
+   "store": "DeSerres",
+   "url": "https://www.deserres.ca/products/felt-black-9x12in",
+   "price": 0.99,
+   "qty": 6,
+   "per": 1,
+   "unit": "sheet",
+   "need": 6.0,
+   "have": 6,
+   "spare": 0,
+   "carrier": "craft_supplies",
+   "ok": true,
+   "uses": [
+    {
+     "project": "paw_disc",
+     "amount": 6.0,
+     "how": "10 back circles of 6\" (2 per 9 x 12\" sheet) + 1 spare sheet"
+    }
+   ]
+  },
+  {
    "id": "velvet_ribbon",
    "name": "Dark red wired velvet ribbon 1.5\" x 25 yd",
    "store": "Amazon.ca",
@@ -526,9 +698,9 @@
    "qty": 1,
    "per": 25,
    "unit": "yd",
-   "need": 11.5,
+   "need": 17.3,
    "have": 25,
-   "spare": 117,
+   "spare": 45,
    "carrier": "velvet_ribbon",
    "ok": true,
    "uses": [
@@ -538,9 +710,14 @@
      "how": "10 bows x 37\" (two 4.5\" loops, 8\" tails, knot)"
     },
     {
+     "project": "velvet_tree_bows",
+     "amount": 5.1,
+     "how": "5 tree bows x 37\" (two 4.5\" loops, 8\" tails)"
+    },
+    {
      "project": "jar",
-     "amount": 1.3,
-     "how": "jar bow, two 5\" loops and 9\" tails"
+     "amount": 1.8,
+     "how": "band round the shoulder (22\") + bow: two 5\" loops, 9\" tails"
     }
    ]
   },
@@ -550,50 +727,50 @@
    "store": "Amazon.ca",
    "url": "https://www.amazon.ca/dp/B0F86WQG4W",
    "price": 22.0,
-   "qty": 2,
+   "qty": 3,
    "per": 500,
    "unit": "g",
-   "need": 901.3,
-   "have": 1000,
-   "spare": 11,
+   "need": 1162.7,
+   "have": 1500,
+   "spare": 29,
    "carrier": "clay",
    "ok": true,
    "uses": [
     {
      "project": "bones",
-     "amount": 590.7,
-     "how": "8 x 20.0 in3, half foil core, 0.45 g/cm3"
+     "amount": 939.0,
+     "how": "8 bones x 117 g: page-4 outline 31.0 sq in x 1\" x 85% (rounded) less the foil core, 0.45 g/cm3"
     },
     {
      "project": "faux_treats",
-     "amount": 310.6,
-     "how": "60 biscuits x 0.70 in3 (the jar needs 48: 6 per ring x 6 rings + 12 on top)"
+     "amount": 223.6,
+     "how": "64 biscuits x 0.47 cu in, 1/4\" thick (the jar needs 61: 7 per ring x 7 rings + 12 on top)"
     }
    ]
   },
   {
    "id": "podge",
-   "name": "Mod Podge Matte 473 ml (sealer and sign glue)",
+   "name": "Mod Podge Matte 236 ml (sealer and sign glue)",
    "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/mod-podge-matte-473ml",
-   "price": 16.99,
+   "url": "https://www.deserres.ca/products/mod-podge-matte-236ml",
+   "price": 9.99,
    "qty": 1,
-   "per": 473,
+   "per": 236,
    "unit": "ml",
-   "need": 85.6,
-   "have": 473,
-   "spare": 452,
+   "need": 111.7,
+   "have": 236,
+   "spare": 111,
    "carrier": "craft_supplies",
    "ok": true,
    "uses": [
     {
      "project": "bones",
-     "amount": 47.5,
+     "amount": 73.8,
      "how": "seal"
     },
     {
      "project": "faux_treats",
-     "amount": 38.1,
+     "amount": 37.9,
      "how": "seal"
     }
    ]
@@ -603,30 +780,35 @@
    "name": "Tartan wired ribbon 4\" x 10 yd",
    "store": "Amazon.ca",
    "url": "https://www.amazon.ca/dp/B0D7WPZDJW",
-   "price": 33.68,
+   "price": 33.76,
    "qty": 5,
    "per": 10,
    "unit": "yd",
-   "need": 38.5,
+   "need": 44.5,
    "have": 50,
-   "spare": 30,
+   "spare": 12,
    "carrier": "tartan_ribbon",
    "ok": true,
    "uses": [
     {
      "project": "cascades",
      "amount": 16.4,
-     "how": "5 cascades x 118\" (82\" down the tree + poufs)"
+     "how": "5 cascades x 118\" (82\" down the tree + 4 poufs x 8\" + 4\" under the topper)"
     },
     {
      "project": "big_bows",
-     "amount": 21.0,
-     "how": "14 bows x 1.5 yd"
+     "amount": 25.2,
+     "how": "14 bows x 1.8 yd (65\": one loop each side, 15\" tails, 6\" knot)"
     },
     {
      "project": "gift_boxes",
      "amount": 1.1,
-     "how": "box D: one way round"
+     "how": "box D: tartan band round the girth, over the paper join"
+    },
+    {
+     "project": "gift_boxes",
+     "amount": 1.8,
+     "how": "box D: big tartan bow on top"
     }
    ]
   },
@@ -692,17 +874,17 @@
     {
      "project": "gift_boxes",
      "amount": 96.0,
-     "how": "box A: 2 strips of 48\" (paper is 17\" wide)"
+     "how": "box A: 2 lengths of 48\" taped edge to edge (paper is 17\" wide)"
     },
     {
      "project": "gift_boxes",
      "amount": 132.0,
-     "how": "box B: 2 strips of 66\" (paper is 17\" wide)"
+     "how": "box B: 2 lengths of 66\" taped edge to edge (paper is 17\" wide)"
     },
     {
      "project": "gift_boxes",
      "amount": 108.0,
-     "how": "box C: 2 strips of 54\" (paper is 17\" wide)"
+     "how": "box C: 2 lengths of 54\" taped edge to edge (paper is 17\" wide)"
     }
    ]
   },
@@ -715,9 +897,9 @@
    "qty": 1,
    "per": 20,
    "unit": "yd",
-   "need": 14.5,
+   "need": 16.2,
    "have": 20,
-   "spare": 38,
+   "spare": 23,
    "carrier": "burlap_ribbon",
    "ok": true,
    "uses": [
@@ -738,8 +920,13 @@
     },
     {
      "project": "gift_boxes",
+     "amount": 1.7,
+     "how": "box D: cream band round the sides"
+    },
+    {
+     "project": "gift_boxes",
      "amount": 1.1,
-     "how": "box D: 10\" bow"
+     "how": "box D: 10\" cream bow on the band"
     }
    ]
   },
@@ -752,9 +939,9 @@
    "qty": 1,
    "per": 50,
    "unit": "m",
-   "need": 12.0,
+   "need": 15.0,
    "have": 50,
-   "spare": 317,
+   "spare": 233,
    "carrier": "ct_supplies",
    "ok": true,
    "uses": [
@@ -777,6 +964,11 @@
      "project": "gift_boxes",
      "amount": 3.0,
      "how": "close box D"
+    },
+    {
+     "project": "transport",
+     "amount": 3.0,
+     "how": "pack the under-tree pieces in one labelled box"
     }
    ]
   },
@@ -785,35 +977,35 @@
    "name": "Scotch Magic Tape 19 mm x 10 m, 3-pk (gift wrapping)",
    "store": "Canadian Tire",
    "url": "https://www.canadiantire.ca/en/pdp/scotch-magic-tape-in-dispenser-invisible-matte-finish-19-mm-x-10-m-3-pk-0670361p.html",
-   "price": 4.99,
+   "price": 7.49,
    "qty": 1,
    "per": 30,
    "unit": "m",
-   "need": 8.0,
+   "need": 12.0,
    "have": 30,
-   "spare": 275,
+   "spare": 150,
    "carrier": "ct_supplies",
    "ok": true,
    "uses": [
     {
      "project": "gift_boxes",
-     "amount": 2.0,
-     "how": "wrap box A"
+     "amount": 3.0,
+     "how": "paper join and wrap, box A"
     },
     {
      "project": "gift_boxes",
-     "amount": 2.0,
-     "how": "wrap box B"
+     "amount": 3.0,
+     "how": "paper join and wrap, box B"
     },
     {
      "project": "gift_boxes",
-     "amount": 2.0,
-     "how": "wrap box C"
+     "amount": 3.0,
+     "how": "paper join and wrap, box C"
     },
     {
      "project": "gift_boxes",
-     "amount": 2.0,
-     "how": "wrap box D"
+     "amount": 3.0,
+     "how": "paper join and wrap, box D"
     }
    ]
   },
@@ -822,64 +1014,52 @@
    "name": "Kraft paw wrapping paper, 6 sheets 17 x 40\"",
    "store": "Amazon.ca",
    "url": "https://www.amazon.ca/dp/B0FSXRGDGM",
-   "price": 22.68,
+   "price": 22.71,
    "qty": 1,
    "per": 6,
    "unit": "sheets",
-   "need": 4.0,
+   "need": 5.0,
    "have": 6,
-   "spare": 50,
+   "spare": 20,
    "carrier": "paw_wrap",
    "ok": true,
    "uses": [
     {
      "project": "gift_boxes",
-     "amount": 4.0,
-     "how": "box D: 2 sheets taped end to end per strip (girth 38\")"
-    }
-   ]
-  },
-  {
-   "id": "enamel_pen",
-   "name": "Sharpie oil-based paint marker, white (paws on the glazed bowl)",
-   "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/sharpie-oil-based-paint-marker-medium-tip-white",
-   "price": 9.99,
-   "qty": 1,
-   "per": 1,
-   "unit": "pen",
-   "need": 1.0,
-   "have": 1,
-   "spare": 0,
-   "carrier": "craft_supplies",
-   "ok": true,
-   "uses": [
+     "amount": 2.0,
+     "how": "box D: 2 sheets side by side (girth 38\" fits a 40\" sheet)"
+    },
     {
-     "project": "bowl",
-     "amount": 1.0,
-     "how": "2 white paws on glazed ceramic"
+     "project": "faux_treats",
+     "amount": 3.0,
+     "how": "jar core: 3 spare kraft sheets crumpled behind each ring of biscuits"
     }
    ]
   },
   {
-   "id": "kraft",
-   "name": "Kraft paper roll 27.6\" x 9.8 ft (core that fills the jar)",
+   "id": "sticks",
+   "name": "Round wood sticks 6 mm x 15 cm, 30 pc (1/4\" clay thickness guides, paint stirrers)",
    "store": "DeSerres",
-   "url": "https://www.deserres.ca/products/kraft-paper-roll-27-6x9-8",
-   "price": 6.99,
+   "url": "https://www.deserres.ca/products/30-round-wood-sticks-6mm-15cm",
+   "price": 5.99,
    "qty": 1,
-   "per": 1,
-   "unit": "roll",
-   "need": 1.0,
-   "have": 1,
-   "spare": 0,
+   "per": 30,
+   "unit": "pc",
+   "need": 8.0,
+   "have": 30,
+   "spare": 275,
    "carrier": "craft_supplies",
    "ok": true,
    "uses": [
     {
      "project": "faux_treats",
-     "amount": 1.0,
-     "how": "crumpled 4\" core inside the jar"
+     "amount": 2.0,
+     "how": "1/4\" thickness guides for pressing the clay"
+    },
+    {
+     "project": "craft",
+     "amount": 6.0,
+     "how": "paint stirrers for the cream, biscuit and brick mixes"
     }
    ]
   },
@@ -901,7 +1081,7 @@
     {
      "project": "craft",
      "amount": 1.0,
-     "how": "covers two tables"
+     "how": "covers two tables; offcuts are the clay work surface"
     }
    ]
   },
@@ -936,16 +1116,16 @@
    "qty": 1,
    "per": 5,
    "unit": "blades",
-   "need": 3.0,
+   "need": 4.0,
    "have": 5,
-   "spare": 67,
+   "spare": 25,
    "carrier": "craft_supplies",
    "ok": true,
    "uses": [
     {
      "project": "craft",
-     "amount": 3.0,
-     "how": "about 1 blade per 3 boards"
+     "amount": 4.0,
+     "how": "about 1 blade per 3 foam boards + the gift boxes and scarf"
     }
    ]
   },
@@ -1055,21 +1235,89 @@
     {
      "project": "craft",
      "amount": 2.0,
-     "how": "bricks + stencilling"
+     "how": "brick dabbing + stencilling"
+    }
+   ]
+  },
+  {
+   "id": "wire_cutter",
+   "name": "Wire cutter (every floral-wire cut: about 400)",
+   "store": "DeSerres",
+   "url": "https://www.deserres.ca/products/wire-cutter",
+   "price": 12.99,
+   "qty": 1,
+   "per": 1,
+   "unit": "tool",
+   "need": 1.0,
+   "have": 1,
+   "spare": 0,
+   "carrier": "craft_supplies",
+   "ok": true,
+   "uses": [
+    {
+     "project": "craft",
+     "amount": 1.0,
+     "how": "about 400 floral-wire cuts (baubles, picks, bows, plush, ornaments)"
+    }
+   ]
+  },
+  {
+   "id": "cut_board",
+   "name": "Extra-large moving box 24 x 20 x 20\", flattened (the cutting surface under every knife cut)",
+   "store": "Canadian Tire",
+   "url": "https://www.canadiantire.ca/en/pdp/canadian-tire-extra-large-moving-box-100-recycled-cardboard-24-x-20-x-20-in-0676076p.html",
+   "price": 4.99,
+   "qty": 1,
+   "per": 1,
+   "unit": "box",
+   "need": 1.0,
+   "have": 1,
+   "spare": 0,
+   "carrier": "ct_supplies",
+   "ok": true,
+   "uses": [
+    {
+     "project": "craft",
+     "amount": 1.0,
+     "how": "flattened: the cutting surface for foam board, boxes, scarf and Aida"
+    }
+   ]
+  },
+  {
+   "id": "fabric_marker",
+   "name": "Erasable fabric marker, white (traces paws and circles on black felt)",
+   "store": "DeSerres",
+   "url": "https://www.deserres.ca/products/eraseable-fabric-marker-white",
+   "price": 3.99,
+   "qty": 1,
+   "per": 1,
+   "unit": "pen",
+   "need": 1.0,
+   "have": 1,
+   "spare": 0,
+   "carrier": "craft_supplies",
+   "ok": true,
+   "uses": [
+    {
+     "project": "craft",
+     "amount": 1.0,
+     "how": "traces every felt paw and circle"
     }
    ]
   }
  ],
  "on_hand": [
-  "Scissors (3 pairs)",
-  "Pencils and ballpoint pens (pens score the brick and shingle lines)",
-  "Aluminum foil, about 15 ft (cores for the clay bones)",
-  "Toothpicks",
-  "Paper towels, water cups, paper plates for palettes",
+  "Scissors (3 pairs; never on wire: the wire cutter is on the DeSerres list)",
+  "Pencils (mark every cut line in pencil, never pen: ink bleeds through paint) and one empty ballpoint pen (scores the brick and roof lines with no ink)",
+  "Aluminum foil, about 15 ft (cores for the 8 clay bones)",
+  "Toothpicks, about 50 (doghouse hanger bars, biscuit dots, drilling the bone holes, pulling scarf fringe)",
+  "Paper towels, water cups, paper plates for palettes, a lidded cup or jar for the cream mix",
   "Office colour printer: templates on Letter and 11x17",
-  "Garbage bags for clean-up"
+  "Black tea bags (4), a kettle and a bowl from the office kitchen (tea-stains the Aida; no tea? use the ochre wash in the steps)",
+  "Garbage bags for clean-up",
+  "Optional: a second 7 mm hot glue gun from home (one is bought; a second speeds up Session 2)"
  ],
- "biscuits_needed": 48,
+ "biscuits_needed": 61,
  "door": [
   10,
   13
@@ -1110,9 +1358,9 @@
   ]
  ],
  "totals": {
-  "subtotal": 1809.22,
-  "gst": 80.46,
-  "grand": 1889.68,
-  "left": 110.32
+  "subtotal": 1834.7,
+  "gst": 81.74,
+  "grand": 1916.44,
+  "left": 83.56
  }
 }

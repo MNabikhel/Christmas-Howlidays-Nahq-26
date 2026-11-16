@@ -161,6 +161,30 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 30px; line-height
 .opts.compact .opt { min-height: 44px; grid-template-columns: 32px minmax(0, 1fr); }
 .opts.compact .opt img, .opts.compact .opt .nothumb { width: 32px; height: 32px; }
 
+/* Extras popover: setting, tree lights, fun scene extras (fixed dark scene, light-on-dark values) */
+.hud #extrasBtn.xact { box-shadow: inset 0 0 0 1.5px #DDB25A; }
+.xpop { position: absolute; z-index: 6; top: 56px; left: max(14px, env(safe-area-inset-left, 0px)); width: min(330px, calc(100% - 28px)); max-height: calc(100% - 70px); overflow-y: auto; overscroll-behavior: contain;
+  background: rgba(14, 18, 16, .9); color: #F3EFE4; border: 1px solid rgba(255,255,255,.14); border-radius: 14px; padding: 12px 14px 12px; backdrop-filter: blur(10px);
+  box-shadow: 0 18px 50px rgba(0,0,0,.5); display: grid; gap: 10px; font-size: 13px; }
+.xpop .xh { display: flex; justify-content: space-between; align-items: center; }
+.xpop .xh b { font-family: var(--display); font-size: 15px; font-weight: 700; }
+.xpop button { font: inherit; color: inherit; cursor: pointer; }
+.xpop .xclose { border: 0; background: rgba(255,255,255,.1); width: 28px; height: 28px; border-radius: 50%; }
+.xpop .xsec { display: grid; gap: 6px; }
+.xpop .xl { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #B9C4BC; }
+.xpop .xchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.xpop .xchips button { border: 1px solid rgba(255,255,255,.18); background: transparent; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 600; min-height: 32px; }
+.xpop .xchips button[aria-pressed="true"] { background: #F3EFE4; color: #18231D; border-color: #F3EFE4; }
+.xpop .xchips button:disabled { opacity: .4; cursor: default; }
+.xpop .xnote, .xpop .xcap { margin: 0; font-size: 12px; color: #B9C4BC; }
+.xpop .xchk { display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; cursor: pointer; line-height: 1.3; }
+.xpop .xchk input { margin: 1px 0 0; width: 16px; height: 16px; accent-color: #DDB25A; flex: none; }
+.xpop .xchk.xoff span { opacity: .6; }
+.xpop .xonly { font-size: 11.5px; color: #B9C4BC; }
+.xpop .xalloff { justify-self: start; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); border-radius: 9px; padding: 7px 12px; font-weight: 700; font-size: 12.5px; }
+.xtoast { position: absolute; z-index: 7; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: #F7F3EA; color: #18231D; font-size: 13px; font-weight: 600;
+  padding: 8px 14px; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.4); max-width: calc(100% - 28px); text-align: center; }
+
 @media (max-width: 899px) {
   html, body { height: auto; }
   .app { display: block; height: auto; }
@@ -187,10 +211,11 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 30px; line-height
       <button id="reset" type="button">Reset view</button>
       <button id="resetTree" type="button" title="Put every element back to its closest match to the board">Reset tree</button>
       <button id="compare" type="button" aria-pressed="false">Compare</button>
-      <span class="seg" role="group" aria-label="Setting"><button type="button" data-room="living" aria-pressed="true">Living room</button><button type="button" data-room="office" aria-pressed="false">Office</button></span>
+      <button id="extrasBtn" type="button" aria-expanded="false" aria-controls="extras" aria-haspopup="dialog" title="Setting, tree lights and fun scene extras">Extras ✦</button>
       <button id="personBtn" type="button" aria-pressed="false">Person for scale</button>
       <select id="personH" aria-label="Person height" hidden><option value="60">5'0"</option><option value="64">5'4"</option><option value="67" selected>5'7"</option><option value="70">5'10"</option><option value="74">6'2"</option></select>
     </div>
+    <div class="xpop" id="extras" role="dialog" aria-label="Scene extras" hidden></div>
     <div class="tip" id="tip" hidden></div>
     <div class="measures" id="measures" hidden></div>
     <div class="card" id="card" hidden aria-live="polite"></div>

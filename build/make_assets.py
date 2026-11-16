@@ -89,12 +89,20 @@ def scarf(src, out, cx, cy, rx, ry, t, tail, size=560):
 if __name__ == '__main__':
     import sys
     from rembg import remove, new_session
+    # usage: make_assets.py [tmp dir] [asset names...]; with no names it makes everything
     tmp = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'build' / '.cut'; tmp.mkdir(exist_ok=True)
+    only = set(sys.argv[2:]); want = lambda n: not only or n in only
     s = new_session('isnet-general-use')
-    for asin, name in (('B0H5YKFT7X', 'cat_fluffy'), ('B00ILYHVDQ', 'golden_aurora')):
-        cut = remove(Image.open(LB / f'p_{asin}.jpg').convert('RGB'), session=s); cut = cut.crop(cut.getbbox()); cut.save(tmp / f'{name}.png')
-    scarf(tmp / 'cat_fluffy.png', 'cat_fluffy', .33, .41, .21, .05, .06, ((.27, .45), (.23, .66), .1))
-    scarf(tmp / 'golden_aurora.png', 'golden_aurora', .5, .46, .33, .08, .08, ((.38, .5), (.33, .74), .12))
+    # pet cutouts: (listing photo in data/lookbook, cutout name, scarf collar centre x/y, radii x/y, thickness, tail (start, end, width)), all as fractions of the cutout
+    PETS = [('p_B0H5YKFT7X', 'cat_fluffy', (.33, .41, .21, .05, .06, ((.27, .45), (.23, .66), .1))),
+            ('p_B00ILYHVDQ', 'golden_aurora', (.5, .46, .33, .08, .08, ((.38, .5), (.33, .74), .12))),
+            # Aurora Miyoni grey tabby (B00SUECXD0), the listing's front view: face forward like the board's cats
+            ('p_B00SUECXD0_front', 'cat_miyoni', (.5, .62, .29, .045, .075, ((.5, .64), (.47, .87), .16)))]
+    for photo, name, sc in PETS:
+        if not want(name): continue
+        cut = remove(Image.open(LB / f'{photo}.jpg').convert('RGB'), session=s); cut = cut.crop(cut.getbbox()); cut.save(tmp / f'{name}.png')
+        scarf(tmp / f'{name}.png', name, *sc)
+    if only: sys.exit(0)
     ribbon('tx_burlap6', 6, 10, paw_in=2.2)                    # topper: 6" jute, hemmed, 2.2" black felt paws every 5"
     ribbon('tx_burlap4', 4, 10, paw_in=2.2, edge='wire')       # earlier topper: 4" wired burlap
     ribbon('tx_burlap25', 2.5, 6, paw_in=1.2, paw_color=(98, 66, 40), paws_per_repeat=2, edge='wire')   # printed brown paws
