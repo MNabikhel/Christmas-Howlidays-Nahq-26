@@ -18,7 +18,7 @@ This folder hands the "Home for the Howlidays" tree work over to Claude Code, so
    The first time, press Enter on the Chrome intro screen. If Chrome isn't detected, restart Chrome and type `/chrome` → "Reconnect extension".
 3. Paste this prompt:
    ```
-   Read CLAUDE.md and do the task. Start by running /chrome to confirm the browser is connected, then check the high-priority items first. Don't buy anything.
+   Read CLAUDE.md and GOAL.md. Run /chrome to confirm the browser is connected, then work through the verify lists in data/lookbook.json, element by element. Don't buy anything.
    ```
 4. Claude will open tabs in a Chrome tab group. Approve the "Claude in Chrome wants to…" prompts (you can allow a site for the whole session). Leave the tabs open while it works.
 
