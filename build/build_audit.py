@@ -20,7 +20,14 @@ HANG = {
  'balls': 'wired into the basket', 'gift_card': 'clipped into the basket', 'bandanas': 'tied on the plush pets', 'faux_treats': 'inside the jar',
  'tartan_wrap': 'wraps boxes A, B, C', 'paw_wrap': 'wraps box D',
 }
-FOUND = [  # what the audit caught, and the fix
+FOUND = [  # what the audits caught, and the fix (latest round first)
+ ('topper', 'Matching the board exactly: its bow is about 6" ribbon in two fat loops; ours was 4" in four loops, and the stencilled paws needed fabric paint.', 'Two loops of 6" natural jute, 20 black felt paws glued on (from the felt we already buy), floral wire along the edges so the loops hold.'),
+ ('paw_disc', 'At the board\'s scale the paw ornaments are 5-8" with a gold rim and cap and a deep red velvet bow; ours were 4" flat wood rounds with 3.5" mini bows.', 'Ten 6" hoops painted gold (the brass screw is the cap), ivory Aida face, black glitter-card paw, bow hand-tied from dark red wired velvet.'),
+ ('doghouse', 'The board\'s doghouse is 10-15" tall; ours were 4.3".', 'Six 10" doghouses from the same template, scaled; 10 foam boards.'),
+ ('bones', 'The board\'s bones are 7-11" long; ours were 5".', 'Eight 9" bones; the two clay bags still cover the bones and the 60 biscuits (11% spare).'),
+ ('cat_fluffy', 'The 4.7" kittens are a third to a half of the board\'s cats.', 'The 8" FLUFFYFUN sitting grey-and-white tabby.'),
+ ('red6_benjia', 'The board\'s biggest red balls are 4.5-7"; our biggest were 3.15".', 'Plain 6" and 4" reds and 4" golds; dropped the second 100-pc set, the 100-pc champagne set and the painted 3.15" reds.'),
+ ('burlap_ribbon', 'The board\'s gifts are tied with cream ribbon; ours used velvet.', 'Cream 1.5" burlap ribbon and bows; the velvet roll and the 12 bought velvet bows are gone (the board has no velvet bows on the tree).'),
  ('doghouse', 'The "doghouse ornaments" were 12 unfinished birdhouses: round entry hole and perch peg. Paint could not make them read as doghouses.', 'Built as real doghouses from 3/16" foam board with a printed template: arched door, scored bricks, cream shingle roof. Uses 4 foam boards ($23.96) instead of the $54.93 birdhouses.'),
  ('doghouse_xl', 'The giant doghouse had no materials. It assumed a big enough shipping box would arrive.', 'Two Canadian Tire 24 x 20 x 20" moving boxes ($4.99 each), a full cut plan (template page 4) and every paint, glue and sign material on the supply list.'),
  ('gift_boxes', 'The display gifts relied on "boxes from our orders", which are not guaranteed and of unknown size.', 'Four bought moving boxes of known size, so wrapping paper and ribbon lengths can be calculated.'),
@@ -70,8 +77,7 @@ a = sup['assumptions']
 L += ['', '## Assumptions behind the numbers', '',
       f"- **Brushed paint:** {a['ml_per_ft2']} ml per sq ft per coat.",
       f"- **Sponge-dabbed bricks:** {a['dab_ml_per_ft2']} ml per sq ft.",
-      f"- **Fabric paint into burlap:** {a['burlap_ml_per_ft2']} ml per sq ft.",
-      f"- **Mod Podge:** {a['podge_ml_per_ft2']} ml per sq ft.",
+       f"- **Mod Podge:** {a['podge_ml_per_ft2']} ml per sq ft.",
       f"- **Foam clay:** {a['clay_g_per_cm3']} g per cm³. This is the heavy end of the range, so we over-buy rather than run short.",
       '- **Pearl medium, fine, black:** the listing does not state the jar size. The paws need about 10 ml.',
       '- **Amazon prices:** from Nov 13-16. Amazon.ca blocked automated browsing on Nov 16, so confirm them at checkout.',

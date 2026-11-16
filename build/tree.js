@@ -9,53 +9,148 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const ITEMS = window.HOWL_ITEMS;
-const BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
-const BUDGET = 2000;
-const money = n => '$' + n.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const ABOUT = "Pets are family, and nothing says home for the holidays like a wagging tail. Plush golden retrievers and tabby kittens in tartan scarves peek from branches filled with paw-print ornaments, doghouses and biscuit bones, under a burlap paw-print bow. Below, a family dog waits in its own doghouse beside a gift basket for the winning bidder's best friend.";
+let TARGET = null, CTX = null;   // the group new meshes go into, and the element/option being built
+/* ================================================================
+   The plan is a set of board elements, each with 2-4 options (data/options.json).
+   SEL holds the chosen option per element; resolve.js turns it into the order list,
+   supplies and totals (the same code path as build/build_plan.py). Every option is
+   built once in 3D, in its own group, and swapping only changes which group shows.
+   ================================================================ */
+const O = window.HOWL_OPTIONS;
+const CAT = O.catalog;
+const BUDGET = O.budget, FLOOR = O.floor;
+const money = n => (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const EL = Object.fromEntries(O.elements.map(e => [e.id, e]));
+const DEFAULT_SEL = Object.fromEntries(O.elements.map(e => [e.id, e.default]));
+const SEL_KEY = 'howl.selection.v6';
+let SEL = (() => { try { const s = JSON.parse(localStorage.getItem(SEL_KEY) || 'null'); if (s) return Object.fromEntries(O.elements.map(e => [e.id, e.options.some(o => o.id === s[e.id]) ? s[e.id] : e.default])); } catch (e) {} return { ...DEFAULT_SEL }; })();
+let CUR = window.howlResolve(O, SEL);
+let ITEMS = CUR.items, BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+const isDefault = () => O.elements.every(e => SEL[e.id] === e.default);
+const optOf = (el, id = SEL[el]) => EL[el].options.find(o => o.id === id);
+// which element an item belongs to (so a tap on the tree can offer its swaps)
+const ELEMENT_OF = {};
+O.elements.forEach(e => e.options.forEach(o => o.rows.forEach(r => { ELEMENT_OF[r.id] ||= e.id; })));
+Object.assign(ELEMENT_OF, { velvet_ribbon: 'paws', glitter_card: 'paws', burlap_ribbon: 'gifts', tartan_wrap: 'gifts', paw_wrap: 'gifts', clay: 'bones', tartan_ribbon: 'ribbon' });
 
-// DIY how-to text lives in items.json ("how")
-const DIY_HOW = Object.fromEntries(ITEMS.filter(i => i.how).map(i => [i.id, i.how]));
+const ABOUT = "Pets are family, and nothing says home for the holidays like a wagging tail. Golden retrievers and tabby cats in tartan scarves sit among paw-print ornaments, red brick doghouses and biscuit bones under a burlap paw-print bow. Below, a dog and cat wait beside a gift basket for the winning bidder's best friend.";
 const NOT_ON_TREE = {
-  paint: { note: 'Paints the DIY paw ornaments, bones, doghouses, the giant doghouse and the faux biscuits, which are highlighted now.', show: ['paw_disc', 'bones', 'doghouse', 'doghouse_xl', 'faux_treats'] },
-  paw_stamp: { note: 'Stamps the paws on the burlap topper, the paw ornaments and the doghouse gables, highlighted now.', show: ['topper', 'paw_disc', 'doghouse', 'doghouse_xl'] },
   floral_wire: { note: 'Wraps every ornament, bow, pick and plush pet to the branches so nothing falls off in transit.', show: [] },
   bone_cutters: { note: 'Cuts the faux biscuits for the jar, highlighted now.', show: ['faux_treats'] },
-  felt: { note: 'The black paw on the sherpa bone pillow, highlighted now.', show: ['bone_pillow'] },
-  craft_supplies: { note: 'Paint, gesso, glue, stencil film and tools for every DIY build, highlighted now. Every line and its quantity is in the committee plan.', show: ['doghouse', 'doghouse_xl', 'paw_disc', 'bones', 'faux_treats', 'topper'] },
-  ct_supplies: { note: 'Tape for the boxes and doghouse, plus a drop sheet for painting in the office.', show: ['gift_boxes', 'doghouse_xl'] },
-  shipping: { note: 'Shipping charged by the Amazon.ca listings without free delivery. $0 with Prime.', show: [] },
+  felt: { note: 'Black felt: the 20 paws on the topper bow and the paw on the bone pillow, highlighted now.', show: ['topper', 'topper_4in', 'bone_pillow'] },
+  clay: { note: 'Air-dry foam clay for the bones and the faux biscuits, highlighted now.', show: ['bones', 'bones_small', 'faux_treats'] },
+  glitter_card: { note: 'The black sparkly paw on every paw ornament, highlighted now.', show: ['paw_disc', 'paw_disc_fay'] },
+  velvet_ribbon: { note: 'Hand-tied into the deep red bows on the paw ornaments and the treat jar, highlighted now.', show: ['paw_disc', 'paw_disc_fay', 'jar'] },
+  burlap_ribbon: { note: 'Cream ribbon and bows on the wrapped gifts, highlighted now.', show: ['gift_boxes'] },
+  tartan_wrap: { note: 'Wraps gifts A, B and C, highlighted now.', show: ['gift_boxes'] },
+  paw_wrap: { note: 'Wraps gift D, highlighted now.', show: ['gift_boxes'] },
+  craft_supplies: { note: 'Paint, gesso, glue, cord and tools for every DIY build, highlighted now. Every line and its calculated quantity is in the committee plan.', show: ['doghouse', 'doghouse_small', 'doghouse_xl', 'paw_disc', 'paw_disc_fay', 'paw_disc_wood', 'bones', 'bones_small', 'faux_treats', 'topper', 'topper_4in'] },
+  ct_supplies: { note: 'Tape for the gift boxes, plus a drop sheet for painting in the office.', show: ['gift_boxes', 'doghouse_xl'] },
+  shipping: { note: 'Delivery charged by the Amazon.ca listings that are not free. $0 with Prime.', show: [] },
 };
 const STATUS = { est: 'Estimated price', listed: 'Price as listed when checked', face: 'Face value' };
+const SEC_COLORS = ['#2E7D5B', '#B3263A', '#C9962E', '#7E6A55', '#5A7FA6', '#6F7F86'];
+const MATCH = { match: 'Match', close: 'Close' };
 
-/* ---------------- Export the Word files ---------------- */
+/* ---------------- Panel: budget, shopping list, swaps ---------------- */
+document.getElementById('about').textContent = ABOUT;
+const budgetEl = document.getElementById('budget'), listEl = document.getElementById('list'), swapsEl = document.getElementById('swaps');
+function renderBudget() {
+  const T = CUR.totals, secs = O.sections.filter(s => ITEMS.some(i => i.section === s));
+  const secTotal = s => ITEMS.filter(i => i.section === s).reduce((a, i) => a + i.total, 0);
+  const tone = T.left < 0 ? 'over' : T.left < FLOOR ? 'tight' : 'ok';
+  const changed = O.elements.filter(e => SEL[e.id] !== e.default).length;
+  budgetEl.innerHTML = `
+    <div class="big"><b>${money(T.grand)}</b><span>of ${money(BUDGET)} incl. GST · <em class="${tone}">${T.left < 0 ? money(-T.left) + ' over' : money(T.left) + ' left'}</em></span></div>
+    <div class="meter" role="img" aria-label="Spend by section">${secs.map(s => `<i style="width:${(secTotal(s) / BUDGET * 100).toFixed(2)}%;background:${SEC_COLORS[O.sections.indexOf(s)]}"></i>`).join('')}<i style="width:${(T.gst / BUDGET * 100).toFixed(2)}%;background:#8C8C8C"></i></div>
+    <div class="legend">${secs.map(s => `<span style="--c:${SEC_COLORS[O.sections.indexOf(s)]}">${s}</span>`).join('')}<span style="--c:#8C8C8C">GST ${money(T.gst)}</span></div>
+    ${tone !== 'ok' ? `<p class="warn">${tone === 'over' ? 'Over the $2,000 budget.' : `Under the $${FLOOR} we keep for price changes.`} Swap something back to fit.</p>` : ''}
+    <p class="selnote">${changed ? `${changed} swap${changed > 1 ? 's' : ''} from the board match · <button type="button" class="linkish" id="resetSel">Back to the board match</button>` : 'Showing the board match: the closest version of every element.'}</p>`;
+  const rs = document.getElementById('resetSel'); if (rs) rs.onclick = () => { SEL = { ...DEFAULT_SEL }; applySel(); };
+}
+function renderList() {
+  const secs = O.sections.filter(s => ITEMS.some(i => i.section === s));
+  listEl.innerHTML = secs.map(s => `
+    <h3>${s}<span>${money(ITEMS.filter(i => i.section === s).reduce((a, i) => a + i.total, 0))}</span></h3>
+    ${ITEMS.filter(i => i.section === s).map(i => `
+      <div class="item${NOT_ON_TREE[i.id] ? ' nov' : ''}${i.img ? ' has-thumb' : ''}${i.id === selected ? ' on' : ''}" data-id="${i.id}" tabindex="0" role="button" aria-label="Show ${i.name.replace(/"/g, '&quot;')} on the tree">
+        ${i.img ? `<img class="thumb" src="${i.img}" alt="" loading="lazy">` : ''}<div class="nm">${i.name}</div>
+        <div class="tot">${money(i.total)}</div>
+        <div class="meta">${i.diy ? '<span class="badge diy">DIY</span>' : ''}<span>${i.diy ? 'makes ' + i.made + (i.total ? ' · materials' : '') : (i.qty + ' × ' + money(i.price))}</span>
+          <a href="${i.url}" target="_blank" rel="noopener">${i.store.replace(/ \(.*\)$/, '').replace(/, South Edmonton.*$/, '')} ↗</a></div>
+      </div>`).join('')}`).join('');
+}
+// price of the plan if one element switched to another option (for the +/- on each choice)
+const deltaFor = (el, opt) => window.howlResolve(O, { ...SEL, [el]: opt }).totals.grand - CUR.totals.grand;
+function optButtons(e, { compact = false } = {}) {
+  return e.options.map(o => {
+    const on = SEL[e.id] === o.id, d = on ? 0 : deltaFor(e.id, o.id);
+    const dTxt = on ? 'chosen' : Math.abs(d) < 0.005 ? '$0' : (d > 0 ? '+' : '−') + money(Math.abs(d)).slice(1);
+    return `<button type="button" class="opt" role="radio" aria-checked="${on}" data-el="${e.id}" data-opt="${o.id}">
+      ${o.thumb ? `<img src="${o.thumb}" alt="">` : `<span class="nothumb" aria-hidden="true">—</span>`}
+      <span class="ol">${o.label}${o.id === e.default ? ' <i class="star" title="Closest to the board">★</i>' : ''}</span>
+      <span class="od${d > 0.005 ? ' up' : d < -0.005 ? ' down' : ''}">${dTxt}</span>
+      ${!compact && o.match ? `<span class="om ${o.match}">${MATCH[o.match]}</span>` : !compact ? '<span class="om extra">Extra</span>' : ''}
+    </button>`;
+  }).join('');
+}
+function renderSwaps() {
+  swapsEl.innerHTML = `<p class="swaphint">Every element of the board, with the options we checked. <b>★</b> is the closest match to the board; the price shows what a swap adds or saves, GST included. The tree, the list, the budget and the exports all follow your choices.</p>` +
+    O.elements.map(e => { const o = optOf(e.id); return `
+    <div class="swap" data-el="${e.id}">
+      <div class="swap-h"><b>${e.title}</b>${o.match ? `<span class="om ${o.match}">${MATCH[o.match]}</span>` : '<span class="om extra">Extra</span>'}<button type="button" class="linkish see" data-el="${e.id}">Show</button></div>
+      <div class="opts" role="radiogroup" aria-label="${e.title}">${optButtons(e)}</div>
+      <p class="why">${o.why}</p>
+    </div>`; }).join('');
+}
+function onOptClick(ev) {
+  const b = ev.target.closest('.opt'); if (b) { SEL = { ...SEL, [b.dataset.el]: b.dataset.opt }; applySel({ focusEl: b.dataset.el }); return; }
+  const s = ev.target.closest('.see'); if (s) { const ids = visibleIdsOf(s.dataset.el); if (ids.length) select(ids[0], { focus: true }); }
+}
+swapsEl.addEventListener('click', onOptClick);
+document.querySelectorAll('[data-tab]').forEach(t => t.onclick = () => {
+  document.querySelectorAll('[data-tab]').forEach(x => x.setAttribute('aria-selected', String(x === t)));
+  document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== t.dataset.tab; });
+});
+
+/* ---------------- Export: the Word files follow the current selection ---------------- */
 {
   const msg = document.getElementById('exportMsg'), box = document.querySelector('.export'), HINT = msg.textContent;
-  const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', PDF = 'application/pdf';
+  const b64Blob = (b64, type) => new Blob([Uint8Array.from(atob(b64), c => c.charCodeAt(0))], { type });
+  const canBuild = () => window.docx && window.howlDocs && window.HOWL_FONTS;
+  // the form and the plan are built in the page from the current list (same code as build/build_docx.js);
+  // the pre-built files are the fallback for the board-match selection
+  const docBlob = async kind => {
+    if (canBuild()) return window.howlDocs.blob(window.docx, kind, { items: ITEMS, supplies: CUR.supplies, totals: CUR.totals, onHand: O.on_hand, fonts: window.HOWL_FONTS, widths: window.HOWL_WIDTHS, chosen: CUR.chosen, elements: O.elements, sel: SEL });
+    if (isDefault()) return b64Blob(kind === 'form' ? window.HOWL_DOCX : window.HOWL_PLAN, DOCX);
+    throw Object.assign(new Error('builder unavailable'), { code: 'nobuild' });
+  };
   const FILES = [
-    { btn: document.getElementById('export'), name: 'HP26_Tree_Gallery_Form_Corporate_Finance.docx', b64: window.HOWL_DOCX },
-    { btn: document.getElementById('exportPlan'), name: 'HP26_Committee_Plan_Corporate_Finance.docx', b64: window.HOWL_PLAN },
-    { btn: document.getElementById('exportTpl'), name: 'HP26_Templates.pdf', b64: window.HOWL_TPL, type: 'application/pdf' },
-    { btn: document.getElementById('exportSign'), name: 'HP26_Doghouse_Sign_11x17.pdf', b64: window.HOWL_SIGN, type: 'application/pdf' },
+    { btn: document.getElementById('export'), name: 'HP26_Tree_Gallery_Form_Corporate_Finance.docx', make: () => docBlob('form'), ok: !!window.HOWL_DOCX },
+    { btn: document.getElementById('exportPlan'), name: 'HP26_Committee_Plan_Corporate_Finance.docx', make: () => docBlob('plan'), ok: !!window.HOWL_PLAN },
+    { btn: document.getElementById('exportTpl'), name: 'HP26_Templates.pdf', make: async () => b64Blob(window.HOWL_TPL, PDF), ok: !!window.HOWL_TPL },
+    { btn: document.getElementById('exportSign'), name: 'HP26_Doghouse_Sign_11x17.pdf', make: async () => b64Blob(window.HOWL_SIGN, PDF), ok: !!window.HOWL_SIGN, el: ['giant', 'build'] },
   ];
   const viaClaude = () => window.claude && typeof window.claude.use === 'function';
   if (!window.HOWL_DOCX) box.hidden = true;
   if (viaClaude()) window.claude.use('downloads').then(dl => { if (!dl) box.hidden = true; });
+  window.howlExportRefresh = () => FILES.forEach(f => { if (f.el) f.btn.hidden = !f.ok || SEL[f.el[0]] !== f.el[1]; });
   FILES.forEach(f => {
-    if (!f.b64) { f.btn.hidden = true; return; }
-    const blob = () => new Blob([Uint8Array.from(atob(f.b64), c => c.charCodeAt(0))], { type: f.type || DOCX });
+    if (!f.ok) { f.btn.hidden = true; return; }
     f.btn.onclick = async () => {
       msg.textContent = HINT;
+      let blob;
+      try { blob = await f.make(); } catch (e) { msg.textContent = e.code === 'nobuild' ? 'The Word builder did not load (it needs the internet). Go back to the board match to export the ready-made files.' : 'Could not build ' + f.name + '.'; return; }
       if (!viaClaude()) {   // standalone preview file opened in a normal browser
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob()); a.download = f.name; document.body.append(a); a.click(); a.remove();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = f.name; document.body.append(a); a.click(); a.remove();
         msg.textContent = 'Downloading ' + f.name + '.'; return;
       }
       const dl = await window.claude.use('downloads');
       if (!dl) { box.hidden = true; return; }
       FILES.forEach(x => { x.btn.disabled = true; });
       try {
-        const r = await dl.save({ filename: f.name, data: blob() });
+        const r = await dl.save({ filename: f.name, data: blob });
         msg.textContent = r.status === 'saved' ? 'Saved ' + f.name + '.' : 'Sent where you chose.';
       } catch (e) {
         const code = e && e.code;
@@ -67,35 +162,8 @@ const STATUS = { est: 'Estimated price', listed: 'Price as listed when checked',
   });
 }
 
-/* ---------------- Panel ---------------- */
-document.getElementById('about').textContent = ABOUT;
-const subtotal = ITEMS.reduce((s, i) => s + i.total, 0);
-const taxable = ITEMS.filter(i => i.id !== 'gift_card').reduce((s, i) => s + i.total, 0);
-const gst = Math.round(taxable * 0.05 * 100) / 100;
-const grand = Math.round((subtotal + gst) * 100) / 100;
-const SECTIONS = [...new Set(ITEMS.map(i => i.section))];
-const SEC_COLORS = ['#2E7D5B', '#B3263A', '#C9962E', '#7E6A55', '#5A7FA6', '#6F7F86'];
-const secTotal = s => ITEMS.filter(i => i.section === s).reduce((a, i) => a + i.total, 0);
-
-const budgetEl = document.getElementById('budget');
-budgetEl.innerHTML = `
-  <div class="big"><b>${money(grand)}</b><span>of ${money(BUDGET)} incl. GST · ${money(BUDGET - grand)} left</span></div>
-  <div class="meter" role="img" aria-label="Spend by section">${SECTIONS.map((s, k) => `<i style="width:${(secTotal(s) / BUDGET * 100).toFixed(2)}%;background:${SEC_COLORS[k]}"></i>`).join('')}<i style="width:${(gst / BUDGET * 100).toFixed(2)}%;background:#8C8C8C"></i></div>
-  <div class="legend">${SECTIONS.map((s, k) => `<span style="--c:${SEC_COLORS[k]}">${s}</span>`).join('')}<span style="--c:#8C8C8C">GST ${money(gst)}</span></div>`;
-
-const listEl = document.getElementById('list');
-listEl.innerHTML = SECTIONS.map(s => `
-  <h3>${s}<span>${money(secTotal(s))}</span></h3>
-  ${ITEMS.filter(i => i.section === s).map(i => `
-    <div class="item${NOT_ON_TREE[i.id] ? ' nov' : ''}${i.img ? ' has-thumb' : ''}" data-id="${i.id}" tabindex="0" role="button" aria-label="Show ${i.name.replace(/"/g, '&quot;')} on the tree">
-      ${i.img ? `<img class="thumb" src="${i.img}" alt="" loading="lazy">` : ''}<div class="nm">${i.name}</div>
-      <div class="tot">${money(i.total)}</div>
-      <div class="meta">${i.diy ? '<span class="badge diy">DIY</span>' : ''}<span>${i.diy ? 'makes ' + i.made : (i.qty + ' × ' + money(i.price))}</span>
-        <a href="${i.url}" target="_blank" rel="noopener">${i.store.replace(/ \(.*\)$/, '').replace(/, South Edmonton.*$/, '')} ↗</a></div>
-    </div>`).join('')}`).join('');
-
 /* ================================================================
-   Scene v3: built at real-world scale from data/items.json (size_in).
+   Scene: built at real-world scale from the listings (size_in in data/options.json).
    1 scene unit = 14 inches. Tree: 7.5 ft Wimberley Pine, ~52" wide.
    - 3D: bows (ribbon strips with loops, knot, V-cut tails), tartan
      cascades with poufs, baubles (glossy / glitter / painted), DIY
@@ -106,8 +174,7 @@ listEl.innerHTML = SECTIONS.map(s => `
    ================================================================ */
 const CUT = window.HOWL_CUTS;
 const IN = 1 / 14;
-const SZ = id => (BY_ID[id] && BY_ID[id].size_in) || {};
-const COUNT = id => { const it = BY_ID[id]; if (!it) return 0; return it.diy ? it.made : it.qty; };
+const SZ = id => (CAT[id] && CAT[id].size_in) || {};
 
 const canvas = document.getElementById('scene');
 const stage = canvas.parentElement;
@@ -153,7 +220,10 @@ const itemMats = {};
 function mat(id, MatClass, params) { const m = new MatClass(params); if (id) (itemMats[id] ||= []).push(m); return m; }
 const pickables = [];
 const instancesOf = {};
-function addInstancePos(id, v) { (instancesOf[id] ||= []).push(v.clone()); }
+function addInstancePos(id, v) { (instancesOf[id] ||= []).push({ p: v.clone(), g: TARGET || scene }); }
+const shown = o => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; };
+const visiblePts = id => (instancesOf[id] || []).filter(e => shown(e.g)).map(e => e.p);
+const visibleIdsOf = el => [...new Set(optOf(el).rows.map(r => r.id).concat(el === 'ribbon' ? ['tartan_ribbon'] : []))].filter(id => visiblePts(id).length);
 function tag(obj, id) { obj.traverse(o => { if (o.isMesh) { o.userData.itemId = id; pickables.push(o); o.castShadow = true; } }); }
 function noise(g, w, h, n, a, colors) { for (let i = 0; i < n; i++) { g.fillStyle = colors[(Math.random() * colors.length) | 0]; g.globalAlpha = Math.random() * a; g.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 2, 1 + Math.random() * 2); } g.globalAlpha = 1; }
 function drawPaw(g, cx, cy, s, color, rot = 0) {
@@ -174,7 +244,7 @@ function instanced(geo, material, list, id, { cast = true } = {}) {
   });
   mesh.castShadow = cast; mesh.receiveShadow = true;
   if (id) { mesh.userData.itemId = id; pickables.push(mesh); }
-  scene.add(mesh); return mesh;
+  (TARGET || scene).add(mesh); return mesh;
 }
 
 /* ---------------- Room: warm wood-panelled room with snowy windows ---------------- */
@@ -331,7 +401,7 @@ scene.background = new THREE.Color(0x0d0806);
 const SHADOW_TEX = canvasTex(128, 128, (g) => { const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(0,0,0,.75)'); r.addColorStop(0.55, 'rgba(0,0,0,.35)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); }, { clamp: true });
 function contactShadow(x, z, w, d, ry = 0, o = 0.8) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshBasicMaterial({ map: SHADOW_TEX, transparent: true, depthWrite: false, opacity: o }));
-  m.rotation.set(-Math.PI / 2, 0, ry); m.position.set(x, 0.004, z); scene.add(m);
+  m.rotation.set(-Math.PI / 2, 0, ry); m.position.set(x, 0.004, z); (TARGET || scene).add(m);
 }
 
 /* ---------------- Lighting: warm room + glow from inside the tree ---------------- */
@@ -419,15 +489,19 @@ const lightPhase = [];
 treeGroup.add(lights);
 
 /* ---------------- Placement ---------------- */
+// Each option avoids the board-match pieces of every other element, and its own pieces, but not the
+// other options of its own element (they are never shown together).
 const placed = [];
+const blocks = q => !q.el || !CTX ? true : q.el === CTX.el ? q.opt === CTX.opt : q.def;
 function spot(size, yMin, yMax, depth = 0.97) {
+  const tag = CTX ? { el: CTX.el, opt: CTX.opt, def: CTX.def } : {};
   for (let t = 0; t < 160; t++) {
     const y = yMin + (yMax - yMin) * rand(), th = rand() * Math.PI * 2, r = rAt(y) * depth + 0.02;
     const p = new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r);
-    if (placed.every(q => q.p.distanceTo(p) > (q.s + size) * 0.5)) { placed.push({ p, s: size }); return { p, th }; }
+    if (placed.every(q => !blocks(q) || q.p.distanceTo(p) > (q.s + size) * 0.5)) { placed.push({ p, s: size, ...tag }); return { p, th }; }
   }
   const y = yMin + (yMax - yMin) * rand(), th = rand() * Math.PI * 2, r = rAt(y) * depth + 0.02;
-  const p = new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r); placed.push({ p, s: size }); return { p, th };
+  const p = new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r); placed.push({ p, s: size, ...tag }); return { p, th };
 }
 const faceY = p => Math.atan2(p.x, p.z);
 function spotFront(size, yMin, yMax, depth, spread = 1.1) {   // hero pieces go on the side people see first
@@ -454,7 +528,7 @@ function strip(pts, nrm, width, { uLen = width, notch = false, taper = null, fli
   g.setIndex(idx); g.computeVertexNormals(); return g;
 }
 // a hand-tied bow: loops (ribbon width vertical), centre knot, two hanging V-cut tails. All sizes in inches.
-function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1 }) {
+function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1, open = 0, flare = 0.32 }) {
   const r = rng(seed), parts = [], W = ribbon * IN, Lb = span / 2 * IN, T = tail * IN;
   const loopDefs = loops === 2 ? [[0, 0.22, 1], [Math.PI, 0.22, 1]] : [[0, 0.5, 1], [Math.PI, 0.5, 1], [0, -0.32, 0.82], [Math.PI, -0.32, 0.82]];
   loopDefs.forEach(([yaw, tilt, len]) => {
@@ -463,7 +537,7 @@ function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1 }) {
       const th = i / 40 * Math.PI * 2;
       const x = L / 2 * (1 - Math.cos(th)) * (1 - 0.12 * Math.sin(th / 2)), z = dz * Math.sin(th) * (0.75 + 0.25 * Math.sin(th / 2));
       const p = new THREE.Vector3(x, 0, z), n = new THREE.Vector3(x - L / 2, 0, z * 1.6).normalize();
-      const e = new THREE.Euler(0, yaw, tilt); p.applyEuler(e); n.applyEuler(e); p.z += 0.15 * W; pts.push(p); nrm.push(n);
+      const e = new THREE.Euler(open, yaw, tilt); p.applyEuler(e); n.applyEuler(e); p.z += 0.15 * W; pts.push(p); nrm.push(n);
     }
     parts.push(strip(pts, nrm, W, { uLen: uLen * IN, taper: t => 0.55 + 0.45 * Math.sin(Math.min(1, Math.sin(t * Math.PI) * 1.4) * Math.PI / 2) }));
   });
@@ -471,7 +545,7 @@ function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1 }) {
     const pts = [], nrm = [];
     for (let i = 0; i <= 30; i++) {
       const t = i / 30, tw = 0.5 * Math.sin(t * 3.2 + s);
-      pts.push(new THREE.Vector3(s * (0.03 * W + t * T * 0.32 + Math.sin(t * 4) * 0.08 * W), -t * T, 0.1 * W + Math.sin(t * 2.6 + s) * 0.2 * W));
+      pts.push(new THREE.Vector3(s * (0.03 * W + t * T * flare + Math.sin(t * 4) * 0.08 * W), -t * T * (1 - flare * 0.35), 0.1 * W + Math.sin(t * 2.6 + s) * 0.2 * W + t * T * flare * 0.25));
       nrm.push(new THREE.Vector3(Math.sin(tw) * s, 0, Math.cos(tw)).normalize());
     }
     parts.push(strip(pts, nrm, W * 0.92, { uLen: uLen * IN, notch: true }));
@@ -488,70 +562,149 @@ function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1 }) {
 const tartanTex = photoTex('tx_tartan4', [1, 1]);
 const velvet = (id, c = 0x6c0a16) => mat(id, THREE.MeshPhysicalMaterial, { color: c, roughness: 0.85, sheen: 1, sheenRoughness: 0.3, sheenColor: new THREE.Color(0xff5064), side: THREE.DoubleSide, envMapIntensity: 0.4 });
 const tartanMat = id => mat(id, THREE.MeshStandardMaterial, { map: tartanTex, color: new THREE.Color(1.35, 1.2, 1.2), roughness: 0.75, side: THREE.DoubleSide, envMapIntensity: 0.4 });
-const burlapMat = mat('topper', THREE.MeshStandardMaterial, { map: photoTex('tx_burlap_paw', [1, 1]), roughness: 0.95, side: THREE.DoubleSide, envMapIntensity: 0.3 });
+const ribbonMat = (id, tex) => mat(id, THREE.MeshStandardMaterial, { map: photoTex(tex, [1, 1]), roughness: 0.95, side: THREE.DoubleSide, envMapIntensity: 0.3 });
+const RIB = { 6: ['tx_burlap6', 10], 4: ['tx_burlap4', 10], 2.5: ['tx_burlap25', 6], 1.5: ['tx_burlap15', 6] };   // ribbon width (in) -> texture, inches per repeat
+const goldMetal = id => mat(id, THREE.MeshStandardMaterial, { color: 0xcfa24e, metalness: 0.95, roughness: 0.3 });
+const sherpaTex = canvasTex(256, 256, (g, w) => { g.fillStyle = '#e9e1d2'; g.fillRect(0, 0, w, w); for (let i = 0; i < 1400; i++) { const x = Math.random() * w, y = Math.random() * w, r = 2 + Math.random() * 4; g.fillStyle = Math.random() < .5 ? '#f6f0e4' : '#cfc4b0'; g.beginPath(); g.arc(x, y, r, 0, 6.28); g.fill(); } }, { repeat: [3, 2] });
+const BUILD = {};
 
-/* ---------------- Topper: 24" four-loop burlap paw bow with long streamers ---------------- */
-{
-  const ts = SZ('topper');
-  const g = bowGeo({ ribbon: ts.ribbon_w || 4, span: ts.w || 24, tail: 9, loops: 4, uLen: 16, seed: 9 });
-  const bow = new THREE.Mesh(g, burlapMat); bow.position.set(0, YTOP + 0.12, 0.12); bow.castShadow = true; scene.add(bow); tag(bow, 'topper'); addInstancePos('topper', bow.position);
-  [-1, 1].forEach(s => {   // ribbon waterfall: two burlap streamers pour from the bow down to the giant doghouse roof
-    const pts = [], nrm = [], yEnd = (SZ('doghouse_xl').h || 28) * IN + 0.15;
+/* ---------------- Topper bow and its optional extras ---------------- */
+BUILD.topper = (r, id) => {
+  const [tex, rep] = RIB[r.ribbon];
+  const g = bowGeo({ ribbon: r.ribbon, span: r.span, tail: r.tail, loops: r.loops, uLen: rep, seed: 9, open: r.loops === 2 ? 0.62 : 0.2, flare: r.loops === 2 ? 0.58 : 0.4 });
+  const bow = new THREE.Mesh(g, ribbonMat(id, tex)); bow.position.set(0, YTOP + 0.1 + (r.ribbon - 4) * IN * 0.45, 0.14); bow.castShadow = true;
+  TARGET.add(bow); tag(bow, id); addInstancePos(id, bow.position);
+};
+BUILD.flourish = r => {
+  if (r.streamers) [-1, 1].forEach(s => {   // two burlap streamers from the bow down the front of the tree
+    const pts = [], nrm = [], yEnd = Y0 + 0.4;
     for (let i = 0; i <= 260; i++) {
-      const t = i / 260, y = YTOP - 0.08 - t * (YTOP - 0.08 - yEnd), th = Math.PI / 2 + s * (0.24 + t * 0.42) + 0.05 * Math.sin(t * 17 + s);
+      const t = i / 260, y = YTOP - 0.1 - t * (YTOP - 0.1 - yEnd), th = Math.PI / 2 + s * (0.24 + t * 0.42) + 0.05 * Math.sin(t * 17 + s);
       const ph = t * 5.5, bulge = Math.pow(Math.max(0, Math.sin(ph * Math.PI * 2)), 2);
-      const r = rAt(y) * 0.97 + 0.05 + 0.16 * bulge * (0.4 + t), tw = 0.55 * Math.sin(ph * Math.PI * 2 + s);
+      const rr = rAt(y) * 0.97 + 0.05 + 0.16 * bulge * (0.4 + t), tw = 0.55 * Math.sin(ph * Math.PI * 2 + s);
       const rad = new THREE.Vector3(Math.cos(th), 0.15, Math.sin(th)).normalize(), tan = new THREE.Vector3(-Math.sin(th), 0, Math.cos(th));
-      pts.push(new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r)); nrm.push(rad.multiplyScalar(Math.cos(tw)).addScaledVector(tan, Math.sin(tw)).normalize());
+      pts.push(new THREE.Vector3(Math.cos(th) * rr, y, Math.sin(th) * rr)); nrm.push(rad.multiplyScalar(Math.cos(tw)).addScaledVector(tan, Math.sin(tw)).normalize());
     }
-    const m = new THREE.Mesh(strip(pts, nrm, 4 * IN, { uLen: 16 * IN, notch: true }), burlapMat); m.castShadow = true; scene.add(m); tag(m, 'topper');
+    const m = new THREE.Mesh(strip(pts, nrm, 6 * IN, { uLen: 10 * IN, notch: true }), ribbonMat('topper', 'tx_burlap6')); m.castShadow = true; TARGET.add(m); tag(m, 'topper');
   });
-}
-/* ---------------- Gold crown: twelve gold glitter sprays fanned out behind the topper ---------------- */
-{
-  const beads = [], L = (SZ('gold_picks').h || 17) * IN * 0.85, c = new THREE.Vector3(0, YTOP + 0.05, -0.05);
-  const stems = [], up = new THREE.Vector3(0, 1, 0), goldMat = mat('gold_picks', THREE.MeshStandardMaterial, { color: 0xd8b062, metalness: 0.9, roughness: 0.3, emissive: 0x3a2508, emissiveIntensity: 0.6 });
-  for (let k = 0; k < 12; k++) {
-    const a = -1.3 + k / 11 * 2.6 + R(-0.05, 0.05), dir = new THREE.Vector3(Math.sin(a), Math.cos(a) * 0.95, -0.22).normalize(), len = L * R(0.85, 1.05);
-    stems.push({ p: c.clone().addScaledVector(dir, len * 0.5), rot: new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(up, dir)), sv: new THREE.Vector3(1, len, 1), noMark: true });
-    for (let b = 0; b < 22; b++) {          // glitter berries along the outer two-thirds, thicker toward the tip, plus little side sprigs
-      const t = 0.35 + Math.pow(b / 22, 0.8) * 0.65, side = new THREE.Vector3(R(-1, 1), R(-1, 1), R(-1, 1)).multiplyScalar((b % 3 ? 0.35 : 1.1) * IN);
-      beads.push({ p: c.clone().addScaledVector(dir, len * t).add(side), s: 0.4 / 2 * IN * R(0.8, 1.3), noMark: !(k === 6 && b === 10) });
+  if (r.crown) {   // twelve gold glitter sprays fanned out behind the bow
+    const beads = [], L = (SZ('gold_picks').h || 17) * IN * 0.85, c = new THREE.Vector3(0, YTOP + 0.05, -0.05);
+    const stems = [], up = new THREE.Vector3(0, 1, 0), gm = mat('gold_picks', THREE.MeshStandardMaterial, { color: 0xd8b062, metalness: 0.9, roughness: 0.3, emissive: 0x3a2508, emissiveIntensity: 0.6 });
+    for (let k = 0; k < 12; k++) {
+      const a = -1.3 + k / 11 * 2.6 + R(-0.05, 0.05), dir = new THREE.Vector3(Math.sin(a), Math.cos(a) * 0.95, -0.22).normalize(), len = L * R(0.85, 1.05);
+      stems.push({ p: c.clone().addScaledVector(dir, len * 0.5), rot: new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(up, dir)), sv: new THREE.Vector3(1, len, 1), noMark: true });
+      for (let b = 0; b < 22; b++) { const t = 0.35 + Math.pow(b / 22, 0.8) * 0.65, side = new THREE.Vector3(R(-1, 1), R(-1, 1), R(-1, 1)).multiplyScalar((b % 3 ? 0.35 : 1.1) * IN); beads.push({ p: c.clone().addScaledVector(dir, len * t).add(side), s: 0.2 * IN * R(0.8, 1.3), noMark: !(k === 6 && b === 10) }); }
     }
+    instanced(new THREE.CylinderGeometry(0.06 * IN, 0.09 * IN, 1, 5), gm, stems, null);
+    instanced(new THREE.SphereGeometry(1, 16, 10), gm, beads, 'gold_picks');
   }
-  instanced(new THREE.CylinderGeometry(0.06 * IN, 0.09 * IN, 1, 5), goldMat, stems, null);
-  instanced(new THREE.SphereGeometry(1, 16, 10), goldMat, beads, 'gold_picks');
-}
+};
 
-/* ---------------- Tartan ribbon cascades (4" wired) with poufs ---------------- */
-{
-  const m = tartanMat('tartan_ribbon');
-  const N = 5;
-  for (let k = 0; k < N; k++) {
-    const th0 = k * Math.PI * 2 / N + 0.25, pts = [], nrm = [];
-    for (let i = 0; i <= 320; i++) {
-      const t = i / 320, y = YTOP - 0.55 - t * (YTOP - Y0 - 0.55), th = th0 + 0.5 * t + 0.04 * Math.sin(t * 13 + k);
-      const ph = t * 4.5 + k * 0.37, bulge = Math.pow(Math.max(0, Math.sin(ph * Math.PI * 2)), 2.2);
-      const r = rAt(y) * 0.95 + 0.02 + 0.11 * bulge * (0.5 + rAt(y) / RB * 0.5);
-      const tw = 0.5 * Math.sin(ph * Math.PI * 2 + 1.2);
-      const rad = new THREE.Vector3(Math.cos(th), 0.25 + bulge * 0.5 * Math.cos(ph * Math.PI * 2), Math.sin(th)).normalize(), tan = new THREE.Vector3(-Math.sin(th), 0, Math.cos(th));
-      pts.push(new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r)); nrm.push(rad.multiplyScalar(Math.cos(tw)).addScaledVector(tan, Math.sin(tw)).normalize());
+/* ---------------- Plush pets on the tree (real product photos, cut out, with their tartan scarves) ---------------- */
+BUILD.dogs = (r, id) => {
+  for (let i = 0; i < r.n; i++) {
+    const { p } = spotFront(r.h * IN * 1.1, 2.0, 3.7, 1.0, i ? 1.7 : 0.55);
+    photoCard(r.cut, id, r.h, p.clone().add(new THREE.Vector3(0, -0.12, 0)));
+    addInstancePos('bandanas', p.clone().add(new THREE.Vector3(0, r.h * IN * 0.45, 0.05)));
+  }
+};
+BUILD.cats = (r, id) => {
+  for (let i = 0; i < r.n; i++) {
+    const { p } = spotFront(r.h * IN * 1.2, 2.9, 5.4, 1.0, i ? 1.4 : 0.85);
+    photoCard(r.cut, id, r.h, p.clone().add(new THREE.Vector3(0, -0.08, 0)));
+    addInstancePos('bandanas', p.clone().add(new THREE.Vector3(0, r.h * IN * 0.5, 0.05)));
+  }
+};
+
+/* ---------------- Doghouse ornaments: foam board, true size from the template ---------------- */
+const brickTex = canvasTex(256, 256, (g, w) => {   // 11.6 courses per tile; a tile covers 6.4"
+  g.fillStyle = '#3c0f0b'; g.fillRect(0, 0, w, w);
+  for (let y = 0; y < w; y += 22) for (let x = (y / 22) % 2 ? -26 : 0; x < w; x += 52) { g.fillStyle = `hsl(${2 + Math.random() * 6}, ${55 + Math.random() * 15}%, ${26 + Math.random() * 8}%)`; g.fillRect(x + 2, y + 2, 48, 18); }
+  noise(g, w, w, 2500, 0.2, ['#000', '#c86a5a']);
+});
+const shingleTex = canvasTex(256, 256, (g, w) => {
+  g.fillStyle = '#d9c497'; g.fillRect(0, 0, w, w);
+  for (let y = 0; y < w; y += 32) for (let x = (y / 32) % 2 ? -24 : 0; x < w; x += 48) { g.fillStyle = `hsl(40, ${38 + Math.random() * 12}%, ${72 + Math.random() * 10}%)`; g.fillRect(x + 1, y, 46, 30); g.fillStyle = 'rgba(80,55,25,.35)'; g.fillRect(x, y + 28, 48, 3); g.fillRect(x, y, 2, 30); }
+  noise(g, w, w, 1500, 0.15, ['#5a3d1d']);
+});
+BUILD.doghouses = (r, id) => {
+  const W = r.w * IN, D = r.d * IN, wallH = r.wall * IN, H = r.ridge * IN, big = r.w > 5, over = (big ? 0.75 : 0.35) * IN, tile = 6.4 * IN;
+  const frontTex = canvasTex(512, Math.round(512 * r.ridge / r.w), (g, w, h) => {
+    const b = brickTex.image, tw = w * 6.4 / r.w; for (let x = 0; x < w; x += tw) for (let y = 0; y < h; y += tw) g.drawImage(b, x, y, tw, tw);
+    const px = w / r.w, dw = (big ? 3.8 : 1.5) * px, dh = (big ? 4.6 : 1.9) * px, dx = w / 2, by = h, trim = (big ? 0.5 : 0.22) * px;
+    g.fillStyle = '#efe0bf';
+    [[0, trim], [w - trim, trim]].forEach(([x, tw2]) => g.fillRect(x, h - r.wall * px, tw2, r.wall * px));   // cream corner trims
+    g.beginPath(); g.moveTo(dx - dw / 2 - trim, by); g.lineTo(dx - dw / 2 - trim, by - dh + dw / 2); g.arc(dx, by - dh + dw / 2, dw / 2 + trim, Math.PI, 0); g.lineTo(dx + dw / 2 + trim, by); g.fill();
+    const ig = g.createRadialGradient(dx, by - 20, 5, dx, by - dh * 0.5, dh); ig.addColorStop(0, '#d98a3a'); ig.addColorStop(0.35, '#5b2a12'); ig.addColorStop(1, '#170905');
+    g.fillStyle = ig; g.beginPath(); g.moveTo(dx - dw / 2, by); g.lineTo(dx - dw / 2, by - dh + dw / 2); g.arc(dx, by - dh + dw / 2, dw / 2, Math.PI, 0); g.lineTo(dx + dw / 2, by); g.fill();
+    drawPaw(g, w / 2, h - (r.wall + (r.ridge - r.wall) * 0.38) * px, (big ? 2.5 : 1) * px, '#efe0bf');
+  }, { clamp: true });
+  const brick = brickTex.clone(); brick.needsUpdate = true; brick.repeat.set(D / tile, wallH / tile);
+  const shingle = shingleTex.clone(); shingle.needsUpdate = true; shingle.repeat.set(1.2 * r.w / 8.5, 1.2 * r.d / 6);
+  const body = new THREE.BoxGeometry(W, wallH, D); body.translate(0, wallH / 2, 0);
+  const gable = new THREE.Shape(); gable.moveTo(-W / 2, 0); gable.lineTo(W / 2, 0); gable.lineTo(W / 2, wallH); gable.lineTo(0, H); gable.lineTo(-W / 2, wallH); gable.closePath();
+  const front = new THREE.ShapeGeometry(gable); { const uv = front.attributes.uv, p = front.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, (p.getX(i) + W / 2) / W, p.getY(i) / H); } front.translate(0, 0, D / 2 + 0.001);
+  const back = new THREE.ShapeGeometry(gable); back.rotateY(Math.PI); back.translate(0, 0, -D / 2 - 0.001);
+  const slope = Math.atan2(H - wallH, W / 2), rl = Math.hypot(W / 2, H - wallH) + over;
+  const roofs = [-1, 1].map(sg => { const rf = new THREE.BoxGeometry(rl, 0.3 * IN, D + 2 * over); rf.rotateZ(-sg * slope); rf.translate(sg * (rl / 2 - over * 0.6) * Math.cos(slope), H - (rl / 2 - over * 0.6) * Math.sin(slope) + 0.15 * IN, 0); return rf; });
+  const geoBrick = mergeGeometries([body.toNonIndexed(), back.toNonIndexed()]), geoRoof = mergeGeometries(roofs.map(x => x.toNonIndexed()));
+  const mBrick = mat(id, THREE.MeshStandardMaterial, { map: brick, roughness: 0.8 }), mFront = mat(id, THREE.MeshStandardMaterial, { map: frontTex, roughness: 0.8, side: THREE.DoubleSide }), mRoof = mat(id, THREE.MeshStandardMaterial, { map: shingle, roughness: 0.75 });
+  const list = [];
+  for (let i = 0; i < r.n; i++) {
+    const { p } = i < 2 ? spotFront(H * 1.15, 2.2, 4.4, 1.03, i ? 1.3 : 0.3) : spot(H * 1.15, Y0 + 0.7, YTOP - 1.3, 1.03);
+    list.push({ p: p.clone().add(new THREE.Vector3(0, -H * 0.5, 0)), rot: new THREE.Euler(0, faceY(p) + R(-0.25, 0.25), R(-0.05, 0.05)) });
+  }
+  instanced(geoBrick, mBrick, list, id); instanced(front, mFront, list.map(l => ({ ...l, noMark: true })), id); instanced(geoRoof, mRoof, list.map(l => ({ ...l, noMark: true })), id);
+};
+
+/* ---------------- Paw ornaments ---------------- */
+BUILD.paws = (r, id) => {
+  const list = [];
+  if (r.kind === 'hoop') {   // 6" embroidery hoop painted gold, ivory Aida, black glitter paw, hand-tied dark red velvet bow
+    const Rr = r.d / 2 * IN, tube = 0.3 * IN, top = Rr + 1.5 * IN;
+    const ring = new THREE.TorusGeometry(Rr, tube, 10, 72); ring.scale(1, 1, 1.4);
+    const face = new THREE.CircleGeometry(Rr - tube * 0.5, 64);
+    const clasp = mergeGeometries([new THREE.BoxGeometry(0.55 * IN, 0.6 * IN, 0.75 * IN).translate(0, Rr + 0.25 * IN, 0).toNonIndexed(), new THREE.CylinderGeometry(0.13 * IN, 0.13 * IN, 1.1 * IN, 10).rotateZ(Math.PI / 2).translate(0, Rr + 0.45 * IN, 0).toNonIndexed()]);
+    const bow = bowGeo({ ribbon: 1.5, span: r.bow || 9, tail: 8, loops: 2, uLen: 3, seed: 31, open: 0.5, flare: 0.85 }); bow.translate(0, Rr + 1.3 * IN, 0.45 * IN);
+    [ring, face, clasp, bow].forEach(g => g.translate(0, -top, 0));
+    const faceTex = canvasTex(512, 512, (g, w) => {
+      g.fillStyle = '#e8dcc0'; g.fillRect(0, 0, w, w);
+      g.strokeStyle = 'rgba(120,100,70,.18)'; g.lineWidth = 1; for (let k = 0; k < w; k += 6) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k, w); g.stroke(); g.beginPath(); g.moveTo(0, k); g.lineTo(w, k); g.stroke(); }   // 14-count weave
+      noise(g, w, w, 9000, 0.25, ['#fff7e6', '#b9a57f']);
+      const m = document.createElement('canvas'); m.width = m.height = w; const mg = m.getContext('2d'); drawPaw(mg, w / 2, w * 0.53, w * 0.66, '#111');
+      mg.globalCompositeOperation = 'source-atop'; for (let i = 0; i < 9000; i++) { mg.fillStyle = ['#2a2a2a', '#555', '#8c8c8c', '#0c0c0c'][(Math.random() * 4) | 0]; mg.fillRect(Math.random() * w, Math.random() * w, 2, 2); }   // glitter card
+      g.drawImage(m, 0, 0);
+    }, { clamp: true });
+    for (let i = 0; i < r.n; i++) {
+      const { p } = i < 2 ? spotFront(top * 2, 1.8, 5.0, 1.04, i ? 1.4 : 0.6) : spot(top * 2, Y0 + 0.5, YTOP - 0.8, 1.04);
+      list.push({ p, rot: new THREE.Euler(R(-0.08, 0.04), faceY(p) + R(-0.3, 0.3), R(-0.08, 0.08)) });
     }
-    const mesh = new THREE.Mesh(strip(pts, nrm, 4 * IN, { uLen: 4 * IN }), m); mesh.castShadow = true; scene.add(mesh); tag(mesh, 'tartan_ribbon');
-    addInstancePos('tartan_ribbon', pts[160]);
+    instanced(ring, goldMetal(id), list, id);
+    instanced(face, mat(id, THREE.MeshStandardMaterial, { map: faceTex, roughness: 0.9, side: THREE.DoubleSide }), list.map(l => ({ ...l, noMark: true })), id);
+    instanced(clasp, mat(id, THREE.MeshStandardMaterial, { color: 0xb8954a, metalness: 1, roughness: 0.35 }), list.map(l => ({ ...l, noMark: true })), id);
+    instanced(bow, velvet(id, 0x5a0a14), list.map(l => ({ ...l, noMark: true })), id);
+  } else {                   // 4" painted wood rounds with a mini velvet bow (the earlier design)
+    const h = 4.3 * IN, geo = new THREE.PlaneGeometry(h * CUT.paw_disc.w / CUT.paw_disc.h, h); geo.translate(0, -h / 2, 0);
+    for (let i = 0; i < r.n; i++) { const { p } = spot(h * 1.1, Y0 + 0.3, YTOP - 0.5, 0.99); list.push({ p, rot: new THREE.Euler(R(-0.1, 0.05), faceY(p) + R(-0.35, 0.35), R(-0.12, 0.12)) }); }
+    instanced(geo, mat(id, THREE.MeshStandardMaterial, { map: photoTex('paw_disc'), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.65 }), list, id);
+    instanced(bowGeo({ ribbon: 1, span: 3.5, tail: 2.5, seed: 11 }), velvet('mini_bows'), list.map(({ p, rot }) => ({ p: p.clone().add(new THREE.Vector3(0, 0.1 * IN, 0)).addScaledVector(new THREE.Vector3(Math.sin(rot.y), 0, Math.cos(rot.y)), 0.012), rot })), 'mini_bows');
   }
-}
+};
 
-/* ---------------- Bows on the tree (3D, real sizes) ---------------- */
-function placeBows(id, geo, material, n, yMin, yMax, sizeIn) {
-  const list = []; for (let i = 0; i < n; i++) { const { p } = spot(sizeIn * IN, yMin, yMax, 1.0); list.push({ p, rot: new THREE.Euler(R(-0.12, 0.12), faceY(p), R(-0.15, 0.15)) }); }
-  return instanced(geo, material, list, id);
-}
-const BIG = SZ('big_bows'), VB = SZ('velvet_bows'), PB = SZ('plaid_bows'), MB = SZ('mini_bows');
-placeBows('big_bows', bowGeo({ ribbon: 4, span: BIG.w || 11, tail: (BIG.h || 18) - 3, seed: 3 }), tartanMat('big_bows'), COUNT('big_bows'), 1.6, 5.6, BIG.w || 11);
-placeBows('velvet_bows', bowGeo({ ribbon: 1.6, span: VB.w || 5.1, tail: (VB.h || 10.2) - 2, seed: 5 }), velvet('velvet_bows'), 12 * COUNT('velvet_bows'), 1.3, 6.0, 6);
+/* ---------------- Bone ornaments ---------------- */
+BUILD.bones = (r, id) => {
+  const L = r.l * IN, H = L * 0.36, T = L * 0.15;
+  const parts = [new THREE.CapsuleGeometry(H * 0.28, L * 0.6, 6, 14).rotateZ(Math.PI / 2)];
+  [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([x, y]) => parts.push(new THREE.SphereGeometry(H * 0.3, 16, 12).translate(x * L * 0.36, y * H * 0.21, 0)));
+  const geo = mergeGeometries(parts.map(p => p.toNonIndexed())); geo.scale(1, 1, T / (H * 0.6));
+  const m = r.kind === 'fleece' ? mat(id, THREE.MeshStandardMaterial, { map: sherpaTex, bumpMap: sherpaTex, bumpScale: 2, roughness: 1 })
+                                : mat(id, THREE.MeshPhysicalMaterial, { color: 0xEBDAB6, roughness: 0.55, clearcoat: 0.35, clearcoatRoughness: 0.4 });
+  const list = [];
+  for (let i = 0; i < r.n; i++) { const { p } = i < 2 ? spotFront(L, 1.8, 4.8, 1.03, i ? 1.2 : 0.45) : spot(L, Y0 + 0.3, YTOP - 0.6, 1.03); list.push({ p, rot: new THREE.Euler(R(-0.15, 0.15), faceY(p) + R(-0.3, 0.3), R(-0.22, 0.22)) }); }
+  instanced(geo, m, list, id);
+};
 
-/* ---------------- Baubles ---------------- */
+/* ---------------- Baubles: what each pack holds, at its listed size ---------------- */
 const SPH = new THREE.SphereGeometry(1, 40, 24);
 const capGeo = (() => { const c = new THREE.CylinderGeometry(0.2, 0.22, 0.22, 16); c.translate(0, 1.0, 0); const l = new THREE.TorusGeometry(0.08, 0.02, 6, 12); l.translate(0, 1.16, 0); return mergeGeometries([c.toNonIndexed(), l.toNonIndexed()]); })();
 const capMat = new THREE.MeshStandardMaterial({ color: 0xcaa25a, metalness: 1, roughness: 0.28 });
@@ -559,21 +712,10 @@ const glitterNormal = canvasTex(512, 512, (g, w) => { const im = g.createImageDa
 const glitterRough = canvasTex(256, 256, (g, w) => { const im = g.createImageData(w, w); for (let i = 0; i < w * w; i++) { const v = Math.random() < 0.35 ? 20 : 150 + Math.random() * 90; im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 255; } g.putImageData(im, 0, 0); }, { repeat: [5, 3], srgb: false });
 const finish = {
   shiny: () => ({ color: 0xffffff, metalness: 0.7, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.4 }),
+  mirror: () => ({ color: 0xffffff, metalness: 1, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.7 }),
   matte: () => ({ color: 0xffffff, metalness: 0.35, roughness: 0.45, clearcoat: 0.3, envMapIntensity: 1.2 }),
   glitter: () => ({ color: 0xffffff, metalness: 0.8, roughness: 0.42, roughnessMap: glitterRough, normalMap: glitterNormal, normalScale: new THREE.Vector2(0.9, 0.9) }),
 };
-const ballSpots = [];
-function balls(id, list) {   // list: [{ d (in), c, f }]
-  const groups = {};
-  list.forEach(b => { const r = b.d / 2 * IN; const { p } = spot(r * 2.2, Y0 + 0.25, YTOP - 0.25, 0.9); (groups[b.f] ||= []).push({ p, s: r, c: b.c, rot: new THREE.Euler(R(-0.2, 0.2), R(0, 6.28), R(-0.2, 0.2)) }); ballSpots.push({ p, s: r }); });
-  Object.entries(groups).forEach(([f, l]) => {
-    const tex = f.startsWith('tex:') ? f.slice(4) : null;
-    const m = tex ? mat(id, THREE.MeshPhysicalMaterial, { map: PATTERN[tex], metalnessMap: PATTERN_M[tex], metalness: 1, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.1, normalMap: glitterNormal, normalScale: new THREE.Vector2(0.35, 0.35) })
-                  : mat(id, THREE.MeshPhysicalMaterial, finish[f]());
-    instanced(SPH, m, l, id);
-  });
-}
-// painted 3.15" red & gold balls from the set (stripes, swirls, lattice, half-glitter)
 const PATTERN = {}, PATTERN_M = {};
 ['meridian', 'swirl', 'lattice', 'half'].forEach(kind => {
   const draw = (g, w, h, metal) => {
@@ -588,99 +730,71 @@ const PATTERN = {}, PATTERN_M = {};
   PATTERN[kind] = canvasTex(512, 256, (g, w, h) => draw(g, w, h, false));
   PATTERN_M[kind] = canvasTex(512, 256, (g, w, h) => draw(g, w, h, true), { srgb: false });
 });
-{
-  const pick = arr => arr[(rand() * arr.length) | 0];
-  // red, forest green & gold 100-pc set x qty: 32 x 2.4", 36 x 1.6", 32 x 1.2"
-  const rgg = []; (SZ('baubles_rgg').d_mix || [[2.4, 32], [1.6, 36], [1.2, 32]]).forEach(([d, n]) => { for (let i = 0; i < n * COUNT('baubles_rgg'); i++) rgg.push({ d, c: pick(['#b8121f', '#b8121f', '#17683d', '#17683d', '#d7a64a']), f: pick(['shiny', 'shiny', 'glitter', 'matte']) }); });
-  balls('baubles_rgg', rgg);
-  const ch = []; (SZ('baubles_champ').d_mix || [[2.4, 33], [1.6, 34], [1.2, 33]]).forEach(([d, n]) => { for (let i = 0; i < n * COUNT('baubles_champ'); i++) ch.push({ d, c: pick(['#d9c39a', '#cdb07a', '#e8dcc2', '#b9a07a']), f: pick(['shiny', 'matte', 'glitter']) }); });
-  balls('baubles_champ', ch);
-  const gr = []; for (let i = 0; i < 12 * COUNT('glitter_red'); i++) gr.push({ d: SZ('glitter_red').d || 3.15, f: 'tex:' + ['meridian', 'swirl', 'lattice', 'half'][i % 4] });
-  balls('glitter_red', gr);
-  const gc = []; for (let i = 0; i < 12 * COUNT('glitter_champ'); i++) gc.push({ d: SZ('glitter_champ').d || 3.15, c: '#dcc08a', f: 'glitter' }); balls('glitter_champ', gc);
-  const gg = []; for (let i = 0; i < 6 * COUNT('glitter_green'); i++) gg.push({ d: SZ('glitter_green').d || 3.94, c: '#1b6b3c', f: 'glitter' }); balls('glitter_green', gg);
-  const caps = ballSpots.map(b => ({ p: b.p, s: b.s, noMark: true }));
-  instanced(capGeo, capMat, caps, null);
+const pickOne = arr => arr[(rand() * arr.length) | 0];
+const RED = '#b3121d', GOLD = '#d4ae5c';
+const BALL = {      // one pack, as sold
+  baubles_rgg: () => (SZ('baubles_rgg').d_mix || [[2.4, 32], [1.6, 36], [1.2, 32]]).flatMap(([d, n]) => Array.from({ length: n }, () => ({ d, c: pickOne(['#b8121f', '#b8121f', '#17683d', '#17683d', '#d7a64a']), f: pickOne(['shiny', 'shiny', 'glitter', 'matte']) }))),
+  baubles_champ: () => (SZ('baubles_champ').d_mix || [[2.4, 33], [1.6, 34], [1.2, 33]]).flatMap(([d, n]) => Array.from({ length: n }, () => ({ d, c: pickOne(['#d9c39a', '#cdb07a', '#e8dcc2', '#b9a07a']), f: pickOne(['shiny', 'matte', 'glitter']) }))),
+  glitter_red: () => Array.from({ length: 12 }, (_, i) => ({ d: 3.15, f: 'tex:' + ['meridian', 'swirl', 'lattice', 'half'][i % 4] })),
+  glitter_champ: () => Array.from({ length: 12 }, () => ({ d: 3.15, c: '#dcc08a', f: 'glitter' })),
+  glitter_green: () => Array.from({ length: 6 }, () => ({ d: 3.94, c: '#1b6b3c', f: 'glitter' })),
+  red4_glitter: () => Array.from({ length: 6 }, () => ({ d: 3.94, c: '#a50f1b', f: 'glitter' })),
+  red4_joyin: () => ['shiny', 'matte', 'glitter', 'mirror'].map(f => ({ d: 4, c: RED, f })),
+  gold4_joyin: () => ['glitter', 'matte', 'shiny', 'mirror'].map(f => ({ d: 4, c: GOLD, f })),
+  red6_benjia: () => ['shiny', 'shiny', 'matte', 'glitter'].map(f => ({ d: 6, c: '#b0101c', f })),
+  redgold6: () => ['swirl', 'lattice', 'half', 'meridian'].map(k => ({ d: 6, f: 'tex:' + k })),
+};
+function balls(id, list, spots) {   // list: [{ d (in), c, f }]; big first so they get the best spots
+  const groups = {};
+  list.forEach(b => { const r = b.d / 2 * IN; const { p } = spot(r * 2.2, Y0 + 0.25 + r, YTOP - 0.3, b.d >= 3.9 ? 0.93 : 0.9); (groups[b.f] ||= []).push({ p, s: r, c: b.c, rot: new THREE.Euler(R(-0.2, 0.2), R(0, 6.28), R(-0.2, 0.2)) }); spots.push({ p, s: r }); });
+  Object.entries(groups).forEach(([f, l]) => {
+    const tex = f.startsWith('tex:') ? f.slice(4) : null;
+    const m = tex ? mat(id, THREE.MeshPhysicalMaterial, { map: PATTERN[tex], metalnessMap: PATTERN_M[tex], metalness: 1, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.1, normalMap: glitterNormal, normalScale: new THREE.Vector2(0.35, 0.35) })
+                  : mat(id, THREE.MeshPhysicalMaterial, finish[f]());
+    instanced(SPH, m, l, id);
+  });
 }
+BUILD.baubles = r => {
+  const spots = [];
+  r.sets.map(([id, packs]) => [id, Array.from({ length: packs }, () => BALL[id]()).flat()])
+    .sort((a, b) => Math.max(...b[1].map(x => x.d)) - Math.max(...a[1].map(x => x.d)))
+    .forEach(([id, list]) => balls(id, list, spots));
+  instanced(capGeo, capMat, spots.map(b => ({ p: b.p, s: b.s, noMark: true })), null);
+};
 
-/* ---------------- DIY ornaments (3D, sized like the real blanks) ---------------- */
-// Paw-print bauble discs: 4" bauble-shaped wood rounds painted both sides (look from the inspiration)
-const discSpots = [];
-{
-  const s = SZ('paw_disc'); const h = (s.h || 4.3) * IN, w = (s.w || 3.5) * IN;
-  const geo = new THREE.PlaneGeometry(h * CUT.paw_disc.w / CUT.paw_disc.h, h); geo.translate(0, -h / 2, 0);
-  const m = mat('paw_disc', THREE.MeshStandardMaterial, { map: photoTex('paw_disc'), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.65, metalness: 0.05 });
-  const list = []; for (let i = 0; i < COUNT('paw_disc'); i++) { const { p } = spot(h * 1.1, Y0 + 0.3, YTOP - 0.5, 0.99); const rot = new THREE.Euler(R(-0.1, 0.05), faceY(p) + R(-0.35, 0.35), R(-0.12, 0.12)); list.push({ p, rot }); discSpots.push({ p, rot }); }
-  instanced(geo, m, list, 'paw_disc');
-}
-// 3D foam-clay bones, 5" x 1.8" x 1", sealed satin cream
-{
-  const s = SZ('bones'); const L = (s.w || 5) * IN, H = (s.h || 1.8) * IN, T = (s.d || 1) * IN;
-  const parts = [new THREE.CapsuleGeometry(H * 0.24, L * 0.62, 6, 14).rotateZ(Math.PI / 2)];
-  [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([x, y]) => parts.push(new THREE.SphereGeometry(H * 0.29, 16, 12).translate(x * L * 0.37, y * H * 0.21, 0)));
-  const geo = mergeGeometries(parts.map(p => p.toNonIndexed())); geo.scale(1, 1, T / (H * 0.55));
-  const m = mat('bones', THREE.MeshPhysicalMaterial, { color: 0xEBDAB6, roughness: 0.55, clearcoat: 0.35, clearcoatRoughness: 0.4 });
-  const list = []; for (let i = 0; i < COUNT('bones'); i++) { const { p } = spot(L, Y0 + 0.3, YTOP - 0.4, 0.99); list.push({ p, rot: new THREE.Euler(R(-0.15, 0.15), faceY(p) + R(-0.4, 0.4), R(-0.5, 0.5)) }); }
-  instanced(geo, m, list, 'bones');
-}
-// Doghouses: 4.3" gabled birdhouses painted barn-red brick, cream roof, arched door, cream paw
-{
-  const s = SZ('doghouse'); const H = (s.h || 4.3) * IN, W = (s.w || 3.4) * IN, D = (s.d || 2.7) * IN, wallH = H * 0.56;
-  const brick = canvasTex(256, 256, (g, w) => {
-    g.fillStyle = '#3c0f0b'; g.fillRect(0, 0, w, w);
-    for (let y = 0; y < w; y += 22) for (let x = (y / 22) % 2 ? -26 : 0; x < w; x += 52) { g.fillStyle = `hsl(${2 + Math.random() * 6}, ${55 + Math.random() * 15}%, ${26 + Math.random() * 8}%)`; g.fillRect(x + 2, y + 2, 48, 18); }
-    noise(g, w, w, 2500, 0.2, ['#000', '#c86a5a']);
-  }, { repeat: [1.4, 1.4] });
-  const frontTex = canvasTex(512, 640, (g, w, h) => {
-    g.drawImage(brick.image, 0, 0, w, h);
-    const dw = w * 0.46, dh = h * 0.42, dx = w / 2, by = h;   // arched door with cream trim and warm glow inside
-    g.fillStyle = '#efe0bf'; g.beginPath(); g.moveTo(dx - dw / 2 - 18, by); g.lineTo(dx - dw / 2 - 18, by - dh + dw / 2); g.arc(dx, by - dh + dw / 2, dw / 2 + 18, Math.PI, 0); g.lineTo(dx + dw / 2 + 18, by); g.fill();
-    const ig = g.createRadialGradient(dx, by - 20, 5, dx, by - dh * 0.5, dh); ig.addColorStop(0, '#f2a94a'); ig.addColorStop(0.35, '#6b3416'); ig.addColorStop(1, '#1a0b05');
-    g.fillStyle = ig; g.beginPath(); g.moveTo(dx - dw / 2, by); g.lineTo(dx - dw / 2, by - dh + dw / 2); g.arc(dx, by - dh + dw / 2, dw / 2, Math.PI, 0); g.lineTo(dx + dw / 2, by); g.fill();
-    g.fillStyle = '#efe0bf'; drawPaw(g, w / 2, h * 0.3, w * 0.24, '#efe0bf');
-  }, { clamp: true });
-  const shingle = canvasTex(256, 256, (g, w) => {
-    g.fillStyle = '#d9c497'; g.fillRect(0, 0, w, w);
-    for (let y = 0; y < w; y += 32) for (let x = (y / 32) % 2 ? -24 : 0; x < w; x += 48) { g.fillStyle = `hsl(40, ${38 + Math.random() * 12}%, ${72 + Math.random() * 10}%)`; g.fillRect(x + 1, y, 46, 30); g.fillStyle = 'rgba(80,55,25,.35)'; g.fillRect(x, y + 28, 48, 3); g.fillRect(x, y, 2, 30); }
-    noise(g, w, w, 1500, 0.15, ['#5a3d1d']);
-  }, { repeat: [1.2, 1.2] });
-  const body = new THREE.BoxGeometry(W, wallH, D); body.translate(0, wallH / 2, 0);
-  const gable = new THREE.Shape(); gable.moveTo(-W / 2, 0); gable.lineTo(W / 2, 0); gable.lineTo(W / 2, wallH); gable.lineTo(0, H * 0.94); gable.lineTo(-W / 2, wallH); gable.closePath();
-  const front = new THREE.ShapeGeometry(gable); { const uv = front.attributes.uv, p = front.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, (p.getX(i) + W / 2) / W, p.getY(i) / (H * 0.94)); } front.translate(0, 0, D / 2 + 0.001);
-  const back = new THREE.ShapeGeometry(gable); back.rotateY(Math.PI); back.translate(0, 0, -D / 2 - 0.001);
-  const slope = Math.atan2(H * 0.94 - wallH, W / 2), rl = Math.hypot(W / 2, H * 0.94 - wallH) * 1.18;
-  const roofs = [-1, 1].map(sg => { const r = new THREE.BoxGeometry(rl, 0.32 * IN, D * 1.25); r.rotateZ(-sg * slope); r.translate(sg * W / 4.2, wallH + (H * 0.94 - wallH) / 2 + 0.2 * IN, 0); return r; });
-  const geoBrick = mergeGeometries([body.toNonIndexed(), back.toNonIndexed()]);
-  const geoRoof = mergeGeometries(roofs.map(r => r.toNonIndexed()));
-  const mBrick = mat('doghouse', THREE.MeshStandardMaterial, { map: brick, roughness: 0.8 });
-  const mFront = mat('doghouse', THREE.MeshStandardMaterial, { map: frontTex, roughness: 0.8, side: THREE.DoubleSide });
-  const mRoof = mat('doghouse', THREE.MeshStandardMaterial, { map: shingle, roughness: 0.75 });
-  const list = []; for (let i = 0; i < COUNT('doghouse'); i++) { const { p } = spot(H * 1.1, Y0 + 0.4, YTOP - 0.7, 0.99); list.push({ p: p.clone().add(new THREE.Vector3(0, -H * 0.5, 0)), rot: new THREE.Euler(0, faceY(p) + R(-0.3, 0.3), R(-0.06, 0.06)) }); }
-  instanced(geoBrick, mBrick, list, 'doghouse'); instanced(front, mFront, list.map(l => ({ ...l, noMark: true })), 'doghouse'); instanced(geoRoof, mRoof, list.map(l => ({ ...l, noMark: true })), 'doghouse');
-}
-// Mini velvet bows on top of every paw disc (and one on the jar later)
-const miniBowGeo = bowGeo({ ribbon: 1, span: MB.w || 3.5, tail: (MB.h || 3.5) - 1, seed: 11 });
-const miniBowMat = velvet('mini_bows');
-instanced(miniBowGeo, miniBowMat, discSpots.map(({ p, rot }) => ({ p: p.clone().add(new THREE.Vector3(0, 0.1 * IN, 0)).addScaledVector(new THREE.Vector3(Math.sin(rot.y), 0, Math.cos(rot.y)), 0.012), rot })), 'mini_bows');
+/* ---------------- Tartan ribbon: cascades with poufs, and big hand-tied bows ---------------- */
+BUILD.ribbon = r => {
+  const m = tartanMat('tartan_ribbon');
+  for (let k = 0; k < r.cascades; k++) {
+    const th0 = k * Math.PI * 2 / r.cascades + 0.25, pts = [], nrm = [];
+    for (let i = 0; i <= 320; i++) {
+      const t = i / 320, y = YTOP - 0.55 - t * (YTOP - Y0 - 0.55), th = th0 + 0.5 * t + 0.04 * Math.sin(t * 13 + k);
+      const ph = t * 4.5 + k * 0.37, bulge = Math.pow(Math.max(0, Math.sin(ph * Math.PI * 2)), 2.2);
+      const rr = rAt(y) * 0.95 + 0.02 + 0.11 * bulge * (0.5 + rAt(y) / RB * 0.5), tw = 0.5 * Math.sin(ph * Math.PI * 2 + 1.2);
+      const rad = new THREE.Vector3(Math.cos(th), 0.25 + bulge * 0.5 * Math.cos(ph * Math.PI * 2), Math.sin(th)).normalize(), tan = new THREE.Vector3(-Math.sin(th), 0, Math.cos(th));
+      pts.push(new THREE.Vector3(Math.cos(th) * rr, y, Math.sin(th) * rr)); nrm.push(rad.multiplyScalar(Math.cos(tw)).addScaledVector(tan, Math.sin(tw)).normalize());
+    }
+    const mesh = new THREE.Mesh(strip(pts, nrm, 4 * IN, { uLen: 4 * IN }), m); mesh.castShadow = true; TARGET.add(mesh); tag(mesh, 'tartan_ribbon');
+    addInstancePos('tartan_ribbon', pts[160]);
+  }
+  const B = SZ('big_bows'), list = [];
+  for (let i = 0; i < r.bows; i++) { const { p } = spot((B.w || 11) * IN, 1.6, 5.6, 1.0); list.push({ p, rot: new THREE.Euler(R(-0.12, 0.12), faceY(p), R(-0.15, 0.15)) }); }
+  instanced(bowGeo({ ribbon: 4, span: B.w || 11, tail: (B.h || 18) - 3, seed: 3 }), tartanMat('big_bows'), list, 'big_bows');
+};
 
-/* ---------------- Photo cutouts (rotate on the vertical axis to face the viewer) ---------------- */
+/* ---------------- Stockings and the gold, pine and berry picks ---------------- */
 const cards = [];
 function photoCard(name, id, heightIn, pos, { anchor = 'bottom', emissive = 0.38, mark = true } = {}) {
   const c = CUT[name], h = heightIn * IN, w = h * c.w / c.h;
   const g = new THREE.PlaneGeometry(w, h); g.translate(0, anchor === 'top' ? -h / 2 : anchor === 'center' ? 0 : h / 2, 0);
   const tex = photoTex(name);
   const m = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.95, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: emissive, envMapIntensity: 0.2 });
-  const mesh = new THREE.Mesh(g, m); mesh.position.copy(pos); mesh.castShadow = true; scene.add(mesh); cards.push(mesh);
+  const mesh = new THREE.Mesh(g, m); mesh.position.copy(pos); mesh.castShadow = true; TARGET.add(mesh); cards.push(mesh);
   mesh.userData.itemId = id; pickables.push(mesh); if (mark) addInstancePos(id, pos.clone().add(new THREE.Vector3(0, anchor === 'bottom' ? h / 2 : anchor === 'top' ? -h / 2 : 0, 0)));
   return mesh;
 }
-function updateCards() { for (const c of cards) c.rotation.y = Math.atan2(camera.position.x - c.position.x, camera.position.z - c.position.z); }
-// plush pets sitting in the branches (they sit, so anchor at the bottom, tucked a little into the tree)
-for (let i = 0; i < Math.max(0, COUNT('golden') - 1); i++) { const { p } = spotFront(SZ('golden').h * IN, 1.9, 3.6, 1.0, 0.9); photoCard('golden_tree', 'golden', SZ('golden').h || 10, p.clone().add(new THREE.Vector3(0, -0.12, 0))); }
-for (let i = 0; i < COUNT('tabby_grey'); i++) { const { p } = spotFront(SZ('tabby_grey').h * IN * 1.4, 3.4, 5.2, 1.0, 1.2); photoCard('tabby_mini_s', 'tabby_grey', SZ('tabby_grey').h || 4.7, p.clone().add(new THREE.Vector3(0, -0.06, 0))); }
-// knit mini stockings hang from their loops
-['stock_red', 'stock_green', 'stock_cream'].forEach((n, k) => { for (let i = 0; i < 4 * COUNT('stockings'); i++) { const { p } = spot(SZ('stockings').h * IN, 1.4, 5.5, 1.0); photoCard(n, 'stockings', (SZ('stockings').h || 4.3) * 1.25, p, { anchor: 'top' }); } });
-// picks tucked into the branches: glitter red sprays, gold sprigs, pine & berry
+function updateCards() { for (const c of cards) if (c.parent && c.parent.visible) c.rotation.y = Math.atan2(camera.position.x - c.position.x, camera.position.z - c.position.z); }
+BUILD.stockings = r => { ['stock_red', 'stock_green', 'stock_cream'].forEach(n => { for (let i = 0; i < r.n / 3; i++) { const { p } = spot(SZ('stockings').h * IN, 1.4, 5.5, 1.0); photoCard(n, 'stockings', (SZ('stockings').h || 4.3) * 1.25, p, { anchor: 'top' }); } }); };
 function sprays(id, n, color, stemsPer, beadIn, lenIn) {   // glitter spray picks: thin stems tipped with glitter beads
   const beads = []; const L = lenIn * IN;
   for (let i = 0; i < n; i++) {
@@ -692,76 +806,72 @@ function sprays(id, n, color, stemsPer, beadIn, lenIn) {   // glitter spray pick
   }
   instanced(SPH, mat(id, THREE.MeshStandardMaterial, { color, metalness: 0.85, roughness: 0.35, roughnessMap: glitterRough, normalMap: glitterNormal }), beads, id);
 }
-sprays('gold_picks', Math.max(0, 28 * COUNT('gold_picks') - 12), 0xd4ad5c, 3, 0.4, 6);   // 12 of the pack form the crown
-for (let i = 0; i < 16; i++) { const { p } = spot(0.35, 1.3, 5.8, 0.95); photoCard('pine_pick', 'pine_picks', (SZ('pine_picks').h || 4) * 1.3, p, { anchor: 'center' }); }
-// glossy red berry clusters (0.6" berries on 7" stems)
-{
-  const list = [], bd = (SZ('glossy_berries').berry_d || 0.6) * IN;
-  for (let i = 0; i < 48 * COUNT('glossy_berries'); i++) { const { p, th } = spot(0.25, 1.3, 6.3, 0.97); const out = new THREE.Vector3(Math.cos(th), 0, Math.sin(th)); for (let k = 0; k < 7; k++) list.push({ p: p.clone().add(new THREE.Vector3(R(-1, 1) * 1.1 * IN, R(-0.6, 1.6) * IN, R(-1, 1) * 1.1 * IN)).addScaledVector(out, 0.03), s: bd / 2 * R(0.85, 1.1), noMark: k > 0 }); }
-  instanced(SPH, mat('glossy_berries', THREE.MeshPhysicalMaterial, { color: 0x9d0a12, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.05 }), list, 'glossy_berries');
-}
+BUILD.greens = r => {
+  sprays('gold_picks', r.gold, 0xd4ad5c, 3, 0.4, 6);
+  for (let i = 0; i < Math.round(r.pine * 2 / 3); i++) { const { p } = spot(0.35, 1.3, 5.8, 0.95); photoCard('pine_pick', 'pine_picks', (SZ('pine_picks').h || 4) * 1.3, p, { anchor: 'center' }); }
+  if (r.berries) {   // glossy red berry clusters (0.6" berries on 7" stems)
+    const list = [], bd = (SZ('glossy_berries').berry_d || 0.6) * IN;
+    for (let i = 0; i < r.berries; i++) { const { p, th } = spot(0.25, 1.3, 6.3, 0.97); const out = new THREE.Vector3(Math.cos(th), 0, Math.sin(th)); for (let k = 0; k < 7; k++) list.push({ p: p.clone().add(new THREE.Vector3(R(-1, 1) * 1.1 * IN, R(-0.6, 1.6) * IN, R(-1, 1) * 1.1 * IN)).addScaledVector(out, 0.03), s: bd / 2 * R(0.85, 1.1), noMark: k > 0 }); }
+    instanced(SPH, mat('glossy_berries', THREE.MeshPhysicalMaterial, { color: 0x9d0a12, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.05 }), list, 'glossy_berries');
+  }
+};
 
-/* ---------------- Under the tree ---------------- */
-function giftBox([wi, di, hi], faceMat, ribbonMat, x, z, ry, id, bow) {
+/* ---------------- Under the tree: wrapped gifts ---------------- */
+function giftBox([wi, di, hi], faceMat, ribbonMat, ribIn, x, z, ry, id, bow, oneWay = false) {
   const w = wi * IN, d = di * IN, h = hi * IN, g = new THREE.Group();
   const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), faceMat); b.position.y = h / 2; b.castShadow = b.receiveShadow = true; g.add(b);
-  const rw = (ribbonMat === tartanBoxRibbon ? 4 : 2.5) * IN;
-  [[w * 1.006, h * 1.006, rw], [rw, h * 1.006, d * 1.006]].forEach(([a, bb, c]) => { const r = new THREE.Mesh(new THREE.BoxGeometry(a, bb, c), ribbonMat); r.position.y = h / 2; g.add(r); });
-  g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g); tag(g, id); addInstancePos(id, new THREE.Vector3(x, h * 0.7, z));
+  const rw = ribIn * IN;
+  (oneWay ? [[rw, h * 1.006, d * 1.006]] : [[w * 1.006, h * 1.006, rw], [rw, h * 1.006, d * 1.006]]).forEach(([a, bb, c]) => { const rb = new THREE.Mesh(new THREE.BoxGeometry(a, bb, c), ribbonMat); rb.position.y = h / 2; g.add(rb); });
+  g.position.set(x, 0, z); g.rotation.y = ry; TARGET.add(g); tag(g, id); addInstancePos(id, new THREE.Vector3(x, h * 0.7, z));
   contactShadow(x, z, w * 1.5, d * 1.5, ry, 0.7);
-  if (bow) { const m = new THREE.Mesh(bow.geo, bow.mat); m.position.set(x, h + 0.01, z); m.rotation.set(-1.25, ry, 0); m.castShadow = true; scene.add(m); tag(m, bow.id); }
+  if (bow) { const m = new THREE.Mesh(bow.geo, bow.mat); m.position.set(x, h + 0.01, z); m.rotation.set(-1.25, ry, 0); m.castShadow = true; TARGET.add(m); tag(m, bow.id); }
   return g;
 }
 const boxTex = (name, wi, hi) => photoTex(name, [+(wi / 8).toFixed(2), +(hi / 8).toFixed(2)]);
-const tartanBoxRibbon = tartanMat('tartan_ribbon');
-{
-  const B = (SZ('gift_boxes').boxes || [[14, 11, 12], [12, 10, 9], [10, 10, 10], [16, 12, 7], [9, 9, 6]]);
-  const velvetRib = velvet('velvet_ribbon', 0x7a0b18);
+BUILD.gifts = () => {
+  const B = SZ('gift_boxes').boxes || [[18, 11, 12], [16, 16, 16], [16, 16, 10], [18, 11, 7]];
   const tw = s => mat('tartan_wrap', THREE.MeshStandardMaterial, { map: boxTex('tx_tartan_wrap', s[0], s[2]), roughness: 0.42 });
   const kp = s => mat('paw_wrap', THREE.MeshStandardMaterial, { map: boxTex('tx_paw_wrap', s[0], s[2]), roughness: 0.85 });
-  const velvetBow = { geo: bowGeo({ ribbon: 2.5, span: 8, tail: 5, seed: 21 }), mat: velvetRib, id: 'velvet_ribbon' };
-  const burlapBow = { geo: bowGeo({ ribbon: 4, span: 9, tail: 6, uLen: 16, seed: 23 }), mat: burlapMat, id: 'topper' };
-  const tartanBow = { geo: bowGeo({ ribbon: 4, span: 9, tail: 6, seed: 25 }), mat: tartanBoxRibbon, id: 'big_bows' };
-  // the four Canadian Tire moving boxes, at their real sizes: A 18x11x12, B 16x16x16, C 16x16x10, D 18x11x7
-  giftBox(B[0], tw(B[0]), velvetRib, -1.6, 1.05, 0.35, 'tartan_wrap', velvetBow);
-  giftBox(B[1], tw(B[1]), tartanBoxRibbon, -1.45, -0.7, 0.15, 'gift_boxes', tartanBow);
-  giftBox(B[2], tw(B[2]), velvetRib, 1.6, 0.25, -0.45, 'tartan_wrap', velvetBow);
-  giftBox(B[3], kp(B[3]), tartanBoxRibbon, 0.95, 1.45, -0.2, 'paw_wrap', burlapBow);
-  addInstancePos('gift_boxes', new THREE.Vector3(-1.5, 0.5, 0.95));
-}
-// cream sherpa bone pillow, 15" x 9" x 3", with the black felt paw
-{
-  const s = SZ('bone_pillow'); const L = (s.w || 15) * IN, H = (s.d || 9) * IN, T = (s.h || 3) * IN;
-  const sherpa = canvasTex(256, 256, (g, w) => { g.fillStyle = '#e9e1d2'; g.fillRect(0, 0, w, w); for (let i = 0; i < 1400; i++) { const x = Math.random() * w, y = Math.random() * w, r = 2 + Math.random() * 4; g.fillStyle = Math.random() < .5 ? '#f6f0e4' : '#cfc4b0'; g.beginPath(); g.arc(x, y, r, 0, 6.28); g.fill(); } }, { repeat: [3, 2] });
-  const parts = [];
-  for (let k = -3; k <= 3; k++) parts.push(new THREE.SphereGeometry(H * 0.27, 20, 14).translate(k * L * 0.08, 0, 0));   // plump shaft
-  [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([x, y]) => parts.push(new THREE.SphereGeometry(H * 0.3, 20, 14).translate(x * L * 0.33, y * H * 0.2, 0)));
-  const geo = mergeGeometries(parts.map(p => p.toNonIndexed())); geo.scale(1, 1, T / (H * 0.6));
-  const m = mat('bone_pillow', THREE.MeshStandardMaterial, { map: sherpa, bumpMap: sherpa, bumpScale: 3, roughness: 1 });
-  const g = new THREE.Group(); const body = new THREE.Mesh(geo, m); body.castShadow = true; g.add(body);
-  const pawT = canvasTex(256, 256, (c, w) => { c.clearRect(0, 0, w, w); drawPaw(c, 128, 136, 210, '#141414'); }, { clamp: true });
-  const paw = new THREE.Mesh(new THREE.PlaneGeometry(4.5 * IN, 4.5 * IN), mat('felt', THREE.MeshStandardMaterial, { map: pawT, transparent: true, alphaTest: 0.3, roughness: 1 }));
-  paw.position.set(-L * 0.18, 0.2 * IN, T * 0.52); g.add(paw);
-  g.position.set(-1.95, H * 0.42, 2.7); g.rotation.set(-0.35, 0.45, 0.06); scene.add(g); tag(g, 'bone_pillow'); addInstancePos('bone_pillow', g.position);
-  contactShadow(-1.95, 2.65, L * 1.3, H * 1.1, 0.45, 0.75);
-}
-// red glazed bowl with white dots, 5.9" x 1.8", scalloped rim
-{
-  const s = SZ('bowl'); const r = (s.w || 5.9) / 2 * IN, h = (s.h || 1.8) * IN;
-  const prof = [[0, 0], [r * 0.72, 0], [r * 0.8, h * 0.06], [r * 0.98, h * 0.85], [r, h], [r * 0.93, h], [r * 0.76, h * 0.2], [0, h * 0.16]].map(([x, y]) => new THREE.Vector2(x, y));
-  const geo = new THREE.LatheGeometry(prof, 64); const p = geo.attributes.position;
-  for (let i = 0; i < p.count; i++) { const y = p.getY(i); if (y > h * 0.6) { const a = Math.atan2(p.getZ(i), p.getX(i)); p.setY(i, y + Math.abs(Math.sin(a * 6)) * h * 0.12 * ((y - h * 0.6) / (h * 0.4))); } }
-  geo.computeVertexNormals();
-  const dots = canvasTex(1024, 256, (g, w, hh) => { g.fillStyle = '#b5101c'; g.fillRect(0, 0, w, hh); g.fillStyle = '#fbf7ef'; for (let y = 40; y < hh; y += 90) for (let x = (y / 90) % 2 ? 60 : 0; x < w; x += 120) { g.beginPath(); g.arc(x, y, 14, 0, 6.28); g.fill(); } [w * 0.22, w * 0.72].forEach(x => { g.fillStyle = '#b5101c'; g.fillRect(x - 70, 20, 140, 200); drawPaw(g, x, 125, 120, '#fbf7ef'); }); });
-  const bowl = new THREE.Mesh(geo, mat('bowl', THREE.MeshPhysicalMaterial, { map: dots, roughness: 0.12, clearcoat: 1, side: THREE.DoubleSide }));
-  bowl.position.set(-0.78, 0, 3.95); bowl.castShadow = true; scene.add(bowl); tag(bowl, 'bowl'); addInstancePos('bowl', new THREE.Vector3(-0.78, h, 3.95));
-  contactShadow(-0.78, 3.95, r * 3, r * 3, 0, 0.7);
-}
-// gift basket: natural wicker 13" x 10.5" x 6", 11" to the handle
-{
+  const cream = mat('burlap_ribbon', THREE.MeshStandardMaterial, { color: 0xcdb48a, roughness: 0.95 });
+  const creamBow = { geo: bowGeo({ ribbon: 1.5, span: 10, tail: 6, uLen: 6, seed: 23 }), mat: ribbonMat('burlap_ribbon', 'tx_burlap15'), id: 'burlap_ribbon' };
+  // the four Canadian Tire moving boxes at their real sizes: tartan with cream ribbon (A, B, C), kraft paw paper with tartan ribbon (D)
+  giftBox(B[0], tw(B[0]), cream, 1.5, -1.6, 1.05, 0.35, 'gift_boxes', creamBow);
+  giftBox(B[1], tw(B[1]), cream, 1.5, -1.45, -0.7, 0.15, 'gift_boxes', creamBow);
+  giftBox(B[2], tw(B[2]), cream, 1.5, 1.6, 0.25, -0.45, 'gift_boxes', creamBow);
+  giftBox(B[3], kp(B[3]), tartanMat('tartan_ribbon'), 4, 0.95, 1.45, -0.2, 'gift_boxes', creamBow, true);
+};
+BUILD.floor = r => {
+  if (r.pillow) {   // cream sherpa bone pillow, 15" x 9" x 3", with the black felt paw
+    const s = SZ('bone_pillow'); const L = (s.w || 15) * IN, H = (s.d || 9) * IN, T = (s.h || 3) * IN;
+    const parts = [];
+    for (let k = -3; k <= 3; k++) parts.push(new THREE.SphereGeometry(H * 0.27, 20, 14).translate(k * L * 0.08, 0, 0));
+    [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([x, y]) => parts.push(new THREE.SphereGeometry(H * 0.3, 20, 14).translate(x * L * 0.33, y * H * 0.2, 0)));
+    const geo = mergeGeometries(parts.map(p => p.toNonIndexed())); geo.scale(1, 1, T / (H * 0.6));
+    const g = new THREE.Group(); const body = new THREE.Mesh(geo, mat('bone_pillow', THREE.MeshStandardMaterial, { map: sherpaTex, bumpMap: sherpaTex, bumpScale: 3, roughness: 1 })); body.castShadow = true; g.add(body);
+    const pawT = canvasTex(256, 256, (c, w) => { c.clearRect(0, 0, w, w); drawPaw(c, 128, 136, 210, '#141414'); }, { clamp: true });
+    const paw = new THREE.Mesh(new THREE.PlaneGeometry(4.5 * IN, 4.5 * IN), mat('felt', THREE.MeshStandardMaterial, { map: pawT, transparent: true, alphaTest: 0.3, roughness: 1 }));
+    paw.position.set(-L * 0.18, 0.2 * IN, T * 0.52); g.add(paw);
+    g.position.set(-1.95, H * 0.42, 2.7); g.rotation.set(-0.35, 0.45, 0.06); TARGET.add(g); tag(g, 'bone_pillow'); addInstancePos('bone_pillow', g.position);
+    contactShadow(-1.95, 2.65, L * 1.3, H * 1.1, 0.45, 0.75);
+  }
+  if (r.bowl) {     // red glazed bowl with white dots and two painted paws
+    const s = SZ('bowl'); const rr = (s.w || 5.9) / 2 * IN, h = (s.h || 1.8) * IN;
+    const prof = [[0, 0], [rr * 0.72, 0], [rr * 0.8, h * 0.06], [rr * 0.98, h * 0.85], [rr, h], [rr * 0.93, h], [rr * 0.76, h * 0.2], [0, h * 0.16]].map(([x, y]) => new THREE.Vector2(x, y));
+    const geo = new THREE.LatheGeometry(prof, 64); const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) { const y = p.getY(i); if (y > h * 0.6) { const a = Math.atan2(p.getZ(i), p.getX(i)); p.setY(i, y + Math.abs(Math.sin(a * 6)) * h * 0.12 * ((y - h * 0.6) / (h * 0.4))); } }
+    geo.computeVertexNormals();
+    const dots = canvasTex(1024, 256, (g, w, hh) => { g.fillStyle = '#b5101c'; g.fillRect(0, 0, w, hh); g.fillStyle = '#fbf7ef'; for (let y = 40; y < hh; y += 90) for (let x = (y / 90) % 2 ? 60 : 0; x < w; x += 120) { g.beginPath(); g.arc(x, y, 14, 0, 6.28); g.fill(); } [w * 0.22, w * 0.72].forEach(x => { g.fillStyle = '#b5101c'; g.fillRect(x - 70, 20, 140, 200); drawPaw(g, x, 125, 120, '#fbf7ef'); }); });
+    const bowl = new THREE.Mesh(geo, mat('bowl', THREE.MeshPhysicalMaterial, { map: dots, roughness: 0.12, clearcoat: 1, side: THREE.DoubleSide }));
+    bowl.position.set(-0.78, 0, 3.95); bowl.castShadow = true; TARGET.add(bowl); tag(bowl, 'bowl'); addInstancePos('bowl', new THREE.Vector3(-0.78, h, 3.95));
+    contactShadow(-0.78, 3.95, rr * 3, rr * 3, 0, 0.7);
+  }
+};
+
+/* ---------------- Gift basket: wicker 13" x 10.5" x 6", 11" to the handle ---------------- */
+BUILD.basket = r => {
   const s = SZ('basket'); const bw = (s.w || 13) * IN, bd = (s.d || 10.5) * IN, bh = (s.h || 6) * IN, hh = (s.handle_h || 11) * IN;
   const bx = 2.0, bz = 2.35, ry = -0.55;
-  const g = new THREE.Group(); g.position.set(bx, 0, bz); g.rotation.y = ry; scene.add(g);
+  const g = new THREE.Group(); g.position.set(bx, 0, bz); g.rotation.y = ry; TARGET.add(g);
   const wick = mat('basket', THREE.MeshStandardMaterial, { map: photoTex('tx_wicker2', [4, 1]), roughness: 0.85, side: THREE.DoubleSide });
   const liner = mat('basket', THREE.MeshStandardMaterial, { color: 0xEFE7D8, roughness: 1, side: THREE.DoubleSide });
   const wall = new THREE.Mesh(new THREE.CylinderGeometry(bw / 2, bw / 2 * 0.86, bh, 48, 1, true), wick); wall.position.y = bh / 2; wall.scale.z = bd / bw; g.add(wall);
@@ -770,81 +880,92 @@ const tartanBoxRibbon = tartanMat('tartan_ribbon');
   const handle = new THREE.Mesh(new THREE.TorusGeometry(bw * 0.36, 0.35 * IN, 8, 40, Math.PI), mat('basket', THREE.MeshStandardMaterial, { map: photoTex('tx_wicker2', [6, 1]), roughness: 0.8 })); handle.position.y = bh; handle.scale.y = (hh - bh) / (bw * 0.36); g.add(handle);
   tag(g, 'basket'); addInstancePos('basket', new THREE.Vector3(bx, bh * 0.6, bz)); contactShadow(bx, bz, bw * 1.5, bd * 1.5, ry, 0.8);
   g.updateMatrixWorld(true); const W = (x, y, z) => g.localToWorld(new THREE.Vector3(x, y, z));
-  // red flannel paw-print throw (50 x 60 in), folded and draped over the front rim
-  const bl = new THREE.PlaneGeometry(bw * 0.8, bw * 0.75, 28, 28); const pa = bl.attributes.position;
-  for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), y = pa.getY(i); const fold = y > 0 ? 0 : -y; pa.setZ(i, -fold * 1.05 + Math.sin(x * 30) * 0.012 + Math.sin(y * 22) * 0.01); pa.setY(i, y > 0 ? y : y * 0.25); }
-  bl.computeVertexNormals();
-  const blanket = new THREE.Mesh(bl, mat('blanket', THREE.MeshStandardMaterial, { map: photoTex('tx_blanket', [1.2, 1.2]), roughness: 1, side: THREE.DoubleSide }));
-  blanket.rotation.set(-1.25, 0, 0.1); blanket.position.set(bw * 0.1, bh + 0.01, bd * 0.18); g.add(blanket); tag(blanket, 'blanket'); addInstancePos('blanket', W(bw * 0.1, bh, bd * 0.4));
-  // glass jar 7" x 9.9" with lid, filled with the faux biscuits
-  const js = SZ('jar'); const jr = (js.w || 7) / 2 * IN, jh = (js.h || 9.9) * IN;
-  const jp = [[0.001, 0], [jr * 0.85, 0], [jr, jh * 0.12], [jr * 1.02, jh * 0.55], [jr * 0.93, jh * 0.84], [jr * 0.75, jh * 0.88], [jr * 0.75, jh * 0.9]].map(([x, y]) => new THREE.Vector2(x, y));
-  const glass = mat('jar', THREE.MeshPhysicalMaterial, { color: 0xeef6f2, metalness: 0, roughness: 0.04, clearcoat: 1, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide, envMapIntensity: 1.6, specularIntensity: 1 });
-  const jar = new THREE.Group(); jar.position.copy(new THREE.Vector3(-bw * 0.18, bh * 0.45, -bd * 0.1)); g.add(jar);
-  jar.add(new THREE.Mesh(new THREE.LatheGeometry(jp, 40), glass));
-  const lid = new THREE.Mesh(new THREE.CylinderGeometry(jr * 0.82, jr * 0.82, 0.45 * IN, 36), glass); lid.position.y = jh * 0.92; jar.add(lid);
-  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.7 * IN, 20, 14), glass); knob.position.y = jh * 0.92 + 0.7 * IN; jar.add(knob);
-  tag(jar, 'jar'); addInstancePos('jar', W(-bw * 0.18, bh * 0.45 + jh * 0.5, -bd * 0.1));
-  { // faux biscuits stacked inside (foam clay, biscuit-tan)
+  if (r.blanket) {   // red paw-print throw (50 x 60 in), folded and draped over the front rim
+    const bl = new THREE.PlaneGeometry(bw * 0.8, bw * 0.75, 28, 28); const pa = bl.attributes.position;
+    for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), y = pa.getY(i); const fold = y > 0 ? 0 : -y; pa.setZ(i, -fold * 1.05 + Math.sin(x * 30) * 0.012 + Math.sin(y * 22) * 0.01); pa.setY(i, y > 0 ? y : y * 0.25); }
+    bl.computeVertexNormals();
+    const blanket = new THREE.Mesh(bl, mat('blanket', THREE.MeshStandardMaterial, { map: photoTex('tx_blanket', [1.2, 1.2]), roughness: 1, side: THREE.DoubleSide }));
+    blanket.rotation.set(-1.25, 0, 0.1); blanket.position.set(bw * 0.1, bh + 0.01, bd * 0.18); g.add(blanket); tag(blanket, 'blanket'); addInstancePos('blanket', W(bw * 0.1, bh, bd * 0.4));
+  }
+  if (r.jar) {       // glass jar 7" x 9.9" with lid, lined with the faux biscuits, deep red velvet bow
+    const js = SZ('jar'); const jr = (js.w || 7) / 2 * IN, jh = (js.h || 9.9) * IN;
+    const jp = [[0.001, 0], [jr * 0.85, 0], [jr, jh * 0.12], [jr * 1.02, jh * 0.55], [jr * 0.93, jh * 0.84], [jr * 0.75, jh * 0.88], [jr * 0.75, jh * 0.9]].map(([x, y]) => new THREE.Vector2(x, y));
+    const glass = mat('jar', THREE.MeshPhysicalMaterial, { color: 0xeef6f2, metalness: 0, roughness: 0.04, clearcoat: 1, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide, envMapIntensity: 1.6, specularIntensity: 1 });
+    const jar = new THREE.Group(); jar.position.copy(new THREE.Vector3(-bw * 0.18, bh * 0.45, -bd * 0.1)); g.add(jar);
+    jar.add(new THREE.Mesh(new THREE.LatheGeometry(jp, 40), glass));
+    const lid = new THREE.Mesh(new THREE.CylinderGeometry(jr * 0.82, jr * 0.82, 0.45 * IN, 36), glass); lid.position.y = jh * 0.92; jar.add(lid);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.7 * IN, 20, 14), glass); knob.position.y = jh * 0.92 + 0.7 * IN; jar.add(knob);
+    tag(jar, 'jar'); addInstancePos('jar', W(-bw * 0.18, bh * 0.45 + jh * 0.5, -bd * 0.1));
     const bs = SZ('faux_treats'); const bl2 = (bs.w || 3) * IN * 0.9, bh2 = (bs.h || 1.2) * IN;
     const parts = [new THREE.CapsuleGeometry(bh2 * 0.25, bl2 * 0.6, 4, 10).rotateZ(Math.PI / 2)]; [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([x, y]) => parts.push(new THREE.SphereGeometry(bh2 * 0.28, 10, 8).translate(x * bl2 * 0.38, y * bh2 * 0.2, 0)));
     const bgeo = mergeGeometries(parts.map(p => p.toNonIndexed())); bgeo.scale(1, 1, 0.55);
     const list = []; jar.updateMatrixWorld(true);
-    for (let i = 0; i < Math.min(26, COUNT('faux_treats')); i++) { const y = 0.25 * IN + i * jh * 0.026, a = R(0, 6.28), rr = R(0, jr * 0.5); list.push({ p: jar.localToWorld(new THREE.Vector3(Math.cos(a) * rr, y, Math.sin(a) * rr)), rot: new THREE.Euler(R(-1.2, 1.2), R(0, 6.28), R(-0.6, 0.6)), noMark: i > 0 }); }
+    for (let i = 0; i < 30; i++) { const y = 0.25 * IN + i * jh * 0.026, a = R(0, 6.28), rr = R(jr * 0.35, jr * 0.8); list.push({ p: jar.localToWorld(new THREE.Vector3(Math.cos(a) * rr, y, Math.sin(a) * rr)), rot: new THREE.Euler(R(-1.2, 1.2), R(0, 6.28), R(-0.6, 0.6)), noMark: i > 0 }); }
     instanced(bgeo, mat('faux_treats', THREE.MeshStandardMaterial, { color: 0xC8955A, roughness: 0.85 }), list, 'faux_treats');
+    const jb = new THREE.Mesh(bowGeo({ ribbon: 1.5, span: 7, tail: 6, loops: 2, uLen: 3, seed: 33 }), velvet('velvet_ribbon', 0x5a0a14)); jb.position.copy(W(-bw * 0.18, bh * 0.45 + jh * 0.8, -bd * 0.1 + jr * 1.02)); jb.rotation.y = ry; TARGET.add(jb); tag(jb, 'jar');
   }
-  const jb = new THREE.Mesh(miniBowGeo, miniBowMat); jb.scale.setScalar(1.4); jb.position.copy(W(-bw * 0.18, bh * 0.45 + jh * 0.86, -bd * 0.1 + jr)); jb.rotation.y = ry; scene.add(jb); tag(jb, 'mini_bows');
-  // red tennis balls 2.58"
-  const felt = canvasTex(256, 128, (c, w, hh) => { c.fillStyle = '#b01322'; c.fillRect(0, 0, w, hh); noise(c, w, hh, 5000, 0.35, ['#e04050', '#70060f']); c.strokeStyle = '#f4ece0'; c.lineWidth = 5; c.beginPath(); for (let x = 0; x <= w; x += 4) c.lineTo(x, hh / 2 + Math.sin(x / w * Math.PI * 4) * hh * 0.28); c.stroke(); });
+  const felt = canvasTex(256, 128, (c, w, hh2) => { c.fillStyle = '#b01322'; c.fillRect(0, 0, w, hh2); noise(c, w, hh2, 5000, 0.35, ['#e04050', '#70060f']); c.strokeStyle = '#f4ece0'; c.lineWidth = 5; c.beginPath(); for (let x = 0; x <= w; x += 4) c.lineTo(x, hh2 / 2 + Math.sin(x / w * Math.PI * 4) * hh2 * 0.28); c.stroke(); });
   const bm = mat('balls', THREE.MeshStandardMaterial, { map: felt, roughness: 1, bumpMap: felt, bumpScale: 1 }); const brd = (SZ('balls').d || 2.58) / 2 * IN;
   [[bw * 0.1, bh + brd * 0.6, bd * 0.05], [bw * 0.62, brd, bd * 0.75]].forEach(([x, y, z], i) => { const b = new THREE.Mesh(SPH, bm); b.scale.setScalar(brd); b.rotation.set(R(0, 3), R(0, 3), 0); b.position.set(x, y, z); b.castShadow = true; g.add(b); tag(b, 'balls'); if (!i) addInstancePos('balls', W(x, y, z)); });
-  // Homes Alive Pets gift cards
   [0, 1].forEach(k => { const c = new THREE.Mesh(new THREE.BoxGeometry(3.4 * IN, 2.1 * IN, 0.003), [0, 1, 2, 3, 4, 5].map(f => f === 4 ? mat('gift_card', THREE.MeshStandardMaterial, { map: photoTex('tx_card'), roughness: 0.4 }) : mat('gift_card', THREE.MeshStandardMaterial, { color: 0xFBFAF6, roughness: 0.4 })));
     c.position.set(bw * 0.08 + k * 0.06, bh + 1.2 * IN + k * 0.02, -bd * 0.12 - k * 0.03); c.rotation.set(-0.25, 0.1 - k * 0.15, 0.05 - k * 0.12); g.add(c); tag(c, 'gift_card'); });
   addInstancePos('gift_card', W(bw * 0.1, bh + 1.4 * IN, -bd * 0.1));
-  // plush bone toy (8.7") and rope toys tucked in the back
   photoCard('small_bone', 'holiday_toy', (SZ('holiday_toy').d || 5.7), W(bw * 0.28, bh * 0.75, -bd * 0.25));
   photoCard('rope_cane', 'rope', 8, W(bw * 0.38, bh * 0.6, -bd * 0.05));
   photoCard('rope_knot', 'rope', 5, W(bw * 0.42, bh * 0.7, bd * 0.2), { mark: false });
-}
-// the golden retriever and tabby plush sitting together in their real fringed tartan scarves
-/* ---------------- Giant doghouse centrepiece (DIY): 26" x 22" x 28", sign, the family dog in the doorway ---------------- */
-{
-  const S = SZ('doghouse_xl'), W = (S.w || 26) * IN, D = (S.d || 22) * IN, H = (S.h || 28) * IN, wallH = H * 0.57, doorW = (S.door_w || 11) * IN, doorH = (S.door_h || 14) * IN;
-  const X = 0, Z = RB + D / 2 + 0.12, frontZ = Z + D / 2;
-  const brick = (rx, ry) => canvasTex(512, 512, (g, w) => {                  // painted brick: ~2.4" x 1.5" bricks (texture = 18")
+};
+
+/* ---------------- Giant doghouse (extra): 24 x 20 x 26", sign; the pair sits in its doorway ---------------- */
+const GIANT = (() => { const S = SZ('doghouse_xl'); return { S, W: (S.w || 24) * IN, D: (S.d || 20) * IN, H: (S.h || 26) * IN }; })();
+GIANT.Z = RB + GIANT.D / 2 + 0.12; GIANT.front = GIANT.Z + GIANT.D / 2;
+BUILD.pair = () => {   // the board's dog-and-cat photo: a golden retriever and a tabby in fringed tartan scarves
+  const free = new THREE.Group(), door = new THREE.Group(); TARGET.add(free); TARGET.add(door); TARGET.userData.free = free; TARGET.userData.door = door;
+  const dh = SZ('golden').h || 11, ch = SZ('cat_fluffy').h || 8, prev = TARGET;
+  TARGET = free;
+  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0.42, 0, 2.62)); photoCard('cat_fluffy', 'cat_fluffy', ch, new THREE.Vector3(0.98, 0, 2.86));
+  contactShadow(0.42, 2.66, 0.85, 0.5, 0, 0.8); contactShadow(0.98, 2.9, 0.6, 0.38, 0, 0.8);
+  addInstancePos('bandanas', new THREE.Vector3(0.42, dh * IN * 0.55, 2.66));
+  TARGET = door;
+  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0, 0, GIANT.front + 0.07)); photoCard('cat_fluffy', 'cat_fluffy', ch, new THREE.Vector3(GIANT.W * 0.62, 0, GIANT.front + 0.22));
+  contactShadow(0, GIANT.front + 0.1, 0.85, 0.5, 0, 0.8); contactShadow(GIANT.W * 0.62, GIANT.front + 0.24, 0.55, 0.32, 0, 0.8);
+  addInstancePos('bandanas', new THREE.Vector3(0, 0.45, GIANT.front + 0.1));
+  TARGET = prev;
+};
+BUILD.giant = () => {
+  const { S } = GIANT, W = GIANT.W, D = GIANT.D, H = GIANT.H, wallH = (S.wall || 16) * IN, doorW = (S.door_w || 10) * IN, doorH = (S.door_h || 13) * IN, X = 0, Z = GIANT.Z;
+  const brick = (rx, ry) => canvasTex(512, 512, (g, w) => {
     g.fillStyle = '#3a0e0a'; g.fillRect(0, 0, w, w); const bh = w / 12, bw = bh * 2.4;
     for (let y = 0; y < w; y += bh) for (let x = (y / bh) % 2 ? -bw / 2 : 0; x < w; x += bw) { g.fillStyle = `hsl(${2 + Math.random() * 6}, ${55 + Math.random() * 15}%, ${25 + Math.random() * 9}%)`; g.fillRect(x + 3, y + 3, bw - 6, bh - 6); }
     noise(g, w, w, 9000, 0.18, ['#000', '#c86a5a']);
   }, { repeat: [rx, ry] });
-  const frontTex = canvasTex(1040, 1120, (g, w, h) => {                       // front: bricks, arched door with cream trim, cream paw on the gable
-    const b = brick(1, 1).image; for (let x = 0; x < w; x += w * 18 / 26) for (let y = 0; y < h; y += h * 18 / 28) g.drawImage(b, x, y, w * 18 / 26, h * 18 / 28);
-    const dw = w * (S.door_w || 11) / 26, dh = h * (S.door_h || 14) / 28, cx = w / 2, trim = w * 1.3 / 26;
-    g.fillStyle = '#efe0bf'; g.beginPath(); g.moveTo(cx - dw / 2 - trim, h); g.lineTo(cx - dw / 2 - trim, h - dh + dw / 2); g.arc(cx, h - dh + dw / 2, dw / 2 + trim, Math.PI, 0); g.lineTo(cx + dw / 2 + trim, h); g.fill();
-    g.fillStyle = '#1a0d07'; g.beginPath(); g.moveTo(cx - dw / 2, h); g.lineTo(cx - dw / 2, h - dh + dw / 2); g.arc(cx, h - dh + dw / 2, dw / 2, Math.PI, 0); g.lineTo(cx + dw / 2, h); g.fill();
-    drawPaw(g, cx, h * (1 - 24 / 28), w * 3.6 / 26, '#efe0bf');
+  const wIn = S.w || 24, hIn = S.h || 26;
+  const frontTex = canvasTex(1040, Math.round(1040 * hIn / wIn), (g, w, h) => {
+    const b = brick(1, 1).image; for (let x = 0; x < w; x += w * 18 / wIn) for (let y = 0; y < h; y += h * 18 / hIn) g.drawImage(b, x, y, w * 18 / wIn, h * 18 / hIn);
+    const dw = w * (S.door_w || 10) / wIn, dhh = h * (S.door_h || 13) / hIn, cx = w / 2, trim = w * 1.3 / wIn;
+    g.fillStyle = '#efe0bf'; g.beginPath(); g.moveTo(cx - dw / 2 - trim, h); g.lineTo(cx - dw / 2 - trim, h - dhh + dw / 2); g.arc(cx, h - dhh + dw / 2, dw / 2 + trim, Math.PI, 0); g.lineTo(cx + dw / 2 + trim, h); g.fill();
+    g.fillStyle = '#1a0d07'; g.beginPath(); g.moveTo(cx - dw / 2, h); g.lineTo(cx - dw / 2, h - dhh + dw / 2); g.arc(cx, h - dhh + dw / 2, dw / 2, Math.PI, 0); g.lineTo(cx + dw / 2, h); g.fill();
+    drawPaw(g, cx, h * (1 - 22 / hIn), w * 3.6 / wIn, '#efe0bf');
   }, { clamp: true });
-  const shingle = canvasTex(512, 512, (g, w) => {                             // cream shingles, 4" courses (texture = 16")
+  const shingle = canvasTex(512, 512, (g, w) => {
     g.fillStyle = '#d6c08f'; g.fillRect(0, 0, w, w); const ch = w / 4, sw = ch * 0.75;
     for (let y = 0; y < w; y += ch) for (let x = (y / ch) % 2 ? -sw / 2 : 0; x < w; x += sw) { g.fillStyle = `hsl(41, ${36 + Math.random() * 12}%, ${72 + Math.random() * 10}%)`; g.fillRect(x + 2, y, sw - 3, ch - 4); g.fillStyle = 'rgba(80,55,25,.4)'; g.fillRect(x, y + ch - 5, sw, 5); }
     noise(g, w, w, 6000, 0.14, ['#5a3d1d']);
   }, { repeat: [1, 1] });
-  const g = new THREE.Group(); g.position.set(X, 0, Z); scene.add(g);
+  const g = new THREE.Group(); g.position.set(X, 0, Z); TARGET.add(g);
   const bm = mat('doghouse_xl', THREE.MeshStandardMaterial, { map: brick(W / (18 * IN), wallH / (18 * IN)), roughness: 0.85 });
   const hidden = new THREE.MeshBasicMaterial({ visible: false });
   const body = new THREE.Mesh(new THREE.BoxGeometry(W, wallH, D), [bm, bm, hidden, hidden, hidden, bm]); body.position.y = wallH / 2; g.add(body);
   const inside = new THREE.Mesh(new THREE.BoxGeometry(W * 0.94, wallH * 0.97, D * 0.94), mat('doghouse_xl', THREE.MeshStandardMaterial, { color: 0x2a160c, roughness: 1, side: THREE.BackSide })); inside.position.y = wallH * 0.49; g.add(inside);
-  const gableS = new THREE.Shape(); gableS.moveTo(-W / 2, 0); gableS.lineTo(W / 2, 0); gableS.lineTo(W / 2, wallH); gableS.lineTo(0, H * 0.93); gableS.lineTo(-W / 2, wallH); gableS.closePath();
-  const door = new THREE.Path(); door.moveTo(-doorW / 2, 0); door.lineTo(-doorW / 2, doorH - doorW / 2); door.absarc(0, doorH - doorW / 2, doorW / 2, Math.PI, 0, true); door.lineTo(doorW / 2, 0); door.closePath();
-  const frontShape = gableS.clone(); frontShape.holes.push(door);
+  const gableS = new THREE.Shape(); gableS.moveTo(-W / 2, 0); gableS.lineTo(W / 2, 0); gableS.lineTo(W / 2, wallH); gableS.lineTo(0, H * 0.96); gableS.lineTo(-W / 2, wallH); gableS.closePath();
+  const doorP = new THREE.Path(); doorP.moveTo(-doorW / 2, 0); doorP.lineTo(-doorW / 2, doorH - doorW / 2); doorP.absarc(0, doorH - doorW / 2, doorW / 2, Math.PI, 0, true); doorP.lineTo(doorW / 2, 0); doorP.closePath();
+  const frontShape = gableS.clone(); frontShape.holes.push(doorP);
   const fg = new THREE.ShapeGeometry(frontShape, 24); { const uv = fg.attributes.uv, pp = fg.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, (pp.getX(i) + W / 2) / W, pp.getY(i) / H); }
   const front = new THREE.Mesh(fg, mat('doghouse_xl', THREE.MeshStandardMaterial, { map: frontTex, roughness: 0.82 })); front.position.z = D / 2 + 0.002; g.add(front);
   const back = new THREE.Mesh(new THREE.ShapeGeometry(gableS), bm); back.rotation.y = Math.PI; back.position.z = -D / 2 - 0.002; g.add(back);
-  const slope = Math.atan2(H * 0.93 - wallH, W / 2), rl = Math.hypot(W / 2, H * 0.93 - wallH) + 2.5 * IN;
+  const slope = Math.atan2(H * 0.96 - wallH, W / 2), rl = Math.hypot(W / 2, H * 0.96 - wallH) + 2.5 * IN;
   const rm = mat('doghouse_xl', THREE.MeshStandardMaterial, { map: shingle, roughness: 0.8 }); rm.map.repeat.set(rl / (16 * IN), (D + 4 * IN) / (16 * IN));
-  [-1, 1].forEach(sg => { const r = new THREE.Mesh(new THREE.BoxGeometry(rl, 1 * IN, D + 4 * IN), rm); r.rotation.z = -sg * slope; r.position.set(sg * (rl / 2 - 1.2 * IN) * Math.cos(slope), H * 0.93 - (rl / 2 - 1.2 * IN) * Math.sin(slope) + 0.6 * IN, 0); g.add(r); });
-  const ridge = new THREE.Mesh(new THREE.BoxGeometry(2.2 * IN, 1.4 * IN, D + 4.5 * IN), mat('doghouse_xl', THREE.MeshStandardMaterial, { color: 0xe7d6b0, roughness: 0.7 })); ridge.position.y = H * 0.93 + 1.1 * IN; g.add(ridge);
-  // the hand-painted sign under the roof edge
+  [-1, 1].forEach(sg => { const rf = new THREE.Mesh(new THREE.BoxGeometry(rl, 1 * IN, D + 4 * IN), rm); rf.rotation.z = -sg * slope; rf.position.set(sg * (rl / 2 - 1.2 * IN) * Math.cos(slope), H * 0.96 - (rl / 2 - 1.2 * IN) * Math.sin(slope) + 0.6 * IN, 0); g.add(rf); });
+  const ridge = new THREE.Mesh(new THREE.BoxGeometry(2.2 * IN, 1.4 * IN, D + 4.5 * IN), mat('doghouse_xl', THREE.MeshStandardMaterial, { color: 0xe7d6b0, roughness: 0.7 })); ridge.position.y = H * 0.96 + 1.1 * IN; g.add(ridge);
   const signT = canvasTex(1024, 256, (c, w, h) => {
     c.fillStyle = '#ecdcb6'; c.fillRect(0, 0, w, h); for (let i = 0; i < 60; i++) { c.strokeStyle = `rgba(150,110,60,${0.05 + Math.random() * 0.08})`; c.lineWidth = 1 + Math.random() * 2; c.beginPath(); const y = Math.random() * h; c.moveTo(0, y); c.bezierCurveTo(w * 0.3, y + 6, w * 0.6, y - 6, w, y + 3); c.stroke(); }
     c.strokeStyle = '#8b1a1f'; c.lineWidth = 10; c.strokeRect(14, 14, w - 28, h - 28);
@@ -857,12 +978,22 @@ const tartanBoxRibbon = tartanMat('tartan_ribbon');
   g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   tag(g, 'doghouse_xl'); addInstancePos('doghouse_xl', new THREE.Vector3(X, H * 0.6, Z));
   contactShadow(X, Z, W * 1.45, D * 1.45, 0, 0.85);
-  // the family dog sits in the doorway in the fringed tartan scarf; the tabby sits beside it
-  photoCard('golden_scarf', 'golden', SZ('golden').h || 10, new THREE.Vector3(X, 0, frontZ + 0.07));
-  photoCard('tabby_cat_s', 'tabby_brown', SZ('tabby_brown').h || 6, new THREE.Vector3(X + W * 0.62, 0, frontZ + 0.22));
-  contactShadow(X, frontZ + 0.1, 0.85, 0.5, 0, 0.8); contactShadow(X + W * 0.62, frontZ + 0.24, 0.55, 0.32, 0, 0.8);
-  addInstancePos('bandanas', new THREE.Vector3(X, 0.45, frontZ + 0.1)); addInstancePos('bandanas', new THREE.Vector3(X + W * 0.62, 0.32, frontZ + 0.24));
+};
+
+/* ---------------- Build every option of every element, each in its own group ---------------- */
+const GROUPS = {};
+const rowId = (el, opt) => ((EL[el].options.find(o => o.id === opt).rows || [])[0] || {}).id;
+function build(el, opt) {
+  const g = new THREE.Group(); g.name = el + '.' + opt; scene.add(g); (GROUPS[el] ||= {})[opt] = g;
+  const o = EL[el].options.find(x => x.id === opt); if (!o.rows.length && !Object.keys(o.render || {}).length) return g;   // "none"
+  const prevT = TARGET, prevC = CTX; TARGET = g; CTX = { el, opt, def: EL[el].default === opt };
+  try { BUILD[el](o.render || {}, rowId(el, opt)); } finally { TARGET = prevT; CTX = prevC; }
+  return g;
 }
+const ORDER = ['topper', 'flourish', 'giant', 'gifts', 'floor', 'basket', 'pair', 'dogs', 'cats', 'doghouses', 'paws', 'bones', 'ribbon', 'baubles', 'stockings', 'greens'];   // hero pieces first, so they get the front
+ORDER.forEach(el => build(el, EL[el].default));                                                     // the board match gets the best spots
+ORDER.forEach(el => EL[el].options.forEach(o => { if (o.id !== EL[el].default) build(el, o.id); }));   // each alternative fits round the others' defaults
+
 
 scene.traverse(o => { if (o.isMesh && o.material && !o.material.isMeshBasicMaterial) [].concat(o.material).forEach(m => { if (m.envMapIntensity === 1) m.envMapIntensity = 0.7; }); });
 
@@ -893,7 +1024,7 @@ frameHooks.push(() => { const dt = Math.min(pclock.getDelta(), 0.1); if (person.
 const ftIn = inches => `${Math.floor(inches / 12)}'${Math.round(inches % 12)}"`;
 const MEASURE = [
   { el: null, text: () => `Tree ${ftIn(90)}`, at: () => new THREE.Vector3(0, YTOP, 0) },
-  { el: null, text: () => `Doghouse ${ftIn(SZ('doghouse_xl').h || 28)}`, at: () => new THREE.Vector3(0, (SZ('doghouse_xl').h || 28) * IN, RB + (SZ('doghouse_xl').d || 22) * IN / 2 + 0.12) },
+  { el: null, text: () => `Doghouse ${ftIn(SZ('doghouse_xl').h || 26)}`, at: () => new THREE.Vector3(0, GIANT.H, GIANT.Z), when: () => SEL.giant === 'build' },
   { el: null, text: () => `Person ${ftIn(PERSON.heightIn)}`, at: () => person.position.clone().add(new THREE.Vector3(0, PERSON.heightIn * IN, 0)) },
 ];
 
@@ -932,17 +1063,18 @@ function setHighlight(ids) {
   }));
   ids.forEach(id => (itemMats[id] || []).forEach(m => { if (m.emissiveMap) m.emissiveIntensity = m.userData.baseEI + 0.35; else if (m.emissive) m.emissive.setRGB(0.22, 0.15, 0.05); }));
   markerGroup.clear();
-  ids.forEach(id => (instancesOf[id] || []).forEach(p => {
+  ids.forEach(id => visiblePts(id).forEach(p => {
     const s = new THREE.Sprite(markerMat); s.position.copy(p); s.scale.setScalar(0.3); s.renderOrder = 999; markerGroup.add(s);
   }));
 }
 
 const card = document.getElementById('card');
+card.addEventListener('click', onOptClick);
 function select(id, { focus = false } = {}) {
   selected = id;
   document.querySelectorAll('.item').forEach(el => el.classList.toggle('on', el.dataset.id === id));
   if (!id) { card.hidden = true; setHighlight([]); return; }
-  const it = BY_ID[id]; const extra = NOT_ON_TREE[id];
+  const it = BY_ID[id] || { ...CAT[id], qty: 0, total: 0 }; const extra = NOT_ON_TREE[id]; const el = ELEMENT_OF[id];
   const showIds = extra ? extra.show : [id];
   setHighlight(showIds);
   const storeShort = it.store.replace(/ \(.*\)$/, '');
@@ -951,11 +1083,13 @@ function select(id, { focus = false } = {}) {
       <button class="close" type="button" aria-label="Close">✕</button></div>
     <div class="facts">
       <div class="fact"><span>Cost</span><b>${it.diy ? 'DIY' : money(it.price)}</b></div>
-      <div class="fact"><span>${it.diy ? 'Makes' : 'Qty'}</span><b>${it.diy ? it.made : it.qty}</b></div>
+      <div class="fact"><span>${it.diy ? 'Makes' : 'Qty'}</span><b>${it.diy ? (it.made ?? '—') : it.qty}</b></div>
       <div class="fact"><span>Total</span><b>${money(it.total)}</b></div>
     </div>
     ${it.img || it.notes ? `<div class="photo">${it.img ? `<img src="${it.img}" alt="Listing photo: ${it.name.replace(/"/g, '&quot;')}">` : ''}<div>${it.match ? `<span class="ok">${it.diy ? 'DIY: target look from our board' : { match: 'Photo matches the look', close: 'Close to the look' }[it.match]}</span>` : ''}<p>${it.notes || ''}${it.arrives_by ? ` <b>Arrives by ${new Date(it.arrives_by + 'T12:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}.</b>` : ''}</p></div></div>` : ''}
-    ${DIY_HOW[id] ? `<p class="where"><b>${it.diy ? 'How to make it' : 'Finishing touch'}:</b> ${DIY_HOW[id]}</p>` : ''}
+    ${it.how ? `<p class="where"><b>${it.diy ? 'How to make it' : 'Finishing touch'}:</b> ${it.how}</p>` : ''}
+    ${it.materials ? `<p class="src">Materials in this total: ${it.materials.map(s => { const x = CUR.supplies.find(y => y.id === s); return x ? `${x.qty} × ${x.name}` : s; }).join('; ')}.</p>` : ''}
+    ${el && EL[el].options.length > 1 ? `<div class="cardswap"><span>Swap ${EL[el].title.toLowerCase()}</span><div class="opts compact" role="radiogroup" aria-label="${EL[el].title}">${optButtons(EL[el], { compact: true })}</div></div>` : ''}
     ${extra ? `<p class="where">${extra.note}</p>` : ''}
     <p class="src">${it.diy ? 'Materials from ' : 'Buy from '}${it.store}. ${STATUS[it.status]}${it.diy ? ' of materials' : ''}.</p>
     <a class="buy" href="${it.url}" target="_blank" rel="noopener">${it.diy ? 'Get the materials at ' : 'Open at '}${storeShort.replace(/, South Edmonton.*$/, '')} ↗</a>`;
@@ -968,7 +1102,7 @@ function select(id, { focus = false } = {}) {
 // Camera focus animation toward the instance closest to the current view
 let anim = null;
 function focusOn(ids) {
-  const pts = ids.flatMap(i => instancesOf[i] || []); if (!pts.length) return;
+  const pts = ids.flatMap(visiblePts); if (!pts.length) return;
   stopSpin();
   const camAz = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z);
   let best = pts[0], bestD = Infinity;
@@ -997,7 +1131,7 @@ function pick(ev) {
   const r = canvas.getBoundingClientRect();
   ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
-  const hits = ray.intersectObjects([...pickables, core], false);
+  const hits = ray.intersectObjects([...pickables, core], false).filter(h => shown(h.object));
   if (!hits.length || hits[0].object.userData.occluder) return null;
   return hits[0].object.userData.itemId || null;
 }
@@ -1014,7 +1148,7 @@ canvas.addEventListener('pointerleave', () => { tip.hidden = true; canvas.classL
 function doHover() {
   if (!hoverQueued) return; const e = hoverQueued; hoverQueued = null;
   const id = pick(e);
-  if (id) { const r = stage.getBoundingClientRect(); tip.textContent = BY_ID[id].name.replace(/ \(.*?\)/g, '').split(':')[0]; tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px'; tip.hidden = false; canvas.classList.add('hovering'); }
+  if (id) { const r = stage.getBoundingClientRect(); tip.textContent = (BY_ID[id] || CAT[id]).name.replace(/ \(.*?\)/g, '').split(':')[0]; tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px'; tip.hidden = false; canvas.classList.add('hovering'); }
   else { tip.hidden = true; canvas.classList.remove('hovering'); }
 }
 
@@ -1086,8 +1220,22 @@ document.querySelectorAll('[data-room]').forEach(b => { b.onclick = () => setRoo
   const v = new THREE.Vector3();
   frameHooks.push(() => {
     if (layer.hidden) return; const r = canvas.getBoundingClientRect();
-    MEASURE.forEach(m => { v.copy(m.at()).project(camera); const vis = v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1; m.el.hidden = !vis; if (!vis) return;
+    MEASURE.forEach(m => { v.copy(m.at()).project(camera); const vis = (!m.when || m.when()) && v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1; m.el.hidden = !vis; if (!vis) return;
       m.el.textContent = m.text(); m.el.style.left = ((v.x + 1) / 2 * r.width) + 'px'; m.el.style.top = ((1 - v.y) / 2 * r.height) + 'px'; });
   });
 }
-window.__howl = { select, instancesOf, pickables, stop: () => renderer.setAnimationLoop(null), frame, camera, controls };
+/* ---------------- Apply a selection: show its groups, re-resolve the list, budget and exports ---------------- */
+function applySel({ focusEl } = {}) {
+  O.elements.forEach(e => Object.entries(GROUPS[e.id] || {}).forEach(([o, g]) => { g.visible = o === SEL[e.id]; }));
+  const pg = GROUPS.pair && GROUPS.pair.pair;   // the dog and cat sit in the giant doghouse's doorway when it is built
+  if (pg && pg.userData.free) { pg.userData.free.visible = SEL.giant !== 'build'; pg.userData.door.visible = SEL.giant === 'build'; }
+  CUR = window.howlResolve(O, SEL); ITEMS = CUR.items; BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+  try { localStorage.setItem(SEL_KEY, JSON.stringify(SEL)); } catch (e) {}
+  document.getElementById('about').textContent = window.howlDocs ? window.howlDocs.aboutText(SEL) : ABOUT;
+  renderBudget(); renderList(); renderSwaps(); if (window.howlExportRefresh) window.howlExportRefresh();
+  if (selected) { if (BY_ID[selected] || (ELEMENT_OF[selected] && visiblePts(selected).length)) select(selected); else select(null); }
+  renderer.shadowMap.needsUpdate = true;
+  if (focusEl) { const ids = visibleIdsOf(focusEl); if (ids.length) { setHighlight(ids); focusOn(ids); } }
+}
+applySel();
+window.__howl = { select, instancesOf, pickables, stop: () => renderer.setAnimationLoop(null), frame, camera, controls, setSel: s => { SEL = { ...SEL, ...s }; applySel(); }, sel: () => ({ ...SEL }), totals: () => CUR.totals, groups: GROUPS };

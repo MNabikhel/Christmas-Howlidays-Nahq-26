@@ -1,4 +1,5 @@
 {
+ "checked": "2026-11-16",
  "scale": {
   "tree_in": 90,
   "px_per_in": [
@@ -7,54 +8,26 @@
   ],
   "how": "Measured on the board's tree panel (858 x 1281 px). 13 px per inch if the tree's visible height (tip to floor, about 1,120 px) is 7.5 ft; 20 px per inch if its visible width is a real 52\" tree. The board is AI-generated and not drawn to scale, so each element is given as a range."
  },
- "checkpoint": {
-  "done": 3,
-  "of": 14,
-  "note": "Checkpoint after the first three elements, as agreed. Nothing on the order list or the Tree Gallery form has changed yet."
- },
- "elements": [
-  {
-   "id": "topper",
-   "title": "Burlap paw-print bow topper",
+ "elements": {
+  "topper": {
    "board": [
     "board_topper",
     "board_topper_panel"
    ],
    "board_desc": "Natural burlap bow, two big loops and two tails, black paw prints, wired edges. About 310 px wide on the board.",
-   "board_size": {
+   "size": {
     "label": "bow width",
-    "px": 310,
-    "in": [
+    "board": [
      15.5,
      23.8
-    ]
+    ],
+    "ours": {
+     "burlap6": 22,
+     "burlap4": 24,
+     "printed": 20
+    }
    },
-   "current": {
-    "desc": "24\" bow with four loops, from 4\" natural burlap stencilled with black paws; two streamers run down the tree to the giant doghouse, and 12 gold sprays fan out behind it.",
-    "size_in": 24,
-    "render": "r3d_topper"
-   },
-   "chosen": {
-    "asin": "B0CHMLF3NP",
-    "name": "Natural burlap wired ribbon, 4\" x 10 yd (x2), stencilled with 2.2\" black paws",
-    "price": 16.8,
-    "qty": 2,
-    "photo": "p_B0CHMLF3NP",
-    "url": "https://www.amazon.ca/dp/B0CHMLF3NP",
-    "size_in": 22,
-    "proposed": "Tie it like the board: two 9\" loops and two 14\" tails, 22\" across, instead of four loops.",
-    "why": "The only natural (tan) burlap at 4\" that arrived in time. No ready-printed ribbon has black paws on natural burlap at this width, so we stencil them."
-   },
-   "verdict": "match",
-   "verdict_note": "Same material, colour and paw print as the board once stencilled. Our version uses fabric paint through a stencil rather than a printed pattern; from viewing distance they look the same.",
-   "alternatives": [
-    {
-     "asin": "B09H2YMHCL",
-     "name": "2.5\" paw-print burlap ribbon, brown paws",
-     "price": 20.56,
-     "photo": "p_B09H2YMHCL",
-     "why": "Brown paws, not black, and 2.5\" wide: a 22\" bow from it has loops about half the board's thickness."
-    },
+   "considered": [
     {
      "asin": "B0GS4ZCWPW",
      "name": "6 rolls of paw-print ribbon, 1.5-2.5\" (the original pick)",
@@ -82,100 +55,87 @@
      "price": 22.99,
      "photo": "p_B0FK9YMTMG",
      "why": "The title says burlap but the photo is black mesh. Listed here because it looked like a backup from its title."
+    },
+    {
+     "asin": "B0CWTXRS4Q",
+     "name": "Natural burlap wired ribbon 4\" x 20 yd",
+     "price": 23.99,
+     "photo": "p_B0CWTXRS4Q",
+     "why": "The widest wired natural burlap in this family is 4\": two-thirds of the board's ribbon."
+    },
+    {
+     "asin": "B0BZHHCWKJ",
+     "name": "Whaline iron-on black paw transfers, 4 sheets",
+     "price": 23.98,
+     "photo": "p_B0BZHHCWKJ",
+     "why": "Crisp paws, but $29.13 with shipping and needs an iron; black felt paws from the felt we already buy look the same from viewing distance."
     }
    ],
-   "additions": [
-    "Two streamers down to the giant doghouse and the gold crown behind the bow are our additions; the board has neither. Keep them, or match the board exactly?"
-   ],
-   "verify": [
-    "B0CHMLF3NP: price, stock (only 2 rolls left on Nov 13; we need both), photo is natural tan, delivery to Edmonton by Nov 21",
-    "If sold out: search 'natural burlap ribbon 4 inch wired' and pick a tan, 4\"-wide roll; compare its photo with the board crop"
-   ],
-   "budget_change": 0
+   "verified": null
   },
-  {
-   "id": "pets",
-   "title": "Dog and cat ornaments on the tree",
+  "flourish": {
+   "board": [
+    "board_tree"
+   ],
+   "board_desc": "The board's topper has no streamers or gold sprays behind it; these are optional extras for impact.",
+   "considered": [],
+   "verified": null
+  },
+  "dogs": {
    "board": [
     "board_dog",
-    "board_cat_a",
-    "board_cat_b",
     "board_pets_panel"
    ],
-   "board_desc": "A golden retriever puppy sitting, red tartan scarf, mouth open. A brown tabby sitting upright. A grey-and-white tabby sitting, white chest, red tartan scarf with fringe.",
-   "board_size": {
-    "label": "height",
-    "items": [
-     {
-      "name": "dog",
-      "px": 205,
-      "in": [
-       10.2,
-       15.8
-      ]
-     },
-     {
-      "name": "brown tabby",
-      "px": 165,
-      "in": [
-       8.2,
-       12.7
-      ]
-     },
-     {
-      "name": "grey tabby",
-      "px": 197,
-      "in": [
-       9.8,
-       15.2
-      ]
-     }
-    ]
-   },
-   "current": {
-    "desc": "2 golden retriever plush (12\", about 11\" sitting) and 3 grey tabby kittens (Wild Republic Pocketkins, 4.7\") on the tree, each in a fringed tartan scarf.",
-    "render": "r3d_golden",
-    "render2": "r3d_tabby",
-    "render2_note": "In the current preview the 4.7\" kitten is buried behind the 11\" tartan bows: it is too small to read on the tree."
-   },
-   "chosen": {
-    "name": "Dogs: keep the Wild Republic 12\" golden retriever. Cats: replace the 4.7\" kittens with an 8\" sitting grey-and-white tabby (FLUFFYFUN), 2 on the tree.",
-    "items": [
-     {
-      "asin": "B01N4NC8QY",
-      "name": "Wild Republic golden retriever plush, 12\" (sits about 11\")",
-      "price": 19.37,
-      "qty": 3,
-      "photo": "p_B01N4NC8QY",
-      "url": "https://www.amazon.ca/dp/B01N4NC8QY",
-      "verdict": "match",
-      "size_in": 11,
-      "why": "Sitting pose, golden coat, floppy ears and dark eyes like the board's puppy; 11\" sitting is inside the board's 10-16\" range. The cheapest of the realistic sitting goldens."
-     },
-     {
-      "asin": "B0H5YKFT7X",
-      "name": "FLUFFYFUN realistic grey tabby plush, 8\", sitting",
-      "price": 34.19,
-      "qty": 2,
-      "photo": "p_B0H5YKFT7X",
-      "url": "https://www.amazon.ca/dp/B0H5YKFT7X",
-      "verdict": "close",
-      "size_in": 8,
-      "why": "The only sitting grey-and-white tabby with a white chest in the results, like the board's lower cat. 8\" is at the bottom of the board's 8-15\" range."
-     }
+   "board_desc": "A golden retriever puppy sitting, red tartan scarf, mouth open; about as tall as the doghouse beside it.",
+   "size": {
+    "label": "dog height",
+    "board": [
+     10.2,
+     15.8
     ],
-    "proposed": "2 dogs and 2 cats on the tree (the board's front shows 1 dog and 2 cats); the 3rd dog and the Zigby cat stay under the tree."
+    "ours": {
+     "cuddlekins": 11,
+     "aurora": 13,
+     "one": 11
+    }
    },
-   "verdict": "close",
-   "verdict_note": "Dog: match. Cats: close. The FLUFFYFUN cat is sitting and coloured like the board's grey tabby, but at 8\" it is at the small end of the board's size, and none of the sitting cats found is a brown tabby like the board's upper cat. Its delivery date was missing from the search results.",
-   "alternatives": [
+   "considered": [
     {
-     "asin": "B0CVNDJS4D",
-     "name": "Wild Republic Pocketkins grey tabby, 5\" (current)",
-     "price": 10.66,
-     "photo": "p_B0CVNDJS4D",
-     "why": "Right look, but 4.7\" is a third to a half of the board's cats, and it disappears behind the bows in the preview."
+     "asin": "B00J6F5438",
+     "name": "Douglas Chap golden retriever (dog option)",
+     "price": 34.26,
+     "photo": "p_B00J6F5438",
+     "why": "Very realistic coat, but standing; the board's puppy sits."
     },
+    {
+     "asin": "B0CMWYVLWR",
+     "name": "WEIGEDU Labrador golden (dog option)",
+     "price": 35.99,
+     "photo": "p_B0CMWYVLWR",
+     "why": "Pale yellow Labrador, not a golden retriever; sits in side profile."
+    }
+   ],
+   "verified": null
+  },
+  "cats": {
+   "board": [
+    "board_cat_a",
+    "board_cat_b"
+   ],
+   "board_desc": "A grey-and-white tabby sitting, white chest, red tartan scarf with fringe; and a brown tabby sitting upright higher up.",
+   "size": {
+    "label": "cat height",
+    "board": [
+     8.2,
+     15.2
+    ],
+    "ours": {
+     "fluffy": 8,
+     "pocketkins": 4.7,
+     "zigby": 6
+    }
+   },
+   "considered": [
     {
      "asin": "B00SUECA2E",
      "name": "Aurora Lily grey tabby flopsie, 12\"",
@@ -198,13 +158,6 @@
      "why": "The right brown tabby coat for the board's upper cat, but lying curled with a long tail."
     },
     {
-     "asin": "B086H6SNL7",
-     "name": "Douglas Zigby grey tabby, 8\" long",
-     "price": 24.99,
-     "photo": "p_B086H6SNL7",
-     "why": "Standing, about 6\" tall: good under the tree (where we use it), too small and the wrong pose for the branches."
-    },
-    {
      "asin": "B0H1XK9MBF",
      "name": "The Petting Zoo grey tabby kitten",
      "price": 28.2,
@@ -219,67 +172,34 @@
      "why": "Standing with tail up, and delivery Dec 4-24: misses the Nov 30 cutoff."
     },
     {
-     "asin": "B00ILYHVDQ",
-     "name": "Aurora Golden Lab, 14\" (dog option)",
-     "price": 37.76,
-     "photo": "p_B00ILYHVDQ",
-     "why": "Sitting and bigger (about 13\"), nearer the top of the board's range, but a rounder, cartoon face; nearly twice the price plus $6.21 shipping."
-    },
-    {
-     "asin": "B00J6F5438",
-     "name": "Douglas Chap golden retriever (dog option)",
-     "price": 34.26,
-     "photo": "p_B00J6F5438",
-     "why": "Very realistic coat, but standing; the board's puppy sits."
-    },
-    {
-     "asin": "B0CMWYVLWR",
-     "name": "WEIGEDU Labrador golden (dog option)",
-     "price": 35.99,
-     "photo": "p_B0CMWYVLWR",
-     "why": "Pale yellow Labrador, not a golden retriever; sits in side profile."
+     "asin": "B0G58FV7YK",
+     "name": "15.8\" realistic grey tabby, lying",
+     "price": 17.26,
+     "photo": "p_B0G58FV7YK",
+     "why": "Right coat and cheap, but lying flat: on a branch it reads as a draped toy, and the board's cats sit."
     }
    ],
-   "verify": [
-    "B01N4NC8QY: price, stock for 3, delivery by Nov 21",
-    "B0H5YKFT7X: price, stock for 2, delivery date (missing in the results), and its real sitting height",
-    "Search for a closer cat: 'Wild Republic Cuddlekins tabby cat 12', 'sitting tabby cat plush 10 inch', 'brown tabby cat plush sitting'. Pick one that sits upright, is 9-12\", and arrives by Nov 21; compare its photo with both board cats"
-   ],
-   "budget_change": 36.4
+   "verified": null
   },
-  {
-   "id": "doghouse",
-   "title": "Doghouse ornaments",
+  "doghouses": {
    "board": [
     "board_doghouse",
     "board_doghouse_panel"
    ],
    "board_desc": "Red doghouse with brick walls, a cream wood-shingle roof with deep overhang and a ridge cap, an arched door with a thick cream trim and a dark opening, and a cream paw on the gable.",
-   "board_size": {
-    "label": "height",
-    "px": 200,
-    "in": [
+   "size": {
+    "label": "doghouse height",
+    "board": [
      10.0,
      15.4
-    ]
+    ],
+    "ours": {
+     "diy10": 10,
+     "diy10x4": 10,
+     "diy43": 4.3
+    }
    },
-   "current": {
-    "desc": "12 DIY doghouses, 4.3\" tall, from 3/16\" foam board using the printed template: arched door, scored bricks, cream shingle roof, cream paw on the gable. On the tree they sit behind the 11\" tartan bows and almost disappear.",
-    "size_in": 4.3,
-    "render": "r3d_doghouse_far"
-   },
-   "chosen": {
-    "name": "Same DIY doghouse, enlarged to the board's scale: 10\" tall x 8\" wide x 6\" deep, 6 of them (2-3 visible from any side)",
-    "price": 53.91,
-    "qty": 1,
-    "photo": "r3d_doghouse_iso",
-    "size_in": 10,
-    "materials": "9 sheets of 16 x 20\" foam board ($53.91, was 4 sheets for $23.96) and one more red paint ($12.99); the rest of the paint, glue and stencils are already on the list. About 90 g each, so floral wire to a sturdy branch holds it.",
-    "why": "No bought doghouse ornament matches the board's style and size; the closest are breed-themed or 2-3\" tall. DIY lets us copy the board's design exactly, and the template already exists."
-   },
-   "verdict": "match",
-   "verdict_note": "The design matches the board's doghouse detail for detail. The size changes from 4.3\" to 10\" so it reads on the tree as it does on the board (10-15\").",
-   "alternatives": [
+   "considered": [
     {
      "asin": "B0BKBVLS3V",
      "name": "Make Market 4.3\" birdhouses, 12 pk (the old pick)",
@@ -313,11 +233,209 @@
      "why": "2.3\" tall: far too small, and plain."
     }
    ],
-   "verify": [
-    "DeSerres foam board 16 x 20\" (foam-board-white-16x20): stock for 9 sheets",
-    "Re-run build/build_plan.py with the new size so paint and glue are recalculated before ordering"
+   "verified": null
+  },
+  "paws": {
+   "board": [
+    "board_paw"
    ],
-   "budget_change": 42.94
+   "board_desc": "A cream, finely textured disc in a gold rim with a gold cap, a black glittery paw, and a deep red velvet bow with long tails above it.",
+   "size": {
+    "label": "ornament width",
+    "board": [
+     5.4,
+     8.2
+    ],
+    "ours": {
+     "hoop": 6,
+     "hoop_fay": 6,
+     "wood": 4
+    }
+   },
+   "considered": [
+    {
+     "asin": "B0HDCZN38P",
+     "name": "ZerUprin red velvet bows, 12 x 9\" (12 pc)",
+     "price": 29.99,
+     "photo": "p_B0HDCZN38P",
+     "why": "Ready-made, but bright red and flat; the board's bow is deep red, hand-tied, with soft wired loops."
+    },
+    {
+     "asin": "B0D8JG87WX",
+     "name": "JOYIN red velvet bows, 10 x 26\" (12 pc)",
+     "price": 39.99,
+     "photo": "p_B0D8JG87WX",
+     "why": "The board's size, but bright red, tails 26\" long, and arrives Nov 21-22."
+    },
+    {
+     "asin": "B0HDXK13R2",
+     "name": "Red velvet bows, 5 x 10\" (12 pc)",
+     "price": 25.99,
+     "photo": "p_B0HDXK13R2",
+     "why": "Half the board's bow size on a 6\" ornament."
+    },
+    {
+     "asin": "B0GCZNCGWB",
+     "name": "Ivory Aida cloth, 14 count (Amazon)",
+     "price": 19.99,
+     "photo": "p_B0GCZNCGWB",
+     "why": "The same 14-count ivory weave at twice the DeSerres price."
+    }
+   ],
+   "verified": null
+  },
+  "bones": {
+   "board": [
+    "board_bone",
+    "board_bone2"
+   ],
+   "board_desc": "Cream, smooth, puffy bones with round knobs, like big biscuits; about as long as the dog is tall.",
+   "size": {
+    "label": "bone length",
+    "board": [
+     7.0,
+     11.0
+    ],
+    "ours": {
+     "clay9": 9,
+     "fleece9": 9,
+     "clay5": 5
+    }
+   },
+   "considered": [],
+   "verified": null
+  },
+  "baubles": {
+   "board": [
+    "board_baubles"
+   ],
+   "board_desc": "Big glossy and glitter red balls, champagne-gold balls, a few forest green; the biggest reds are about the size of the dog's head.",
+   "size": {
+    "label": "biggest red ball",
+    "board": [
+     4.5,
+     7.0
+    ],
+    "ours": {
+     "board": 6,
+     "painted": 6,
+     "original": 3.15
+    }
+   },
+   "considered": [
+    {
+     "asin": "B0H4QQGQFG",
+     "name": "Wine-red flocked velvet balls, 5.9\" (4 pc)",
+     "price": 56.49,
+     "photo": "p_B0H4QQGQFG",
+     "why": "Velvet-flocked wine red; the board's balls are glossy and glitter. Also $6.43 shipping."
+    },
+    {
+     "asin": "B0FHK76NRC",
+     "name": "Lanpn velvet balls, 6\" (4 pc)",
+     "price": 44.99,
+     "photo": "p_B0FHK76NRC",
+     "why": "Patterned velvet, not the board's plain glossy red."
+    },
+    {
+     "asin": "B08BZCDMH7",
+     "name": "Red mercury-glass balls, 6\" (4 pc)",
+     "price": 46.99,
+     "photo": "p_B08BZCDMH7",
+     "why": "Ribbed mercury finish, and arrives Nov 25."
+    },
+    {
+     "asin": "B0H39G253M",
+     "name": "Lanpn painted balls, 6\" (6 pc)",
+     "price": 53.99,
+     "photo": "p_B0H39G253M",
+     "why": "Painted snowflakes and reindeer: busier than the board's plain balls."
+    },
+    {
+     "asin": "B09BB4W1F3",
+     "name": "Red balls, 3.94\" (6 pc)",
+     "price": 28.99,
+     "photo": "p_B09BB4W1F3",
+     "why": "The same size as our 4\" glitter set: a near-duplicate."
+    }
+   ],
+   "verified": null
+  },
+  "ribbon": {
+   "board": [
+    "board_ribbon"
+   ],
+   "board_desc": "4\" red-and-green tartan with a thin gold line, running top to bottom in loose waves, with big hand-tied bows along it.",
+   "size": {
+    "label": "bow width",
+    "board": [
+     9.5,
+     14.6
+    ],
+    "ours": {
+     "full": 11,
+     "bows": 11,
+     "more": 11
+    }
+   },
+   "considered": [],
+   "verified": null
+  },
+  "stockings": {
+   "board": [
+    "board_bullets"
+   ],
+   "board_desc": "\"Mini pet stockings\" is on the board's list but not in any of its photos.",
+   "considered": [],
+   "verified": null
+  },
+  "greens": {
+   "board": [
+    "board_greens"
+   ],
+   "board_desc": "Glossy red berry clusters, pine cones and holly, and gold glitter sprays through the branches.",
+   "considered": [],
+   "verified": null
+  },
+  "gifts": {
+   "board": [
+    "board_gifts"
+   ],
+   "board_desc": "Tartan-wrapped boxes tied with cream ribbon and cream bows, and a kraft paw-print box with tartan ribbon and a cream bow.",
+   "considered": [],
+   "verified": null
+  },
+  "floor": {
+   "board": [
+    "board_floor"
+   ],
+   "board_desc": "A cream sherpa bone pillow with a black paw, and a glossy red bowl with white paws.",
+   "considered": [],
+   "verified": null
+  },
+  "basket": {
+   "board": [
+    "board_basket"
+   ],
+   "board_desc": "A wicker basket with a glass jar of bone biscuits tied with a red velvet bow, a red ball, rope toys, a cream bone toy with a black paw, a pet store gift card and a red paw-print throw.",
+   "considered": [],
+   "verified": null
+  },
+  "pair": {
+   "board": [
+    "board_pets_panel"
+   ],
+   "board_desc": "A golden retriever and a grey tabby side by side in fringed tartan scarves.",
+   "considered": [],
+   "verified": null
+  },
+  "giant": {
+   "board": [
+    "board_tree"
+   ],
+   "board_desc": "Not on the board: an optional centrepiece.",
+   "considered": [],
+   "verified": null
   }
- ]
+ }
 }

@@ -28,3 +28,4 @@ Agreed with Muntaz on Nov 16, 2026. It replaces the earlier goals: their tests (
 - **Order:** element by element, most visible first: topper, pets, doghouse ornaments, paw ornaments, bones, baubles, ribbon and bows, stockings, gold and greens, gift basket, under-tree pieces, giant doghouse.
 - **Checkpoint:** stop after the first three elements and show Muntaz, so the standard can be corrected before the rest.
 - **Approval:** an element is finished only when its lookbook page is complete and Muntaz has approved it.
+- **Nov 16 update:** Muntaz asked for an exact match to the board and delegated the choices ("make the judgment yourself"). Every element now has a board-match default and 1-3 swap options in the 3D page; the defaults are documented judgments, each reversible, and the list, budget and Word exports follow whatever is selected.

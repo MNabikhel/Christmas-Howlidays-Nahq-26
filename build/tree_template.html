@@ -128,6 +128,37 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 30px; line-height
 .item .meta a { color: var(--pine); font-weight: 600; text-underline-offset: 2px; }
 .item.nov .nm::after { content: " · not on tree"; font-weight: 400; color: var(--muted); font-size: 12px; }
 .fine { margin-top: 18px; font-size: 12px; color: var(--muted); }
+.budget em { font-style: normal; font-weight: 700; }
+.budget em.tight { color: var(--gold); } .budget em.over { color: var(--berry); }
+.budget .warn { margin: 0; font-size: 12.5px; font-weight: 600; color: var(--berry); }
+.budget .selnote { margin: 0; font-size: 12px; color: var(--muted); }
+.linkish { border: 0; background: none; padding: 0; color: var(--pine); font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font-size: inherit; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: 0 0 6px; position: sticky; top: -20px; background: var(--surface); z-index: 1; padding-top: 6px; }
+.tabs button { border: 0; background: none; padding: 9px 12px 8px; font-weight: 700; font-size: 13.5px; color: var(--muted); cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--berry); }
+.swaphint { margin: 10px 0 4px; font-size: 12.5px; color: var(--muted); }
+.swap { padding: 12px 0 10px; border-bottom: 1px solid var(--line); }
+.swap-h { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.swap-h b { font-size: 13.5px; }
+.swap-h .see { margin-left: auto; font-size: 12px; }
+.swap .why { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+.opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.opt { display: grid; grid-template-columns: 40px minmax(0, 1fr); grid-template-rows: auto auto; gap: 1px 8px; align-items: center; text-align: left;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 8px 6px 6px; cursor: pointer; min-height: 52px; }
+.opt:hover { border-color: var(--muted); }
+.opt[aria-checked="true"] { border-color: var(--pine); box-shadow: inset 0 0 0 1.5px var(--pine); background: var(--sel); }
+.opt img, .opt .nothumb { grid-row: span 3; width: 40px; height: 40px; border-radius: 7px; object-fit: cover; background: #fff; border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); }
+.opt .ol { font-size: 12.5px; font-weight: 600; line-height: 1.25; }
+.opt .ol .star { font-style: normal; color: var(--gold); }
+.opt .od { font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 600; }
+.opt .od.up { color: var(--berry); } .opt .od.down { color: var(--pine); }
+.om { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; justify-self: start; }
+.om.match { background: var(--chip); color: var(--pine); } .om.close { background: var(--sel); color: var(--gold); } .om.extra { background: var(--chip); color: var(--muted); }
+.cardswap { display: grid; gap: 5px; border-top: 1px solid var(--line); padding-top: 8px; }
+.cardswap > span { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.opts.compact { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); max-height: 128px; overflow-y: auto; }
+.opts.compact .opt { min-height: 44px; grid-template-columns: 32px minmax(0, 1fr); }
+.opts.compact .opt img, .opts.compact .opt .nothumb { width: 32px; height: 32px; }
 
 @media (max-width: 899px) {
   html, body { height: auto; }
@@ -178,12 +209,19 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 30px; line-height
       </div>
       <p id="exportMsg" aria-live="polite">The organizers' form in its original layout; the plan with build sheets and the buy list by store; true-size templates.</p>
     </div>
-    <div class="list" id="list"></div>
-    <p class="fine">Every product photo was checked against the inspiration image and prices were read from the live listings on Nov 13, 2026, so confirm them at checkout. Every item in the 3D view is drawn at its real size from the listing measurements, so the preview matches what we build. Tap one to see the listing; tap Compare to see the inspiration board. DIY items are made by the committee, and their totals are the cost of materials. Every ornament gets secured with floral wire, and there's no tree skirt (the organizers cover the base).</p>
+    <div class="tabs" role="tablist" aria-label="Plan">
+      <button type="button" role="tab" data-tab="list" aria-selected="true">Shopping list</button>
+      <button type="button" role="tab" data-tab="swaps" aria-selected="false">Swap pieces</button>
+    </div>
+    <div class="list" id="list" data-pane="list" role="tabpanel"></div>
+    <div class="swaps" id="swaps" data-pane="swaps" role="tabpanel" hidden></div>
+    <p class="fine">Every product photo was checked against the inspiration board and prices were read from the live listings on Nov 13-16, 2026, so confirm them at checkout. Every piece in the 3D view is drawn at its real size from the listing or the DIY template, so the preview matches what we build. Tap a piece to see its listing and swap it; tap Compare to see the board. DIY totals are the cost of materials, calculated from the build with at least 10% spare. Every ornament is secured with floral wire, and there's no tree skirt (the organizers cover the base).</p>
   </aside>
 </div>
 
-<script>window.HOWL_ITEMS = __ITEMS__;</script>
+<script>window.HOWL_OPTIONS = __OPTIONS__;</script>
+<script>__RESOLVE__</script>
+__BUILDER__
 <script>window.HOWL_DOCX = "__DOCX__"; window.HOWL_PLAN = "__PLAN__"; window.HOWL_TPL = "__TPL__"; window.HOWL_SIGN = "__SIGN__";</script>
 <script>window.HOWL_PERSON = "__PERSON__";</script>
 <script>window.HOWL_CUTS = __CUTS__;</script>
