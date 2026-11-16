@@ -56,6 +56,7 @@ button { font: inherit; color: inherit; }
 .hud button { background: rgba(10, 14, 12, .62); color: #F3EFE4; border: 1px solid rgba(255,255,255,.14); border-radius: 999px;
   padding: 6px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer; backdrop-filter: blur(6px); }
 .hud button[aria-pressed="true"] { background: #F3EFE4; color: #18231D; }
+.hud button:disabled { opacity: .45; cursor: default; }
 .seg { display: inline-flex; border-radius: 999px; overflow: hidden; border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(6px); }
 .hud .seg button { border: 0; border-radius: 0; }
 .hud select { background: rgba(10, 14, 12, .62); color: #F3EFE4; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; padding: 6px 10px; font: inherit; font-size: 12.5px; font-weight: 600; }
@@ -184,6 +185,7 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 30px; line-height
       <span class="hint" id="hint"><span class="wide">Drag to spin · Scroll or pinch to zoom · </span>Tap any decoration</span>
       <button id="spin" type="button" aria-pressed="true">Auto-spin</button>
       <button id="reset" type="button">Reset view</button>
+      <button id="resetTree" type="button" title="Put every element back to its closest match to the board">Reset tree</button>
       <button id="compare" type="button" aria-pressed="false">Compare</button>
       <span class="seg" role="group" aria-label="Setting"><button type="button" data-room="living" aria-pressed="true">Living room</button><button type="button" data-room="office" aria-pressed="false">Office</button></span>
       <button id="personBtn" type="button" aria-pressed="false">Person for scale</button>

@@ -604,14 +604,14 @@ BUILD.flourish = r => {
 BUILD.dogs = (r, id) => {
   for (let i = 0; i < r.n; i++) {
     const { p } = spotFront(r.h * IN * 1.1, 2.0, 3.7, 1.0, i ? 1.7 : 0.55);
-    photoCard(r.cut, id, r.h, p.clone().add(new THREE.Vector3(0, -0.12, 0)));
+    photoCard(r.cut, id, r.h, p.clone().add(new THREE.Vector3(0, -0.12, 0)), { depth: 0.45 });
     addInstancePos('bandanas', p.clone().add(new THREE.Vector3(0, r.h * IN * 0.45, 0.05)));
   }
 };
 BUILD.cats = (r, id) => {
   for (let i = 0; i < r.n; i++) {
     const { p } = spotFront(r.h * IN * 1.2, 2.9, 5.4, 1.0, i ? 1.4 : 0.85);
-    photoCard(r.cut, id, r.h, p.clone().add(new THREE.Vector3(0, -0.08, 0)));
+    photoCard(r.cut, id, r.h, p.clone().add(new THREE.Vector3(0, -0.08, 0)), { depth: 0.45 });
     addInstancePos('bandanas', p.clone().add(new THREE.Vector3(0, r.h * IN * 0.5, 0.05)));
   }
 };
@@ -783,18 +783,54 @@ BUILD.ribbon = r => {
 };
 
 /* ---------------- Stockings and the gold, pine and berry picks ---------------- */
-const cards = [];
-function photoCard(name, id, heightIn, pos, { anchor = 'bottom', emissive = 0.38, mark = true } = {}) {
-  const c = CUT[name], h = heightIn * IN, w = h * c.w / c.h;
-  const g = new THREE.PlaneGeometry(w, h); g.translate(0, anchor === 'top' ? -h / 2 : anchor === 'center' ? 0 : h / 2, 0);
-  const tex = photoTex(name);
-  const m = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.95, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: emissive, envMapIntensity: 0.2 });
-  const mesh = new THREE.Mesh(g, m); mesh.position.copy(pos); mesh.castShadow = true; TARGET.add(mesh); cards.push(mesh);
-  mesh.userData.itemId = id; pickables.push(mesh); if (mark) addInstancePos(id, pos.clone().add(new THREE.Vector3(0, anchor === 'bottom' ? h / 2 : anchor === 'top' ? -h / 2 : 0, 0)));
-  return mesh;
+// Real products from their photos, as solid pieces that stay put when you orbit: the cutout's outline is
+// inflated into a rounded relief (front photo, slightly darker back), lit like everything else.
+const RELIEF = {};   // cutout name -> Promise of { G, W, H, f: Float32Array } height field (0 at the outline, 1 at the thickest)
+function reliefField(name) {
+  if (RELIEF[name]) return RELIEF[name];
+  return (RELIEF[name] = new Promise(res => {
+    const img = new Image(); img.onload = () => {
+      const W = 72, H = Math.max(8, Math.round(72 * img.height / img.width)), cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const g = cv.getContext('2d'); g.drawImage(img, 0, 0, W, H); const a = g.getImageData(0, 0, W, H).data;
+      const d = new Float32Array(W * H), BIG = 1e6;
+      for (let i = 0; i < W * H; i++) d[i] = a[i * 4 + 3] > 100 ? BIG : 0;
+      const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : d[y * W + x];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (d[i]) d[i] = Math.min(d[i], at(x - 1, y) + 1, at(x, y - 1) + 1, at(x - 1, y - 1) + 1.41, at(x + 1, y - 1) + 1.41); }
+      for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) { const i = y * W + x; if (d[i]) d[i] = Math.min(d[i], at(x + 1, y) + 1, at(x, y + 1) + 1, at(x + 1, y + 1) + 1.41, at(x - 1, y + 1) + 1.41); }
+      let mx = 1; for (let i = 0; i < W * H; i++) mx = Math.max(mx, d[i]);
+      const f = new Float32Array(W * H); for (let i = 0; i < W * H; i++) f[i] = Math.sqrt(d[i] / mx);   // rounded, like a stuffed toy
+      res({ W, H, f });
+    }; img.src = CUT[name].src;
+  }));
 }
-function updateCards() { for (const c of cards) if (c.parent && c.parent.visible) c.rotation.y = Math.atan2(camera.position.x - c.position.x, camera.position.z - c.position.z); }
-BUILD.stockings = r => { ['stock_red', 'stock_green', 'stock_cream'].forEach(n => { for (let i = 0; i < r.n / 3; i++) { const { p } = spot(SZ('stockings').h * IN, 1.4, 5.5, 1.0); photoCard(n, 'stockings', (SZ('stockings').h || 4.3) * 1.25, p, { anchor: 'top' }); } }); };
+function sampleField(F, u, v) {
+  const x = Math.min(F.W - 1.001, Math.max(0, u * (F.W - 1))), y = Math.min(F.H - 1.001, Math.max(0, (1 - v) * (F.H - 1))), x0 = x | 0, y0 = y | 0, fx = x - x0, fy = y - y0;
+  const q = (a, b) => F.f[b * F.W + a];
+  return (q(x0, y0) * (1 - fx) + q(x0 + 1, y0) * fx) * (1 - fy) + (q(x0, y0 + 1) * (1 - fx) + q(x0 + 1, y0 + 1) * fx) * fy;
+}
+function photoCard(name, id, heightIn, pos, { anchor = 'bottom', mark = true, depth = 0.3, ry = null } = {}) {
+  const c = CUT[name], h = heightIn * IN, w = h * c.w / c.h, dy = anchor === 'top' ? -h / 2 : anchor === 'center' ? 0 : h / 2;
+  const nx = 40, ny = Math.max(8, Math.round(40 * h / w));
+  const front = new THREE.PlaneGeometry(w, h, nx, ny), back = new THREE.PlaneGeometry(w, h, nx, ny); back.rotateY(Math.PI);
+  const tex = photoTex(name);
+  const mF = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.5, roughness: 0.92, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.08, envMapIntensity: 0.35 });
+  const mB = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.5, roughness: 0.95, color: 0xb8b0a6, envMapIntensity: 0.25 });
+  const grp = new THREE.Group(); const meshes = [new THREE.Mesh(front, mF), new THREE.Mesh(back, mB)];
+  meshes.forEach(m => { m.position.y = dy; m.castShadow = true; m.receiveShadow = true; m.userData.itemId = id; pickables.push(m); grp.add(m); });
+  grp.position.copy(pos);
+  grp.rotation.y = ry ?? ((Math.hypot(pos.x, pos.z) > 0.25 && pos.y > 0.9) ? faceY(pos) : Math.atan2(-pos.x * 0.15, 1));   // on the tree: face out from the trunk
+  TARGET.add(grp); cards.push(grp);
+  reliefField(name).then(F => {   // inflate once the cutout has decoded
+    const D = Math.min(w, h) * depth;
+    [[front, 1], [back, -0.85]].forEach(([g, sgn]) => { const P = g.attributes.position, UV = g.attributes.uv; for (let i = 0; i < P.count; i++) P.setZ(i, sgn * D * sampleField(F, UV.getX(i), UV.getY(i))); P.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingSphere(); });
+    renderer.shadowMap.needsUpdate = true;
+  });
+  if (mark) addInstancePos(id, pos.clone().add(new THREE.Vector3(0, dy, 0)));
+  return grp;
+}
+const cards = [];
+function updateCards() {}   // pieces no longer turn to face the camera
+BUILD.stockings = r => { ['stock_red', 'stock_green', 'stock_cream'].forEach(n => { for (let i = 0; i < r.n / 3; i++) { const { p } = spot(SZ('stockings').h * IN, 1.4, 5.5, 1.0); photoCard(n, 'stockings', (SZ('stockings').h || 4.3) * 1.25, p, { anchor: 'top', depth: 0.18 }); } }); };
 function sprays(id, n, color, stemsPer, beadIn, lenIn) {   // glitter spray picks: thin stems tipped with glitter beads
   const beads = []; const L = lenIn * IN;
   for (let i = 0; i < n; i++) {
@@ -808,7 +844,7 @@ function sprays(id, n, color, stemsPer, beadIn, lenIn) {   // glitter spray pick
 }
 BUILD.greens = r => {
   sprays('gold_picks', r.gold, 0xd4ad5c, 3, 0.4, 6);
-  for (let i = 0; i < Math.round(r.pine * 2 / 3); i++) { const { p } = spot(0.35, 1.3, 5.8, 0.95); photoCard('pine_pick', 'pine_picks', (SZ('pine_picks').h || 4) * 1.3, p, { anchor: 'center' }); }
+  for (let i = 0; i < Math.round(r.pine * 2 / 3); i++) { const { p } = spot(0.35, 1.3, 5.8, 0.95); photoCard('pine_pick', 'pine_picks', (SZ('pine_picks').h || 4) * 1.3, p, { anchor: 'center', depth: 0.25, ry: faceY(p) + R(-0.6, 0.6) }); }
   if (r.berries) {   // glossy red berry clusters (0.6" berries on 7" stems)
     const list = [], bd = (SZ('glossy_berries').berry_d || 0.6) * IN;
     for (let i = 0; i < r.berries; i++) { const { p, th } = spot(0.25, 1.3, 6.3, 0.97); const out = new THREE.Vector3(Math.cos(th), 0, Math.sin(th)); for (let k = 0; k < 7; k++) list.push({ p: p.clone().add(new THREE.Vector3(R(-1, 1) * 1.1 * IN, R(-0.6, 1.6) * IN, R(-1, 1) * 1.1 * IN)).addScaledVector(out, 0.03), s: bd / 2 * R(0.85, 1.1), noMark: k > 0 }); }
@@ -922,11 +958,11 @@ BUILD.pair = () => {   // the board's dog-and-cat photo: a golden retriever and 
   const free = new THREE.Group(), door = new THREE.Group(); TARGET.add(free); TARGET.add(door); TARGET.userData.free = free; TARGET.userData.door = door;
   const dh = SZ('golden').h || 11, ch = SZ('cat_fluffy').h || 8, prev = TARGET;
   TARGET = free;
-  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0.42, 0, 2.62)); photoCard('cat_fluffy', 'cat_fluffy', ch, new THREE.Vector3(0.98, 0, 2.86));
+  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0.42, 0, 2.62), { depth: 0.45 }); photoCard('cat_fluffy', 'cat_fluffy', ch, new THREE.Vector3(0.98, 0, 2.86), { depth: 0.45 });
   contactShadow(0.42, 2.66, 0.85, 0.5, 0, 0.8); contactShadow(0.98, 2.9, 0.6, 0.38, 0, 0.8);
   addInstancePos('bandanas', new THREE.Vector3(0.42, dh * IN * 0.55, 2.66));
   TARGET = door;
-  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0, 0, GIANT.front + 0.07)); photoCard('cat_fluffy', 'cat_fluffy', ch, new THREE.Vector3(GIANT.W * 0.62, 0, GIANT.front + 0.22));
+  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0, 0, GIANT.front + 0.07), { depth: 0.45 }); photoCard('cat_fluffy', 'cat_fluffy', ch, new THREE.Vector3(GIANT.W * 0.62, 0, GIANT.front + 0.22), { depth: 0.45 });
   contactShadow(0, GIANT.front + 0.1, 0.85, 0.5, 0, 0.8); contactShadow(GIANT.W * 0.62, GIANT.front + 0.24, 0.55, 0.32, 0, 0.8);
   addInstancePos('bandanas', new THREE.Vector3(0, 0.45, GIANT.front + 0.1));
   TARGET = prev;
@@ -1225,7 +1261,7 @@ document.querySelectorAll('[data-room]').forEach(b => { b.onclick = () => setRoo
   });
 }
 /* ---------------- Apply a selection: show its groups, re-resolve the list, budget and exports ---------------- */
-function applySel({ focusEl } = {}) {
+let applySel = function ({ focusEl } = {}) {
   O.elements.forEach(e => Object.entries(GROUPS[e.id] || {}).forEach(([o, g]) => { g.visible = o === SEL[e.id]; }));
   const pg = GROUPS.pair && GROUPS.pair.pair;   // the dog and cat sit in the giant doghouse's doorway when it is built
   if (pg && pg.userData.free) { pg.userData.free.visible = SEL.giant !== 'build'; pg.userData.door.visible = SEL.giant === 'build'; }
@@ -1236,6 +1272,12 @@ function applySel({ focusEl } = {}) {
   if (selected) { if (BY_ID[selected] || (ELEMENT_OF[selected] && visiblePts(selected).length)) select(selected); else select(null); }
   renderer.shadowMap.needsUpdate = true;
   if (focusEl) { const ids = visibleIdsOf(focusEl); if (ids.length) { setHighlight(ids); focusOn(ids); } }
+};
+{ // reset the whole tree to the board match (every element back to its default option)
+  const rt = document.getElementById('resetTree');
+  const sync = () => { rt.disabled = isDefault(); };
+  rt.onclick = () => { SEL = { ...DEFAULT_SEL }; applySel(); sync(); };
+  const prev = applySel; applySel = (...a) => { prev(...a); sync(); };
 }
 applySel();
 window.__howl = { select, instancesOf, pickables, stop: () => renderer.setAnimationLoop(null), frame, camera, controls, setSel: s => { SEL = { ...SEL, ...s }; applySel(); }, sel: () => ({ ...SEL }), totals: () => CUR.totals, groups: GROUPS };
