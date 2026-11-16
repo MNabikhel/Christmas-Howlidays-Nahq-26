@@ -51,6 +51,7 @@ wid = (ROOT / 'build' / 'fonts' / 'regular_widths.json').read_text()
 builder = ''
 if docs_js.exists() and docx_umd.exists():   # the Word builder runs in the page, so exports follow the selection
     umd = docx_umd.read_text(encoding='utf-8').replace('</script', '<\\/script')
+    umd = umd.replace('\ufffd', '\\ufffd')   # the library's own replacement characters, written as JS escapes (same string at run time)
     builder = ('<script>' + umd + '</script>\n<script>window.HOWL_FONTS = ' + json.dumps(fonts) + '; window.HOWL_WIDTHS = ' + wid + ';</script>\n<script>'
                + docs_js.read_text(encoding='utf-8') + '</script>')
 page = (template.replace('__DOCX__', docx_b64).replace('__PLAN__', plan_b64).replace('__TPL__', tpl_b64).replace('__SIGN__', sign_b64).replace('__PERSON__', person_b64)
