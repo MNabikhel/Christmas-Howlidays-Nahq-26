@@ -14,6 +14,7 @@ const {
 const ROOT = path.join(__dirname, '..');
 const items = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'items.json'), 'utf8'));
 const ABOUT = fs.readFileSync(path.join(ROOT, 'data', 'about.txt'), 'utf8').trim();
+const SUP = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'supplies.json'), 'utf8'));
 items.forEach(it => { it.total = Math.round(it.price * it.qty * 100) / 100; });
 const subtotal = items.reduce((s, i) => s + i.total, 0);
 const taxable = items.filter(i => i.id !== 'gift_card').reduce((s, i) => s + i.total, 0);
@@ -152,8 +153,23 @@ const plan = new Document({
     B(' the 24" burlap paw bow on top, with two burlap streamers that pour down the front of the tree to the doghouse roof, tucked in and puffed every 12".', 'Ribbon waterfall:'),
     B(' twelve gold glitter sprays fanned out behind the topper bow.', 'Gold crown:'),
     B(' two 10" golden retrievers and three tabby kittens in tartan scarves sit front and centre on sturdy branches (floral wire round the body, under the scarf).', 'Pets on the tree:'),
-    H('DIY'),
-    ...items.filter(i => i.diy).map(i => B(' ' + (i.notes || ''), (i.form_name || i.name) + ':')),
+    H('DIY build sheets (templates: HP26_Templates.pdf, print at Actual size)'),
+    ...items.filter(i => i.diy).map(i => B(' ' + (i.how || i.notes || ''), (i.form_name || i.name) + ':')),
+    H('Buy list by store'),
+    ...(() => {
+      const out = [], amz = items.filter(i => i.store === 'Amazon.ca' && !i.diy && i.id !== 'shipping');
+      out.push(B(` ${amz.length} listings, ${money(amz.reduce((a, i) => a + i.total, 0))} before GST. Order the burlap first (2 rolls; only 2 were in stock). Shipping is about $34 without Prime.`, 'Amazon.ca:'));
+      amz.forEach(i => out.push(B(` ${i.qty} x ${money(i.price)}`, '    ' + (i.form_name || i.name) + ':')));
+      for (const store of ['DeSerres', 'Canadian Tire']) {
+        const rows = SUP.supplies.filter(x => x.store === store), tot = rows.reduce((a, x) => a + x.price * x.qty, 0);
+        out.push(B(store === 'DeSerres' ? ` ${rows.length} lines, ${money(tot)} before GST: free shipping to Alberta (over $149), no oversized items; ships in 48 h, allow 5-7 business days. Order by Nov 17.` : ` ${rows.length} lines, ${money(tot)} before GST, store pickup in Edmonton.`, store + ':'));
+        rows.forEach(x => out.push(B(` ${x.qty} x ${money(x.price)}`, '    ' + x.name + ':')));
+      }
+      out.push(B(' 2 x $100 gift cards, in store (5611 104 St NW).', 'Homes Alive Pets:'));
+      return out;
+    })(),
+    H('Bring from home or office (confirm who brings what)'),
+    ...SUP.on_hand.map(x => B(x)),
     H('Gift basket (goes to the winning bidder)'),
     B('Pick up the two $100 Homes Alive Pets gift cards at the South Edmonton store (5611 104 St NW).'),
     B('Basket: glass jar of faux biscuits with a velvet bow, red tennis balls, rope toys, plush bone, folded paw-print throw, gift cards. Wrap in cellophane and wire it to the base.'),

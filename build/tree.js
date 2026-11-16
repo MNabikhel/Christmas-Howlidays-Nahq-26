@@ -23,6 +23,9 @@ const NOT_ON_TREE = {
   floral_wire: { note: 'Wraps every ornament, bow, pick and plush pet to the branches so nothing falls off in transit.', show: [] },
   bone_cutters: { note: 'Cuts the faux biscuits for the jar, highlighted now.', show: ['faux_treats'] },
   felt: { note: 'The black paw on the sherpa bone pillow, highlighted now.', show: ['bone_pillow'] },
+  craft_supplies: { note: 'Paint, gesso, glue, stencil film and tools for every DIY build, highlighted now. Every line and its quantity is in the committee plan.', show: ['doghouse', 'doghouse_xl', 'paw_disc', 'bones', 'faux_treats', 'topper'] },
+  ct_supplies: { note: 'Tape for the boxes and doghouse, plus a drop sheet for painting in the office.', show: ['gift_boxes', 'doghouse_xl'] },
+  shipping: { note: 'Shipping charged by the Amazon.ca listings without free delivery. $0 with Prime.', show: [] },
 };
 const STATUS = { est: 'Estimated price', listed: 'Price as listed when checked', face: 'Face value' };
 
@@ -33,13 +36,15 @@ const STATUS = { est: 'Estimated price', listed: 'Price as listed when checked',
   const FILES = [
     { btn: document.getElementById('export'), name: 'HP26_Tree_Gallery_Form_Corporate_Finance.docx', b64: window.HOWL_DOCX },
     { btn: document.getElementById('exportPlan'), name: 'HP26_Committee_Plan_Corporate_Finance.docx', b64: window.HOWL_PLAN },
+    { btn: document.getElementById('exportTpl'), name: 'HP26_Templates.pdf', b64: window.HOWL_TPL, type: 'application/pdf' },
+    { btn: document.getElementById('exportSign'), name: 'HP26_Doghouse_Sign_11x17.pdf', b64: window.HOWL_SIGN, type: 'application/pdf' },
   ];
   const viaClaude = () => window.claude && typeof window.claude.use === 'function';
   if (!window.HOWL_DOCX) box.hidden = true;
   if (viaClaude()) window.claude.use('downloads').then(dl => { if (!dl) box.hidden = true; });
   FILES.forEach(f => {
     if (!f.b64) { f.btn.hidden = true; return; }
-    const blob = () => new Blob([Uint8Array.from(atob(f.b64), c => c.charCodeAt(0))], { type: DOCX });
+    const blob = () => new Blob([Uint8Array.from(atob(f.b64), c => c.charCodeAt(0))], { type: f.type || DOCX });
     f.btn.onclick = async () => {
       msg.textContent = HINT;
       if (!viaClaude()) {   // standalone preview file opened in a normal browser
@@ -69,7 +74,7 @@ const taxable = ITEMS.filter(i => i.id !== 'gift_card').reduce((s, i) => s + i.t
 const gst = Math.round(taxable * 0.05 * 100) / 100;
 const grand = Math.round((subtotal + gst) * 100) / 100;
 const SECTIONS = [...new Set(ITEMS.map(i => i.section))];
-const SEC_COLORS = ['#2E7D5B', '#B3263A', '#C9962E', '#7E6A55', '#5A7FA6'];
+const SEC_COLORS = ['#2E7D5B', '#B3263A', '#C9962E', '#7E6A55', '#5A7FA6', '#6F7F86'];
 const secTotal = s => ITEMS.filter(i => i.section === s).reduce((a, i) => a + i.total, 0);
 
 const budgetEl = document.getElementById('budget');
@@ -545,7 +550,6 @@ function placeBows(id, geo, material, n, yMin, yMax, sizeIn) {
 const BIG = SZ('big_bows'), VB = SZ('velvet_bows'), PB = SZ('plaid_bows'), MB = SZ('mini_bows');
 placeBows('big_bows', bowGeo({ ribbon: 4, span: BIG.w || 11, tail: (BIG.h || 18) - 3, seed: 3 }), tartanMat('big_bows'), COUNT('big_bows'), 1.6, 5.6, BIG.w || 11);
 placeBows('velvet_bows', bowGeo({ ribbon: 1.6, span: VB.w || 5.1, tail: (VB.h || 10.2) - 2, seed: 5 }), velvet('velvet_bows'), 12 * COUNT('velvet_bows'), 1.3, 6.0, 6);
-placeBows('plaid_bows', bowGeo({ ribbon: 2, span: PB.w || 5, tail: (PB.h || 7) - 2.2, seed: 7 }), mat('plaid_bows', THREE.MeshStandardMaterial, { map: photoTex('tx_tartan_ribbon', [1, 1]), roughness: 0.8, side: THREE.DoubleSide }), 12 * COUNT('plaid_bows'), 1.3, 6.1, 5);
 
 /* ---------------- Baubles ---------------- */
 const SPH = new THREE.SphereGeometry(1, 40, 24);
@@ -688,8 +692,7 @@ function sprays(id, n, color, stemsPer, beadIn, lenIn) {   // glitter spray pick
   }
   instanced(SPH, mat(id, THREE.MeshStandardMaterial, { color, metalness: 0.85, roughness: 0.35, roughnessMap: glitterRough, normalMap: glitterNormal }), beads, id);
 }
-sprays('red_picks', 24 * COUNT('red_picks') * 0.6 | 0, 0x9a0a14, 3, 0.45, 6);
-sprays('gold_picks', 28 * COUNT('gold_picks') * 0.6 | 0, 0xd4ad5c, 3, 0.4, 6);
+sprays('gold_picks', Math.max(0, 28 * COUNT('gold_picks') - 12), 0xd4ad5c, 3, 0.4, 6);   // 12 of the pack form the crown
 for (let i = 0; i < 16; i++) { const { p } = spot(0.35, 1.3, 5.8, 0.95); photoCard('pine_pick', 'pine_picks', (SZ('pine_picks').h || 4) * 1.3, p, { anchor: 'center' }); }
 // glossy red berry clusters (0.6" berries on 7" stems)
 {
@@ -719,11 +722,11 @@ const tartanBoxRibbon = tartanMat('tartan_ribbon');
   const velvetBow = { geo: bowGeo({ ribbon: 2.5, span: 8, tail: 5, seed: 21 }), mat: velvetRib, id: 'velvet_ribbon' };
   const burlapBow = { geo: bowGeo({ ribbon: 4, span: 9, tail: 6, uLen: 16, seed: 23 }), mat: burlapMat, id: 'topper' };
   const tartanBow = { geo: bowGeo({ ribbon: 4, span: 9, tail: 6, seed: 25 }), mat: tartanBoxRibbon, id: 'big_bows' };
-  giftBox(B[0], tw(B[0]), velvetRib, -1.5, 0.95, 0.35, 'tartan_wrap', velvetBow);
-  giftBox(B[1], kp(B[1]), tartanBoxRibbon, -1.25, 1.45, -0.2, 'paw_wrap', tartanBow);
-  giftBox(B[2], tw(B[2]), velvetRib, 1.7, -0.15, 0.5, 'tartan_wrap', velvetBow);
-  giftBox(B[3], kp(B[3]), tartanBoxRibbon, -1.75, -0.55, 0.2, 'paw_wrap', burlapBow);
-  giftBox(B[4], tw(B[4]), velvetRib, 0.95, -1.35, -0.3, 'gift_boxes', null);
+  // the four Canadian Tire moving boxes, at their real sizes: A 18x11x12, B 16x16x16, C 16x16x10, D 18x11x7
+  giftBox(B[0], tw(B[0]), velvetRib, -1.6, 1.05, 0.35, 'tartan_wrap', velvetBow);
+  giftBox(B[1], tw(B[1]), tartanBoxRibbon, -1.45, -0.7, 0.15, 'gift_boxes', tartanBow);
+  giftBox(B[2], tw(B[2]), velvetRib, 1.6, 0.25, -0.45, 'tartan_wrap', velvetBow);
+  giftBox(B[3], kp(B[3]), tartanBoxRibbon, 0.95, 1.45, -0.2, 'paw_wrap', burlapBow);
   addInstancePos('gift_boxes', new THREE.Vector3(-1.5, 0.5, 0.95));
 }
 // cream sherpa bone pillow, 15" x 9" x 3", with the black felt paw
@@ -842,15 +845,15 @@ const tartanBoxRibbon = tartanMat('tartan_ribbon');
   [-1, 1].forEach(sg => { const r = new THREE.Mesh(new THREE.BoxGeometry(rl, 1 * IN, D + 4 * IN), rm); r.rotation.z = -sg * slope; r.position.set(sg * (rl / 2 - 1.2 * IN) * Math.cos(slope), H * 0.93 - (rl / 2 - 1.2 * IN) * Math.sin(slope) + 0.6 * IN, 0); g.add(r); });
   const ridge = new THREE.Mesh(new THREE.BoxGeometry(2.2 * IN, 1.4 * IN, D + 4.5 * IN), mat('doghouse_xl', THREE.MeshStandardMaterial, { color: 0xe7d6b0, roughness: 0.7 })); ridge.position.y = H * 0.93 + 1.1 * IN; g.add(ridge);
   // the hand-painted sign under the roof edge
-  const signT = canvasTex(1024, 232, (c, w, h) => {
+  const signT = canvasTex(1024, 256, (c, w, h) => {
     c.fillStyle = '#ecdcb6'; c.fillRect(0, 0, w, h); for (let i = 0; i < 60; i++) { c.strokeStyle = `rgba(150,110,60,${0.05 + Math.random() * 0.08})`; c.lineWidth = 1 + Math.random() * 2; c.beginPath(); const y = Math.random() * h; c.moveTo(0, y); c.bezierCurveTo(w * 0.3, y + 6, w * 0.6, y - 6, w, y + 3); c.stroke(); }
     c.strokeStyle = '#8b1a1f'; c.lineWidth = 10; c.strokeRect(14, 14, w - 28, h - 28);
     c.textAlign = 'center'; c.fillStyle = '#1d4a35'; c.font = 'italic 700 52px Georgia, "Times New Roman", serif'; c.fillText('Home for the', w / 2, 86);
     c.fillStyle = '#8b1a1f'; c.font = '700 92px Georgia, "Times New Roman", serif'; c.fillText('HOWLIDAYS', w / 2, 184);
     drawPaw(c, 92, 118, 80, '#1d4a35', -0.3); drawPaw(c, w - 92, 118, 80, '#1d4a35', 0.3);
   }, { clamp: true });
-  const sign = new THREE.Mesh(new THREE.BoxGeometry(20 * IN, 4.5 * IN, 0.5 * IN), [0, 1, 2, 3, 4, 5].map(f => f === 4 ? mat('doghouse_xl', THREE.MeshStandardMaterial, { map: signT, roughness: 0.75 }) : mat('doghouse_xl', THREE.MeshStandardMaterial, { color: 0xd9c79f, roughness: 0.8 })));
-  sign.position.set(0, wallH + 1.6 * IN, D / 2 + 0.4 * IN); g.add(sign);
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(16 * IN, 4 * IN, 0.25 * IN), [0, 1, 2, 3, 4, 5].map(f => f === 4 ? mat('doghouse_xl', THREE.MeshStandardMaterial, { map: signT, roughness: 0.75 }) : mat('doghouse_xl', THREE.MeshStandardMaterial, { color: 0xd9c79f, roughness: 0.8 })));
+  sign.position.set(0, wallH + 1.4 * IN, D / 2 + 0.3 * IN); g.add(sign);
   g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   tag(g, 'doghouse_xl'); addInstancePos('doghouse_xl', new THREE.Vector3(X, H * 0.6, Z));
   contactShadow(X, Z, W * 1.45, D * 1.45, 0, 0.85);
@@ -951,7 +954,7 @@ function select(id, { focus = false } = {}) {
       <div class="fact"><span>${it.diy ? 'Makes' : 'Qty'}</span><b>${it.diy ? it.made : it.qty}</b></div>
       <div class="fact"><span>Total</span><b>${money(it.total)}</b></div>
     </div>
-    ${it.img || it.notes ? `<div class="photo">${it.img ? `<img src="${it.img}" alt="Listing photo: ${it.name.replace(/"/g, '&quot;')}">` : ''}<div>${it.match ? `<span class="ok">${{ match: 'Photo matches the look', close: 'Close to the look' }[it.match]}</span>` : ''}<p>${it.notes || ''}${it.arrives_by ? ` <b>Arrives by ${new Date(it.arrives_by + 'T12:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}.</b>` : ''}</p></div></div>` : ''}
+    ${it.img || it.notes ? `<div class="photo">${it.img ? `<img src="${it.img}" alt="Listing photo: ${it.name.replace(/"/g, '&quot;')}">` : ''}<div>${it.match ? `<span class="ok">${it.diy ? 'DIY: target look from our board' : { match: 'Photo matches the look', close: 'Close to the look' }[it.match]}</span>` : ''}<p>${it.notes || ''}${it.arrives_by ? ` <b>Arrives by ${new Date(it.arrives_by + 'T12:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}.</b>` : ''}</p></div></div>` : ''}
     ${DIY_HOW[id] ? `<p class="where"><b>${it.diy ? 'How to make it' : 'Finishing touch'}:</b> ${DIY_HOW[id]}</p>` : ''}
     ${extra ? `<p class="where">${extra.note}</p>` : ''}
     <p class="src">${it.diy ? 'Materials from ' : 'Buy from '}${it.store}. ${STATUS[it.status]}${it.diy ? ' of materials' : ''}.</p>

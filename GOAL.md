@@ -2,11 +2,26 @@
 
 **Win the 2026 Tree Gallery with a tree that stops people in their tracks, matches our inspiration board item for item, and is built exactly as the 3D preview shows.**
 
-Every change to the shopping list, the 3D preview or the Word form is checked against the five tests below. A round of work is done only when all five pass.
+Every change to the shopping list, the 3D preview or the Word form is checked against the six tests below, starting with test 0. A round of work is done only when all six pass.
+
+## 0. Every item is thought through
+Nothing goes on the list until someone could buy it, build it and hang it without asking a question. For every item:
+- **It is what it says.** A doghouse ornament is a doghouse, not a birdhouse painted red. A look-alike product only counts if a written conversion removes every giveaway, such as a round hole or a perch peg.
+- **Every DIY item has a complete build sheet:**
+  - finished dimensions and a cut list or printed template;
+  - every material, with quantity, store, price and link;
+  - every tool;
+  - the steps and the time they take.
+- **Quantities are calculated from real dimensions, not guessed.** This covers paint coverage, ribbon yardage, clay volume, glue sticks, hanging cord, and bow and box counts. Each one shows its calculation and keeps at least 10% spare.
+- **Nothing depends on "maybe".** Nothing relies on boxes we might receive, or on paint, tools or a printer we assume someone has. An item is bought and on the list, or it is on a named "bring from home or office" list that someone has confirmed.
+- **Materials suit the surface.** Glazed ceramic needs an enamel marker, burlap needs fabric paint, and cardboard needs primer. Paint goes on both faces of anything that could warp.
+- **It can hang or sit as shown.** Every ornament has a hanging method and the hardware is on the list. Heavy pieces such as the plush pets are wired to the trunk.
+- **It fits:** the basket holds its contents, the display gifts and the doghouse fit around the tree base, and the jar actually looks full.
+- **Test:** `output/item_audit.md` lists every item with a pass or fail on each check above, with the calculation shown. Nothing is ordered while any item fails.
 
 ## 1. Wow from across the room
 A first-time viewer stops, smiles and walks over.
-- **Centrepiece:** a 28" doghouse under the tree with the family dog in the doorway.
+- **Centrepiece:** a 24 x 20 x 26" doghouse under the tree with the family dog in the doorway.
 - **Ribbon waterfall:** burlap paw-print streamers that pour from the 24" topper bow to the doghouse roof.
 - **Gold crown:** gold glitter sprays fanned out behind the topper bow.
 - **Pets on the tree:** plush golden retrievers and tabby kittens in tartan scarves, front and centre.
@@ -27,7 +42,7 @@ A first-time viewer stops, smiles and walks over.
 
 ## 4. Within the rules
 - **Budget:** at most $2,000 including 5% GST (gift cards are exempt), with at least $150 kept free for shipping and price changes.
-- **Delivery:** everything arrives in Edmonton by Nov 21, nine days before the Nov 30 cutoff.
+- **Delivery:** Amazon items and the Canadian Tire pickup by Nov 21; the DeSerres craft order by about Nov 26 (5-7 business days). Everything arrives before the Nov 30 cutoff, and any Edmonton Michaels is the same-day fallback for craft supplies.
 - **Excluded:** no lights (the tree is pre-lit), no tree skirt, no PCL, Oilers or other branding, and no food. The auction is in 2027, so the jar holds faux biscuits.
 
 ## 5. Paperwork ready

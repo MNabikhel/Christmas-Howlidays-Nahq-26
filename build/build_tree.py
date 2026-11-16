@@ -31,8 +31,9 @@ template = (ROOT / 'build' / 'tree_template.html').read_text(encoding='utf-8')
 b64 = lambda f: base64.b64encode(f.read_bytes()).decode() if f.exists() else ''
 docx_b64 = b64(ROOT / 'output' / 'HP26_Tree_Gallery_Form_Corporate_Finance.docx')   # built first by build_docx.js
 plan_b64 = b64(ROOT / 'output' / 'HP26_Committee_Plan_Corporate_Finance.docx')
+tpl_b64 = b64(ROOT / 'output' / 'HP26_Templates.pdf'); sign_b64 = b64(ROOT / 'output' / 'HP26_Doghouse_Sign_11x17.pdf')
 person_b64 = b64(ROOT / 'data' / 'models' / 'person.glb')                           # scale figure (three.js example model, MIT)
-page = template.replace('__DOCX__', docx_b64).replace('__PLAN__', plan_b64).replace('__PERSON__', person_b64).replace('__ITEMS__', json.dumps(slim, ensure_ascii=False, separators=(',', ':'))).replace('__CUTS__', json.dumps(cuts, separators=(',', ':'))).replace('__SCRIPT__', script)
+page = template.replace('__DOCX__', docx_b64).replace('__PLAN__', plan_b64).replace('__TPL__', tpl_b64).replace('__SIGN__', sign_b64).replace('__PERSON__', person_b64).replace('__ITEMS__', json.dumps(slim, ensure_ascii=False, separators=(',', ':'))).replace('__CUTS__', json.dumps(cuts, separators=(',', ':'))).replace('__SCRIPT__', script)
 (ROOT / 'output' / 'howlidays_tree.html').write_text(page, encoding='utf-8')
 preview = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'

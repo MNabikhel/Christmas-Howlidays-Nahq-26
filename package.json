@@ -3,7 +3,7 @@
   "private": true,
   "description": "Corporate Finance 2026 Tree Gallery: Home for the Howlidays",
   "scripts": {
-    "build": "node build/build_docx.js && python3 build/build_tree.py && python3 build/build_report.py"
+    "build": "python3 build/build_plan.py && node build/build_templates.js && node build/build_docx.js && python3 build/build_tree.py && python3 build/build_report.py && python3 build/build_audit.py"
   },
   "dependencies": {
     "docx": "9.8.1"
