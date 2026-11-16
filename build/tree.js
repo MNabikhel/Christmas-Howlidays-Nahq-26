@@ -778,7 +778,7 @@ BUILD.ribbon = r => {
     addInstancePos('tartan_ribbon', pts[160]);
   }
   const B = SZ('big_bows'), list = [];
-  for (let i = 0; i < r.bows; i++) { const { p } = spot((B.w || 11) * IN, 1.6, 5.6, 1.0); list.push({ p, rot: new THREE.Euler(R(-0.12, 0.12), faceY(p), R(-0.15, 0.15)) }); }
+  for (let i = 0; i < r.bows; i++) { const { p } = spot((B.w || 11) * IN * 1.45, 1.6, 5.6, 1.0);   /* wide berth: the tails must not cover the pets and ornaments */ list.push({ p, rot: new THREE.Euler(R(-0.12, 0.12), faceY(p), R(-0.15, 0.15)) }); }
   instanced(bowGeo({ ribbon: 4, span: B.w || 11, tail: (B.h || 18) - 3, seed: 3 }), tartanMat('big_bows'), list, 'big_bows');
 };
 

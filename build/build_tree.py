@@ -21,11 +21,18 @@ for k, it in O['catalog'].items():
 for e in O['elements']:
     for o in e['options']:
         src = ROOT / 'data' / 'lookbook' / f"{o.get('photo') or '-'}.jpg"
+        r3d = ROOT / 'data' / 'lookbook' / f"r3d_{e['id']}_{o['id']}.jpg"     # the 3D close-up shows what a DIY or grouped option looks like
+        first = O['catalog'].get(o['rows'][0]['id'], {}) if o['rows'] else {}
+        if r3d.exists() and (first.get('diy') or not o['rows'] or len(o['rows']) > 1 or e['id'] in ('stockings', 'greens')): src = r3d
         if not src.exists() and o['rows']: src = ROOT / 'data' / 'img' / f"{o['rows'][0]['id']}.jpg"
         if src.exists(): o['thumb'] = thumb(src, 96)
         o.pop('needs_text', None)
 
 script = (ROOT / 'build' / 'tree.js').read_text(encoding='utf-8')
+import subprocess   # fail the build on a syntax error rather than ship a blank page
+for js in ('tree.js', 'resolve.js', 'docs_core.js'):
+    r = subprocess.run(['node', '-e', "new Function(require('fs').readFileSync(process.argv[1], 'utf8').replace(/^import .*$/mg, ''))", str(ROOT / 'build' / js)], capture_output=True, text=True)
+    if r.returncode: raise SystemExit(f'{js} has a syntax error:\n{r.stderr[-600:]}')
 resolve_js = (ROOT / 'build' / 'resolve.js').read_text(encoding='utf-8')
 cuts = {}
 for f in sorted((ROOT / 'data' / 'cutouts').glob('*.webp')):

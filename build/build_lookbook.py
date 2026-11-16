@@ -115,7 +115,7 @@ for e in O['elements']:
   <p class="vn"><b>{esc(o['label'])}.</b> {esc(o['why'])}</p>
   <div class="trio">
     <div class="col"><h3>On the board</h3><div class="bgrid">{board}</div><p class="cap">{esc(L['board_desc'])}</p></div>
-    <div class="col"><h3>What we buy or build</h3>{f'<figure>{chosen_pic}</figure>' if chosen_pic else ''}<ul class="rows">{rows_of(o) or '<li>Nothing: as the board.</li>'}</ul></div>
+    <div class="col"><h3>What we buy or build</h3>{f'<figure>{chosen_pic}<figcaption>{"Main material; the finished piece is in the 3D preview." if ITEMS.get((o["rows"] or [{}])[0].get("id"), {}).get("diy") else "The listing photo."}</figcaption></figure>' if chosen_pic else ''}<ul class="rows">{rows_of(o) or '<li>Nothing: as the board.</li>'}</ul></div>
     <div class="col"><h3>In the 3D preview</h3>{f'<figure>{r3d}<figcaption>Close-up from the 3D page, at true size.</figcaption></figure>' if r3d else '<p class="cap">Nothing to show for this option.</p>'}</div>
   </div>
   {diag}
@@ -137,7 +137,8 @@ JUDGMENTS = [
  ('Velvet', 'The 2.5" velvet roll and the 12 bought velvet bows are gone: the board shows no velvet bows on the tree, and its velvet is on the paw ornaments and the jar.'),
  ('Giant doghouse, streamers, gold crown', 'Off by default: none of them are on the board. Each stays one tap away in Swap pieces.'),
 ]
-page = f'''<title>Howlidays Lookbook</title>
+page = f'''<meta charset="utf-8">
+<title>Howlidays Lookbook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">

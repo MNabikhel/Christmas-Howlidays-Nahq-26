@@ -73,7 +73,7 @@ button { font: inherit; color: inherit; }
 
 .card { position: absolute; z-index: 4; left: max(14px, env(safe-area-inset-left, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px));
   width: min(370px, calc(100% - 28px)); background: var(--surface); color: var(--ink); border-radius: 14px;
-  box-shadow: 0 18px 50px rgba(0,0,0,.45); padding: 14px 16px 16px; display: grid; gap: 8px; }
+  box-shadow: 0 18px 50px rgba(0,0,0,.45); padding: 14px 16px 16px; display: grid; gap: 8px; max-height: calc(100% - 28px); overflow-y: auto; overscroll-behavior: contain; }
 .card .photo { display: flex; gap: 12px; align-items: flex-start; }
 .card .photo img { width: 112px; height: 112px; flex: none; border-radius: 10px; object-fit: contain; background: #fff; border: 1px solid var(--line); }
 .card .photo p { font-size: 12.5px; }
