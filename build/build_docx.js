@@ -1,211 +1,172 @@
+/* Builds two Word files from data/items.json:
+   1. output/HP26_Tree_Gallery_Form_Corporate_Finance.docx  - the organizers' Tree Gallery form, laid out
+      exactly like inputs/HP26_Tree_Gallery_Form_original.pdf (Letter, Barlow Condensed, same columns,
+      colours and rules), filled with the current list. Continues onto extra pages when needed.
+   2. output/HP26_Committee_Plan_Corporate_Finance.docx      - our own planning notes (goal, DIY, wow pieces).
+   Barlow Condensed (SIL OFL) is embedded so the form looks the same on any computer. */
 const fs = require('fs');
 const path = require('path');
 const {
-  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType,
-  ShadingType, BorderStyle, AlignmentType, ExternalHyperlink, VerticalAlign,
-  TableLayoutType, PageBreak, LevelFormat,
+  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle,
+  AlignmentType, ExternalHyperlink, VerticalAlign, TableLayoutType, HeightRule, LevelFormat, LineRuleType,
 } = require('docx');
 
-const items = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'items.json'), 'utf8'));
-const TODAY = new Date().toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
-const allChecked = items.every(i => i.image_checked);
+const ROOT = path.join(__dirname, '..');
+const items = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'items.json'), 'utf8'));
+const ABOUT = fs.readFileSync(path.join(ROOT, 'data', 'about.txt'), 'utf8').trim();
 items.forEach(it => { it.total = Math.round(it.price * it.qty * 100) / 100; });
-
-const GREEN = '104735';
-const INK = '373A36';
-const RULE = 'BFBFBF';
-const FONT = 'Arial Narrow';
-const money = n => '$' + n.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 const subtotal = items.reduce((s, i) => s + i.total, 0);
 const taxable = items.filter(i => i.id !== 'gift_card').reduce((s, i) => s + i.total, 0);
 const gst = Math.round(taxable * 0.05 * 100) / 100;
 const grand = Math.round((subtotal + gst) * 100) / 100;
-const remaining = Math.round((2000 - grand) * 100) / 100;
+const money = n => '$' + n.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const CHECKED = items.map(i => i.checked_on).filter(Boolean).sort().pop() || '';
+const asOf = CHECKED ? new Date(CHECKED + 'T12:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
-const ABOUT = "Pets are family, and nothing says home for the holidays like a wagging tail or a purring lap. Our tree celebrates them with golden retrievers, tabby kittens, paw-print ornaments, doghouses and bones, wrapped in tartan and velvet ribbon. A cozy gift basket with local pet-store gift cards waits underneath for the winning bidder's best friend.";
+/* ---- the original form's spec (measured from the PDF, in points) ---- */
+const INK = '373A36', GREEN = '104735', RULE = 'BABCBE', GRID = 'D0CFCD';
+const F = { bold: 'Barlow Condensed Bold', med: 'Barlow Condensed Medium', reg: 'Barlow Condensed', lightIt: 'Barlow Condensed Light Italic' };
+const tw = pt => Math.round(pt * 20);                       // points -> twips
+const COLS = [217, 89, 43, 119].map(tw);                    // ITEM, COST, QTY., TOTAL $  (72 -> 540 pt)
+const LABEL_W = tw(104), VALUE_W = tw(364);
+const R = (text, font, sizePt, o = {}) => new TextRun({ text, font, size: Math.round(sizePt * 2), color: INK, ...o });
+const NONE = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+const line = (color, eighths = 4) => ({ style: BorderStyle.SINGLE, size: eighths, color });
 
-// Page: US Letter, 0.75" margins -> 10800 DXA content width
-const W = [4560, 1000, 760, 1160, 3320];
-const TABLE_W = W.reduce((a, b) => a + b, 0);
-
-const run = (text, o = {}) => new TextRun({ text, font: FONT, color: INK, size: 20, ...o });
-
-function labelLine(label, value, italicNote) {
-  const kids = [run(label + ' ', { size: 22 })];
-  if (italicNote) kids.push(run(italicNote + ' ', { size: 22, italics: true, color: '6B6B6B' }));
-  if (value) kids.push(run(value, { size: 24, bold: true, color: GREEN }));
-  return new Paragraph({
-    children: kids,
-    spacing: { before: 200, after: 80 },
-    border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: RULE, space: 4 } },
-  });
+// exact text width with Barlow Condensed Regular, so the "About" text breaks onto the form's ruled lines like handwriting would
+const WID = JSON.parse(fs.readFileSync(path.join(__dirname, 'fonts', 'regular_widths.json'), 'utf8'));
+const textW = (s, pt) => [...s].reduce((a, c) => a + (WID[c.codePointAt(0)] ?? 0.5) * pt, 0);
+function wrap(text, pt, maxPt) {
+  const out = []; let cur = '';
+  text.split(/\s+/).forEach(w => { const t = cur ? cur + ' ' + w : w; if (textW(t, pt) <= maxPt) cur = t; else { out.push(cur); cur = w; } });
+  if (cur) out.push(cur); return out;
 }
 
-const cellBorders = {
-  top: { style: BorderStyle.SINGLE, size: 4, color: 'D9D9D9' },
-  bottom: { style: BorderStyle.SINGLE, size: 4, color: 'D9D9D9' },
-  left: { style: BorderStyle.SINGLE, size: 4, color: 'D9D9D9' },
-  right: { style: BorderStyle.SINGLE, size: 4, color: 'D9D9D9' },
-};
+function labelRow(label, value) {
+  return new Table({
+    width: { size: LABEL_W + VALUE_W, type: WidthType.DXA }, columnWidths: [LABEL_W, VALUE_W], layout: TableLayoutType.FIXED,
+    borders: { top: NONE, bottom: NONE, left: NONE, right: NONE, insideHorizontal: NONE, insideVertical: NONE },
+    rows: [new TableRow({ height: { value: tw(20), rule: HeightRule.ATLEAST }, children: [
+      new TableCell({ width: { size: LABEL_W, type: WidthType.DXA }, verticalAlign: VerticalAlign.BOTTOM, margins: { left: 0, right: 0, top: 0, bottom: 20 }, borders: { top: NONE, bottom: NONE, left: NONE, right: NONE },
+        children: [new Paragraph({ children: [R(label, F.med, 11, { characterSpacing: -6 })] })] }),
+      new TableCell({ width: { size: VALUE_W, type: WidthType.DXA }, verticalAlign: VerticalAlign.BOTTOM, margins: { left: tw(4), right: 0, top: 0, bottom: 20 }, borders: { top: NONE, left: NONE, right: NONE, bottom: line(RULE) },
+        children: [new Paragraph({ children: [R(value, F.reg, 12.5, { color: GREEN })] })] }),
+    ] })],
+  });
+}
+const gap = pt => new Paragraph({ spacing: { before: 0, after: 0, line: tw(pt), lineRule: LineRuleType.EXACT }, children: [R('', F.reg, 2)] });
 
-function cell(children, width, o = {}) {
+function cell(text, width, { header = false, align = AlignmentType.LEFT, last = false, link = null, font = F.reg } = {}) {
+  const run = header ? R(text, F.med, 14, { color: 'FFFFFF' }) : R(text, font, 11);
+  const kids = link ? [new ExternalHyperlink({ link, children: [R(text, font, 11, { color: GREEN })] })] : [run];
   return new TableCell({
-    children: Array.isArray(children) ? children : [children],
-    width: { size: width, type: WidthType.DXA },
-    borders: cellBorders,
-    margins: { top: 50, bottom: 50, left: 90, right: 90 },
-    verticalAlign: VerticalAlign.CENTER,
-    ...o,
+    width: { size: width, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
+    margins: { left: tw(4), right: tw(5), top: tw(2), bottom: tw(2) },
+    shading: header ? { type: ShadingType.CLEAR, color: 'auto', fill: GREEN } : undefined,
+    borders: header
+      ? { top: NONE, bottom: NONE, left: NONE, right: last ? NONE : line('FFFFFF', 8) }
+      : { top: NONE, left: NONE, bottom: line(GRID, 4), right: last ? NONE : line(GRID, 8) },
+    children: [new Paragraph({ alignment: align, children: kids })],
   });
 }
+const header = new TableRow({ tableHeader: true, height: { value: tw(29), rule: HeightRule.EXACT }, children: [
+  cell('ITEM', COLS[0], { header: true }), cell('COST', COLS[1], { header: true }), cell('QTY.', COLS[2], { header: true }), cell('TOTAL $', COLS[3], { header: true, last: true }),
+] });
+const rows = items.map(it => new TableRow({ height: { value: tw(21), rule: HeightRule.ATLEAST }, cantSplit: true, children: [
+  cell(it.form_name || it.name, COLS[0], { link: it.url }),
+  cell(it.diy ? 'DIY' : money(it.price), COLS[1], { align: AlignmentType.RIGHT }),
+  cell(String(it.diy ? it.made : it.qty), COLS[2], { align: AlignmentType.CENTER }),
+  cell(money(it.total), COLS[3], { align: AlignmentType.RIGHT, last: true }),
+] }));
+rows.push(new TableRow({ height: { value: tw(21), rule: HeightRule.ATLEAST }, children: [
+  cell('GST 5% (gift cards exempt)', COLS[0], { font: F.med }), cell('', COLS[1]), cell('', COLS[2]), cell(money(gst), COLS[3], { align: AlignmentType.RIGHT, last: true }),
+] }));
+const table = new Table({ width: { size: COLS.reduce((a, b) => a + b, 0), type: WidthType.DXA }, columnWidths: COLS, layout: TableLayoutType.FIXED,
+  borders: { top: NONE, bottom: NONE, left: NONE, right: NONE, insideHorizontal: NONE, insideVertical: NONE }, rows: [header, ...rows] });
 
-function headerRow() {
-  const labels = ['ITEM', 'COST', 'QTY.', 'TOTAL $', 'LINK'];
-  return new TableRow({
-    tableHeader: true,
-    children: labels.map((l, i) => cell(
-      new Paragraph({ children: [run(l, { bold: true, color: 'FFFFFF', size: 22 })] }),
-      W[i],
-      { shading: { type: ShadingType.CLEAR, color: 'auto', fill: GREEN } }
-    )),
-  });
-}
-
-function sectionRow(title) {
-  return new TableRow({
-    cantSplit: true,
-    children: [cell(
-      new Paragraph({ children: [run(title.toUpperCase(), { bold: true, color: GREEN, size: 18 })], keepNext: true }),
-      TABLE_W,
-      { columnSpan: 5, shading: { type: ShadingType.CLEAR, color: 'auto', fill: 'E8F0EC' } }
-    )],
-  });
-}
-
-function itemRow(it) {
-  const costText = it.diy ? 'DIY' : money(it.price);
-  const qtyText = it.diy ? String(it.made) : String(it.qty);
-  const costRun = it.diy ? run(costText, { bold: true, color: 'A6192E' }) : run(costText);
-  const storeShort = it.store.replace(/ \(.*\)$/, '');
-  return new TableRow({
-    cantSplit: true,
-    children: [
-      cell(new Paragraph({ children: [run(it.name)] }), W[0]),
-      cell(new Paragraph({ alignment: AlignmentType.RIGHT, children: [costRun] }), W[1]),
-      cell(new Paragraph({ alignment: AlignmentType.CENTER, children: [run(qtyText)] }), W[2]),
-      cell(new Paragraph({ alignment: AlignmentType.RIGHT, children: [run(money(it.total))] }), W[3]),
-      cell(new Paragraph({ children: [
-        new ExternalHyperlink({ link: it.url, children: [new TextRun({ text: storeShort, style: 'Hyperlink', font: FONT, size: 20 })] }),
-        ...(it.store.includes('(') ? [run(' ' + it.store.match(/\(.*\)$/)[0], { size: 16, color: '6B6B6B' })] : []),
-      ] }), W[4]),
-    ],
-  });
-}
-
-const sections = [];
-items.forEach(it => { if (!sections.includes(it.section)) sections.push(it.section); });
-const rows = [headerRow()];
-sections.forEach(s => {
-  rows.push(sectionRow(s));
-  items.filter(i => i.section === s).forEach(i => rows.push(itemRow(i)));
+const TOTAL_LABEL_W = tw(30), TOTAL_VALUE_W = tw(92);
+const totalLine = new Table({
+  alignment: AlignmentType.RIGHT, width: { size: TOTAL_LABEL_W + TOTAL_VALUE_W, type: WidthType.DXA }, columnWidths: [TOTAL_LABEL_W, TOTAL_VALUE_W], layout: TableLayoutType.FIXED,
+  borders: { top: NONE, bottom: NONE, left: NONE, right: NONE, insideHorizontal: NONE, insideVertical: NONE },
+  rows: [new TableRow({ children: [
+    new TableCell({ width: { size: TOTAL_LABEL_W, type: WidthType.DXA }, verticalAlign: VerticalAlign.BOTTOM, borders: { top: NONE, bottom: NONE, left: NONE, right: NONE }, margins: { left: 0, right: 0 }, children: [new Paragraph({ children: [R('Total $:', F.med, 11, { characterSpacing: -6 })] })] }),
+    new TableCell({ width: { size: TOTAL_VALUE_W, type: WidthType.DXA }, verticalAlign: VerticalAlign.BOTTOM, borders: { top: NONE, left: NONE, right: NONE, bottom: line(RULE) }, margins: { left: tw(4), right: 0 }, children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [R(money(grand), F.med, 12.5, { color: GREEN })] })] }),
+  ] })],
 });
 
-const table = new Table({
-  width: { size: TABLE_W, type: WidthType.DXA },
-  columnWidths: W,
-  layout: TableLayoutType.FIXED,
-  rows,
+const aboutLines = wrap(ABOUT, 11.5, 462).slice(0, 4);
+while (aboutLines.length < 4) aboutLines.push('');
+const FONTS = [
+  { name: F.reg, data: fs.readFileSync(path.join(__dirname, 'fonts', 'BarlowCondensed-Regular.ttf')) },
+  { name: F.med, data: fs.readFileSync(path.join(__dirname, 'fonts', 'BarlowCondensed-Medium.ttf')) },
+  { name: F.bold, data: fs.readFileSync(path.join(__dirname, 'fonts', 'Form-Bold.ttf')) },
+  { name: F.lightIt, data: fs.readFileSync(path.join(__dirname, 'fonts', 'Form-LightItalic.ttf')) },
+];
+const PAGE = { size: { width: 12240, height: 15840 }, margin: { top: tw(50), bottom: tw(54), left: tw(72), right: tw(72) } };
+
+const form = new Document({
+  creator: 'Corporate Finance Tree Committee', title: '2026 Holiday Tree Gallery – Corporate Finance', fonts: FONTS,
+  styles: { default: { document: { run: { font: F.reg, size: 22, color: INK } } } },
+  sections: [{ properties: { page: PAGE }, children: [
+    new Paragraph({ spacing: { before: 0, after: 0 }, children: [R('2026 HOLIDAY TREE GALLERY', F.bold, 46.4, { characterSpacing: -26 })] }),
+    gap(20),
+    labelRow('Department / District Name:', 'Corporate Finance'),
+    gap(13),
+    labelRow('Name or Theme of the Tree:', 'Home for the Howlidays'),
+    gap(16),
+    new Paragraph({ spacing: { before: 0, after: 0 }, children: [R('About Our Tree (why did you choose this them) ', F.med, 11, { characterSpacing: -6 }), R('60 words max :', F.lightIt, 11, { characterSpacing: -6 })] }),
+    gap(6),
+    new Table({ width: { size: tw(468), type: WidthType.DXA }, columnWidths: [tw(468)], layout: TableLayoutType.FIXED,   // the form's four ruled lines
+      borders: { top: NONE, bottom: NONE, left: NONE, right: NONE, insideHorizontal: NONE, insideVertical: NONE },
+      rows: aboutLines.map(t => new TableRow({ height: { value: tw(22.6), rule: HeightRule.EXACT }, children: [new TableCell({ width: { size: tw(468), type: WidthType.DXA }, verticalAlign: VerticalAlign.BOTTOM,
+        margins: { left: 0, right: 0, top: 0, bottom: tw(2) }, borders: { top: NONE, left: NONE, right: NONE, bottom: line(RULE) }, children: [new Paragraph({ children: [R(t, F.reg, 11.5, { color: GREEN })] })] })] })) }),
+    gap(22),
+    table,
+    gap(26),
+    totalLine,
+    new Paragraph({ spacing: { before: tw(10) }, alignment: AlignmentType.RIGHT, children: [R(`DIY = made by our committee: QTY. is how many we make and TOTAL $ is the cost of materials. Item names link to the store listing. Prices as listed on ${asOf}; update with receipts before submitting.`, F.lightIt, 8.5, { color: '6B6B6B' })] }),
+  ] }],
 });
 
-function totalLine(label, value, o = {}) {
-  return new Paragraph({
-    alignment: AlignmentType.RIGHT,
-    spacing: { before: o.before ?? 40, after: 40 },
-    children: [
-      run(label + '  ', { size: o.size ?? 22, bold: !!o.bold }),
-      run(value, { size: o.size ?? 22, bold: !!o.bold, color: o.color ?? INK, underline: o.underline ? {} : undefined }),
-    ],
-  });
-}
-
-const note = (t, o = {}) => new Paragraph({ spacing: { before: 40, after: 40 }, children: [run(t, { size: 17, italics: true, color: '6B6B6B', ...o })] });
-
-// ---------- Page 2: committee notes ----------
-const H = t => new Paragraph({ spacing: { before: 220, after: 80 }, keepNext: true, children: [run(t, { bold: true, size: 26, color: GREEN })] });
-const B = (t, bold) => new Paragraph({
-  numbering: { reference: 'bul', level: 0 },
-  spacing: { before: 30, after: 30 },
-  children: bold ? [run(bold, { bold: true, size: 21 }), run(t, { size: 21 })] : [run(t, { size: 21 })],
+/* ---- committee plan ---- */
+const H = t => new Paragraph({ spacing: { before: tw(12), after: tw(4) }, keepNext: true, children: [R(t.toUpperCase(), F.bold, 15, { color: GREEN })] });
+const B = (t, lead) => new Paragraph({ numbering: { reference: 'bul', level: 0 }, spacing: { before: 0, after: tw(3) }, children: lead ? [R(lead, F.med, 11.5), R(t, F.reg, 11.5)] : [R(t, F.reg, 11.5)] });
+const plan = new Document({
+  creator: 'Corporate Finance Tree Committee', title: 'Committee plan – Home for the Howlidays', fonts: FONTS,
+  styles: { default: { document: { run: { font: F.reg, size: 23, color: INK } } } },
+  numbering: { config: [{ reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 300, hanging: 220 } } } }] }] },
+  sections: [{ properties: { page: PAGE }, children: [
+    new Paragraph({ children: [R('HOME FOR THE HOWLIDAYS', F.bold, 40)] }),
+    new Paragraph({ spacing: { after: tw(8) }, children: [R(`Corporate Finance committee plan · total ${money(grand)} incl. GST of $2,000 · prices as of ${asOf}`, F.lightIt, 11)] }),
+    H('Goal'),
+    B(' anyone who has seen our inspiration board recognises this tree from across the room, and it has one moment that makes people stop: the giant doghouse with the family dog in the doorway.', 'Win the Tree Gallery:'),
+    B(' every item matches the board in subject, colour and style (scorecard in the verification report), and every piece is sized so the real tree reads like the board.', 'True to the board:'),
+    B(` ${money(grand)} incl. GST, under $2,000 with at least $150 spare for shipping and price changes; everything arrives by Nov 21; no lights, skirt, brands or food.`, 'Within the rules:'),
+    H('Key dates'),
+    B(' order everything on Amazon.ca (burlap first, only 2 rolls left); buy paint, stamp and gift cards in store.', 'Now:'),
+    B(' two craft sessions: doghouses, paw ornaments, clay bones and biscuits, burlap stamping, giant doghouse.', 'Week of Nov 16:'),
+    B(' decorate at NAHQ (about 3 hours, 3-4 people).', 'Dec 1-3:'),
+    B(' Special Event Rentals picks up the tree.', 'Fri Dec 4:'),
+    H('The wow pieces'),
+    B(' a 26" x 22" x 28" doghouse built from one of our shipping boxes, painted like the ornaments (red brick, cream shingle roof, arched door with cream trim), with a hand-painted "Home for the Howlidays" sign. The plush golden retriever sits in the doorway in the tartan scarf, the tabby beside it.', 'Giant doghouse centrepiece:'),
+    B(' the 24" burlap paw bow on top, with two burlap streamers that pour down the front of the tree to the doghouse roof, tucked in and puffed every 12".', 'Ribbon waterfall:'),
+    B(' twelve gold glitter sprays fanned out behind the topper bow.', 'Gold crown:'),
+    B(' two 10" golden retrievers and three tabby kittens in tartan scarves sit front and centre on sturdy branches (floral wire round the body, under the scarf).', 'Pets on the tree:'),
+    H('DIY'),
+    ...items.filter(i => i.diy).map(i => B(' ' + (i.notes || ''), (i.form_name || i.name) + ':')),
+    H('Gift basket (goes to the winning bidder)'),
+    B('Pick up the two $100 Homes Alive Pets gift cards at the South Edmonton store (5611 104 St NW).'),
+    B('Basket: glass jar of faux biscuits with a velvet bow, red tennis balls, rope toys, plush bone, folded paw-print throw, gift cards. Wrap in cellophane and wire it to the base.'),
+    H('Rules from the kickoff'),
+    B('Secure every ornament, bow, pick and plush with floral wire; the tree is moved several times.'),
+    B('No tree skirt, no lights (the 7.5 ft Wimberley Pine is pre-lit), no PCL/Oilers or other branding, no food.'),
+    B('Decorate all the way around. Expense code: Holiday2026_TreeGallery.'),
+  ] }],
 });
 
-const doc = new Document({
-  creator: 'Corporate Finance Tree Committee',
-  title: '2026 Holiday Tree Gallery – Home for the Howlidays',
-  styles: {
-    default: { document: { run: { font: FONT, size: 20, color: INK } } },
-    characterStyles: [{ id: 'Hyperlink', name: 'Hyperlink', basedOn: 'DefaultParagraphFont', run: { color: '0B5CAD', underline: { type: 'single' } } }],
-  },
-  numbering: { config: [{ reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 360, hanging: 240 } } } }] }] },
-  sections: [{
-    properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1000, bottom: 900, left: 720, right: 720 } } },
-    children: [
-      new Paragraph({ spacing: { after: 120 }, children: [run('2026 HOLIDAY TREE GALLERY', { bold: true, size: 64 })] }),
-      labelLine('Department / District Name:', 'Corporate Finance'),
-      new Paragraph({ spacing: { before: 0, after: 0 }, children: [run('', { size: 4 })] }),
-      labelLine('Name or Theme of the Tree:', 'Home for the Howlidays'),
-      new Paragraph({ spacing: { before: 220, after: 60 }, children: [run('About Our Tree (why did you choose this theme) ', { size: 22 }), run('60 words max :', { size: 22, italics: true, color: '6B6B6B' })] }),
-      new Paragraph({
-        spacing: { before: 40, after: 200, line: 300 },
-        border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: RULE, space: 4 } },
-        children: [run(ABOUT, { size: 22 })],
-      }),
-      table,
-      totalLine('Subtotal:', money(subtotal), { before: 160 }),
-      totalLine('GST 5% (est.; gift cards exempt):', money(gst)),
-      totalLine('Total $:', money(grand), { bold: true, size: 26, color: GREEN, underline: true }),
-      totalLine('Budget $2,000.00  |  Remaining contingency:', money(remaining), { size: 19 }),
-      note('DIY = made by our committee. For DIY rows, QTY is the number of ornaments we make and TOTAL $ is the cost of the materials; the link goes to the materials.'),
-      note(allChecked ? `Prices as listed on ${TODAY}. Update the COST column with actual receipts before submitting.` : `Prices are approximate as of ${TODAY} and may change. Update the COST column with actual receipts before submitting.`),
-
-      new Paragraph({ children: [new PageBreak()] }),
-      new Paragraph({ spacing: { after: 60 }, children: [run('COMMITTEE PLANNING NOTES', { bold: true, size: 40 })] }),
-      new Paragraph({ spacing: { after: 120 }, children: [run('For our team only. Remove this page before submitting the form.', { italics: true, size: 20, color: '6B6B6B' })] }),
-
-      H('Key dates'),
-      B(' place all Amazon.ca orders so they arrive at least a week before decorating.', 'This week:'),
-      B(' tree fully decorated at NAHQ.', 'Thursday, Dec 3:'),
-      B(' Special Event Rentals picks up the tree at NAHQ.', 'Friday, Dec 4:'),
-
-      H('Rules from the Tree Gallery kickoff'),
-      B('Secure every ornament, bow and pick with floral wire (pipe cleaners also work). The tree gets moved several times.'),
-      B('No tree skirt. The organizers cover the bases.'),
-      B('Decorate all the way around so the tree looks finished from every angle.'),
-      B('The tree comes pre-lit (7.5 ft Wimberley Pine), so we don\'t need to buy lights.'),
-      B('Expense description: Holiday2026_TreeGallery.'),
-
-      H('Goal'),
-      B(' anyone who has seen our inspiration board recognises this tree from across the room. All 11 board elements are on the front of the tree, at the board\'s scale, within $2,000 incl. GST and shipping, delivered by Nov 21.', 'Win the Tree Gallery:'),
-      H('DIY (about two craft sessions, start the week of Nov 16)'),
-      B(' paint both sides of the 4" bauble-shaped rounds cream, gold rim and cap tab, black glitter paw, mini velvet bow on top.', 'Paw-print ornaments (30):'),
-      B(' shape 5" puffy bones from the foam clay, add a cord loop, dry 24 h, paint biscuit-cream, dry-brush tan, seal.', 'Dog bones (24):'),
-      B(' barn-red walls with brick lines, cream roof, dark arched door with cream trim, cream paw stamped on the gable.', 'Doghouses (12):'),
-      B(' stamp black paws on the 4" burlap, tie a 24" four-loop bow and leave two 3 ft streamers down the front.', 'Topper:'),
-      B(' 1.5 yd of 4" tartan ribbon each: two loops a side and 18" V-cut tails.', 'Big tartan bows (10):'),
-      B(' cut 14" strips of the tartan ribbon, fringe the ends and tie them on the 2 golden and 3 tabby plush that go on the tree. Cut the tartan scarf in half for the plush dog and cat under the tree.', 'Pet scarves:'),
-      B(' foam clay cut with the bone cutters, painted biscuit-tan and sealed (inedible).', 'Faux biscuits for the jar (30):'),
-      B(' wrap 5 of our sturdiest shipping boxes in tartan and kraft paw paper; glue a 4" black felt paw on the sherpa bone pillow.', 'Display gifts:'),
-
-      H('Gift basket (goes to the winning bidder)'),
-      B('Pick up the two Homes Alive Pets gift cards at the South Edmonton store (5611 104 St NW).'),
-      B('Basket: glass jar of faux biscuits with a velvet bow, red tennis balls, rope toys, plush bone, folded paw-print throw, gift cards. Sit the plush golden retriever and tabby beside it in their tartan scarves.'),
-      B('Wrap the basket in cellophane and wire it to the base so nothing goes missing in transit.'),
-    ],
-  }],
-});
-
-Packer.toBuffer(doc).then(buf => {
-  const out = process.argv[2] || path.join(__dirname, '..', 'output', 'HP26_Tree_Gallery_Form_Corporate_Finance.docx');
-  fs.writeFileSync(out, buf);
-  console.log('ok', { subtotal, gst, grand, remaining });
+const out = path.join(ROOT, 'output');
+Promise.all([Packer.toBuffer(form), Packer.toBuffer(plan)]).then(([a, b]) => {
+  fs.writeFileSync(process.argv[2] || path.join(out, 'HP26_Tree_Gallery_Form_Corporate_Finance.docx'), a);
+  fs.writeFileSync(path.join(out, 'HP26_Committee_Plan_Corporate_Finance.docx'), b);
+  console.log('ok', { subtotal: Math.round(subtotal * 100) / 100, gst, grand, about_lines: aboutLines.filter(Boolean).length });
 });

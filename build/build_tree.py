@@ -8,7 +8,7 @@ import base64, json, pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 items = json.loads((ROOT / 'data' / 'items.json').read_text(encoding='utf-8'))
-keep = ['id', 'section', 'name', 'store', 'url', 'price', 'qty', 'status', 'diy', 'made', 'notes', 'arrives_by', 'match']
+keep = ['id', 'section', 'name', 'store', 'url', 'price', 'qty', 'status', 'diy', 'made', 'notes', 'arrives_by', 'match', 'how', 'size_in']
 slim = []
 for it in items:
     d = {k: it[k] for k in keep if k in it}
@@ -28,9 +28,11 @@ for f in sorted((ROOT / 'data' / 'cutouts').glob('*.webp')):
     w, h = Image.open(f).size
     cuts[f.stem] = {'src': 'data:image/webp;base64,' + base64.b64encode(f.read_bytes()).decode(), 'w': w, 'h': h}
 template = (ROOT / 'build' / 'tree_template.html').read_text(encoding='utf-8')
-docx = ROOT / 'output' / 'HP26_Tree_Gallery_Form_Corporate_Finance.docx'  # built first by build_docx.js
-docx_b64 = base64.b64encode(docx.read_bytes()).decode() if docx.exists() else ''
-page = template.replace('__DOCX__', docx_b64).replace('__ITEMS__', json.dumps(slim, ensure_ascii=False, separators=(',', ':'))).replace('__CUTS__', json.dumps(cuts, separators=(',', ':'))).replace('__SCRIPT__', script)
+b64 = lambda f: base64.b64encode(f.read_bytes()).decode() if f.exists() else ''
+docx_b64 = b64(ROOT / 'output' / 'HP26_Tree_Gallery_Form_Corporate_Finance.docx')   # built first by build_docx.js
+plan_b64 = b64(ROOT / 'output' / 'HP26_Committee_Plan_Corporate_Finance.docx')
+person_b64 = b64(ROOT / 'data' / 'models' / 'person.glb')                           # scale figure (three.js example model, MIT)
+page = template.replace('__DOCX__', docx_b64).replace('__PLAN__', plan_b64).replace('__PERSON__', person_b64).replace('__ITEMS__', json.dumps(slim, ensure_ascii=False, separators=(',', ':'))).replace('__CUTS__', json.dumps(cuts, separators=(',', ':'))).replace('__SCRIPT__', script)
 (ROOT / 'output' / 'howlidays_tree.html').write_text(page, encoding='utf-8')
 preview = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'

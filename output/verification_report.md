@@ -1,6 +1,6 @@
 # Home for the Howlidays: photo verification report
 
-**40 of 42 items checked against the inspiration photo on 2026-11-13** · 13 matched as listed · 16 replaced · 4 DIY (searched for bought versions first) · 6 added · **new total $1,655.57 incl. GST** ($344.43 left of $2,000).
+**41 of 43 items checked against the inspiration photo on 2026-11-13** · 13 matched as listed · 16 replaced · 4 DIY (searched for bought versions first) · 7 added · **new total $1,655.57 incl. GST** ($344.43 left of $2,000).
 
 Every listing was opened in a browser, its main photo compared to `inputs/inspiration.png` and the crops, and the price and delivery date read from the live page (delivery to Canada; confirm the Edmonton date at checkout). Nothing was added to a cart or bought.
 
@@ -10,14 +10,14 @@ Every listing was opened in a browser, its main photo compared to `inputs/inspir
 | `baubles_champ` | close | kept | [Shatterproof baubles – champagne/cream & gold (100-pc set)](https://www.amazon.ca/Christmas-Ornaments-Shatterproof-Decorations-Decorative/dp/B0CBLSMM5Z) | $40.99 | 1 | 2026-11-18 | Champagne/gold mix, some lace-pattern balls; reads cream-gold on the tree. |
 | `glitter_red` | match | kept | [Large 3.15" red & gold glitter statement baubles (12-pc)](https://www.amazon.ca/Christmas-Ornaments-Shatterproof-Hand-Painted-Decorations/dp/B0FSZCQ1L2) | $54.23 | 1 | 2026-11-16 | 12 large red & gold glitter/painted 3.15" balls. Price up from $29.99, so qty cut to 1. |
 | `glitter_champ` | no | replaced | [Large 3.15" champagne glitter baubles (12-pc)](https://www.amazon.ca/dp/B09CMDR2D6) | $39.99 | 1 | 2026-11-17 | Old listing unavailable. New: champagne glitter 3.15" balls with sequin texture. |
-| `golden` | close | replaced | [Golden retriever plush, sitting, ~10" (2 on the tree, 1 under it in a tartan scarf)](https://www.amazon.ca/dp/B01N4NC8QY) | $19.37 | 3 | 2026-11-17 | Resin 2.75" ornaments were far too small to read like the inspiration. Sitting golden plush with dark eyes and floppy ears; wired into the lower branches with a tartan-ribbon scarf. |
+| `golden` | close | replaced | [Golden retriever plush, sitting, ~10" (2 on the tree, 1 in the doorway of the giant doghouse)](https://www.amazon.ca/dp/B01N4NC8QY) | $19.37 | 3 | 2026-11-17 | Resin 2.75" ornaments were far too small to read like the inspiration. Sitting golden plush with dark eyes and floppy ears; wired into the lower branches with a tartan-ribbon scarf. |
 | `tabby_grey` | match | replaced | [Grey tabby kitten plush, sitting, 4.7" (on the tree, tartan-ribbon scarf)](https://www.amazon.ca/dp/B0CVNDJS4D) | $10.66 | 3 | 2026-11-17 | Wild Republic Pocketkins: sitting grey tabby with white chest, like the kittens in the inspiration. Replaces the 2.25" resin kittens. |
 | `tabby_brown` | match | replaced | [Grey tabby cat plush, 6" tall (under the tree with the dog, tartan scarf)](https://www.amazon.ca/dp/B086H6SNL7) | $24.99 | 1 | 2026-11-16 | Douglas Zigby: realistic grey-brown tabby with white bib, the closest to the cat in the inspiration panel. $5.21 shipping on this listing. |
 | `paw_disc` | no | DIY | [Paw-print bauble ornaments (makes 30): 4" bauble-shaped wood rounds painted cream, gold rim & cap, black glitter paw, velvet bow](https://www.amazon.ca/dp/B0FC6DWFVL) | $13.90 | makes 30 | 2026-11-20 | OurWarm 4" wood rounds already cut in a bauble shape with a cap tab, like the paw ornament in the inspiration. 50 pcs, cheaper than the 3" set. |
 | `bones` | no | DIY | [3D dog-bone ornaments (makes 24): 5" puffy bones shaped from white air-dry foam clay, painted biscuit-cream](https://www.amazon.ca/dp/B0F86WQG4W) | $22.00 | makes 24 | 2026-11-17 | The inspiration bones are chunky and 3D, not flat. Lightweight foam clay (500 g) keeps them light enough to hang; also makes the faux biscuits for the jar. |
 | `doghouse` | no | DIY | [Red doghouse ornaments (makes 12): 4.3" wood birdhouses painted barn-red, cream roof & door trim, cream paw on the gable](https://www.amazon.ca/dp/B0BKBVLS3V) | $54.93 | makes 12 | 2026-11-19 | Make Market gabled birdhouses with hanging rope, 4.3" tall: painted barn-red with brick lines, cream roof and arched door trim, cream paw on the gable. |
 | `stockings` | no | replaced | [Mini knit stockings, red/green/cream, 4" (12-pk)](https://www.amazon.ca/dp/B0FRF9R1HD) | $22.99 | 1 | 2026-11-17 | Old plaid set unavailable. New: cable-knit minis in red, forest green and cream with fluffy cuffs. |
-| `topper` | no | DIY | [Tree topper (makes 1): 24" four-loop bow with 3 ft streamers, from 4" natural burlap stamped with black paws](https://www.amazon.ca/dp/B0CHMLF3NP) | $16.80 | makes 1 | 2026-11-17 | No 4" burlap with black paws exists; the 2.5" one had brown paws. 4" natural burlap + black paw stamps = exactly the inspiration topper. Only 2 rolls left, order first. |
+| `topper` | no | DIY | [Tree topper (makes 1): 24" four-loop bow with two floor-length streamers, from 4" natural burlap stamped with black paws](https://www.amazon.ca/dp/B0CHMLF3NP) | $16.80 | makes 1 | 2026-11-17 | No 4" burlap with black paws exists; the 2.5" one had brown paws. 4" natural burlap + black paw stamps = the inspiration topper. The full 10 yd is used: a 24" bow plus two streamers that cascade all the way to the floor. Only 2 rolls left, order first. |
 | `glitter_green` | new | new | [Large 4" dark green glitter baubles (6-pc)](https://www.amazon.ca/dp/B0CSYXLVCF) | $30.99 | 2 | 2026-11-17 | Deep forest-green glitter, 3.94"; the inspiration has big dark green glitter balls among the red and gold. |
 | `tartan_ribbon` | match | kept | [Red/green/black tartan wired ribbon, 4" x 10 yd](https://www.amazon.ca/dp/B0D7WPZDJW) | $33.68 | 6 | 2026-11-21 | Darker Stewart-style tartan, 4" wide like the cascading ribbon in the inspiration. 60 yd: 6 cascades with poufs, 10 big hand-tied bows, and scarves for the plush pets. $5.45 shipping per order. |
 | `velvet_ribbon` | match | kept | [Red velvet wired ribbon, 2.5" x 10 yd](https://www.amazon.ca/MEEDEE-Crushed-Velvet-Christmas-Supplies/dp/B0C9TMPDBM) | $36.37 | 1 | 2026-11-19 | Deep red velvet with gold back, 2.5" x 10 yd. One roll ties the display gift boxes. |
@@ -26,7 +26,7 @@ Every listing was opened in a browser, its main photo compared to `inputs/inspir
 | `mini_bows` | match | kept | [Mini red velvet bows, 3.5" (12-pk) for paw discs, doghouses & treat jar](https://www.amazon.ca/Velvet-Christmas-Bows-Wreath-Wrapping/dp/B0FK4Y5M37) | $15.41 | 3 | 2026-11-18 | Small deep-red velvet bows on twist ties. |
 | `big_bows` | new | new | [Big tartan bows, 11" with 18" tails (makes 10): hand-tied from the 4" tartan ribbon](https://www.amazon.ca/dp/B0D7WPZDJW) | $0.00 | makes 10 | 2026-11-21 | The inspiration bows are much bigger than store-bought 5x7" bows. 1.5 yd of 4" wired ribbon makes one 11" bow with tails. |
 | `red_picks` | match | kept | [Red glitter berry picks (24-pk)](https://www.amazon.ca/CristBest-Christmas-Ornaments-Artificial-Decorations/dp/B0D8KRZQND) | $48.55 | 1 | 2026-11-16 | Red glitter berry sprays; matches the red berries in the photo. |
-| `gold_picks` | match | kept | [Gold glitter berry stems (28-pk)](https://www.amazon.ca/ROSELEAF-Artificial-Ornaments-Christmas-Decoration/dp/B0C965KSQG) | $20.40 | 2 | 2026-11-23 | Gold glitter berry & leaf picks. |
+| `gold_picks` | match | kept | [Gold glitter berry stems (28-pk)](https://www.amazon.ca/ROSELEAF-Artificial-Ornaments-Christmas-Decoration/dp/B0C965KSQG) | $20.40 | 2 | 2026-11-23 | Gold glitter berry & leaf picks. Twelve stems fan out behind the topper bow as a gold crown; the rest are tucked through the tree. |
 | `pine_picks` | match | kept | [Pine cone, holly & red berry evergreen picks (24-pk)](https://www.amazon.ca/KY-Tech-Christmas-Artificial-Supplies-Decorations/dp/B0CF19PZKZ) | $26.99 | 1 | 2026-11-18 | Pine sprigs with pinecones and red berries. |
 | `paint` | not checked | kept | [Craft Smart acrylic paint value pack (barn red, cream, black, gold) for the DIY ornaments](https://canada.michaels.com/product/acrylic-paint-value-pack-by-craft-smart-10278752) | $14.99 | 1 | — | Michaels site blocks automated browsing (403); price not re-checked. Buy in store. |
 | `paw_stamp` | not checked | kept | [Paw-print wood stamp for the DIY discs & doghouses](https://canada.michaels.com/product/paw-wood-stamp-by-recollections-10656835) | $7.99 | 1 | — | Michaels site blocks automated browsing (403); price not re-checked. Buy in store. |
@@ -38,7 +38,8 @@ Every listing was opened in a browser, its main photo compared to `inputs/inspir
 | `tartan_wrap` | no | replaced | [Red tartan wrapping paper (reversible)](https://www.amazon.ca/dp/B0F9P8CHMT) | $19.79 | 1 | 2026-11-17 | Old roll was green with tan check. New: red tartan with green & white lines, like the boxes in the photo. |
 | `paw_wrap` | no | replaced | [Kraft wrapping paper with black paw prints](https://www.amazon.ca/dp/B0FSXRGDGM) | $22.68 | 1 | 2026-11-18 | Old listing unavailable (and was red bones). New: brown kraft with black paws, exactly the boxes in the photo. |
 | `bone_pillow` | close | replaced | [Cream sherpa bone pillow, 15" (black felt paw added)](https://www.amazon.ca/dp/B0GS53B213) | $26.57 | 1 | 2026-11-21 | Curly cream sherpa bone like the big pillow under the tree in the inspiration; glue on a 4" black felt paw. $6.11 shipping on this listing. |
-| `bowl` | no | replaced | [Red glazed ceramic pet bowl with white dots](https://www.amazon.ca/dp/B0FX23RP9K) | $19.99 | 1 | 2026-11-17 | Old bowl unavailable. No red bowl with a white paw exists on Amazon.ca; this is glossy red ceramic with white dots. Optional: add a white paw with a paint pen. |
+| `bowl` | no | replaced | [Red glazed ceramic pet bowl with white dots](https://www.amazon.ca/dp/B0FX23RP9K) | $19.99 | 1 | 2026-11-17 | Glossy red ceramic with white dots (no red bowl with a white paw exists on Amazon.ca). We paint two white paws on the side with the cream paint, like the bowl under the tree in the inspiration. |
+| `doghouse_xl` | new | new | [Giant doghouse centrepiece (makes 1): 26" x 22" x 28" from a shipping box, red brick walls, cream shingle roof, "Home for the Howlidays" sign; the plush golden retriever sits in the doorway](https://canada.michaels.com/product/acrylic-paint-value-pack-by-craft-smart-10278752) | $0.00 | makes 1 | 2026-11-21 | The wow piece: a full-size version of the doghouse ornaments, so the tree reads as the dog's home. Built from one of our larger shipping boxes; paint, stamp and burlap are already on the list. |
 | `gift_card` | match | kept | [Homes Alive Pets gift card, $100 (Edmonton-based, buy in-store)](https://www.homesalive.ca/south-edmonton) | $100.00 | 2 | 2026-11-30 | Buy in store at Homes Alive Pets. |
 | `basket` | close | kept | [Natural wicker gift basket with handle & lace liner, 13" x 10.5" x 6"](https://www.amazon.ca/dp/B0CW39X1ZP) | $39.99 | 1 | 2026-11-17 | Light natural willow like the inspiration basket (the old one was dark burgundy wicker). 11" tall to the handle. |
 | `blanket` | no | replaced | [Red flannel throw with white paw prints & snowflakes, 50x60"](https://www.amazon.ca/dp/B0FKBGPHCV) | $43.34 | 1 | 2026-11-19 | Old one was snowflakes only. New: red with white paws (plus snowflakes); photo is red knit with white paws. |
@@ -51,13 +52,15 @@ Every listing was opened in a browser, its main photo compared to `inputs/inspir
 
 ## Goal
 
-**Win the Tree Gallery: anyone who has seen our inspiration board recognises this tree from across the room, and bidders want it.** Measured by:
+**Win the 2026 Tree Gallery with a tree that stops people in their tracks, matches our inspiration board item for item, and is built exactly as the 3D preview shows.** Full goal and tests in `GOAL.md`.
 
-1. **Recognisable:** all 11 elements on the inspiration board are on the front of the tree (scorecard below).
-2. **Same scale as the board:** the board is AI-generated and its ornaments are oversized (pets about 8-10", bones about 10" against a 7.5 ft tree), so hero pieces are sized up: 10" plush dogs, 5" plush cats, 11" bows, 24" topper, 5" bones.
-3. **Auction appeal:** the gift basket bundle (with the plush dog & cat) is worth about $479 retail.
-4. **Within the rules:** $1,655.57 incl. GST, or $1,694.63 if we pay shipping on the 7 listings that charge it; $305 left after that. Everything arrives by Nov 21 (9 days before the Nov 30 cutoff). No lights, skirt, brands or food.
-5. **Build-ready:** the 3D preview uses the listing dimensions of every item, so it is the map for decorating day.
+| Test | Status |
+|---|---|
+| 1. Wow from across the room | 28" doghouse centrepiece with the family dog in the doorway, burlap ribbon waterfall to the floor, gold crown behind the topper, plush pets front and centre |
+| 2. Every item matches the board | 34 of 41 items `match`; the rest are `close` with a fix noted below |
+| 3. Realistic and true to scale | every item placed at its listing size; living room or office setting; person for scale (5'0"-6'2") with height labels |
+| 4. Within the rules | $1,655.57 incl. GST ($1,694.63 with the shipping some listings charge); arrives by Nov 21; no lights, skirt, brands or food |
+| 5. Paperwork ready | Tree Gallery form (original layout) and committee plan export as Word from the preview page |
 
 ## Inspiration scorecard
 
@@ -69,18 +72,22 @@ Every listing was opened in a browser, its main photo compared to `inputs/inspir
 | Doghouse ornaments | 12 DIY 4.3" doghouses: red brick, cream roof, arched door, paw on gable | match |
 | Red, forest green, cream & gold baubles | 200 red/green/gold + 100 champagne + 12 red-gold 3.15" + 12 champagne 3.15" + 12 green 4" | match |
 | Plaid and velvet ribbons | 5 cascades of 4" tartan, 10 big tartan bows, 12 plaid bows, 12 wine-velvet bows | match |
-| Mini pet stockings | 12 knit minis (red, green, cream), 4.3" | close (knit, not plaid) |
+| Mini pet stockings | 12 knit minis (red, green, cream), 4.3" | close: knit, not plaid; the cuffs match |
 | Pet toys and treats in a gift basket | natural wicker basket, glass jar of faux biscuits, red tennis balls, rope toys, plush bone | match |
 | Gift cards from local pet stores | 2 x $100 Homes Alive Pets | match |
-| Cozy pet blanket or throw | red flannel with white paws & snowflakes | close (flannel, not knit) |
-| Gold accents and festive greens | gold glitter sprays, pine & cone picks, glossy red berries | match |
-| Burlap paw-print topper | 24" 4-loop bow from 4" burlap, black paws stamped (DIY) | match |
-| Sherpa bone pillow & red bowl under the tree | 15" cream sherpa bone + black felt paw; red glazed bowl with white dots | close (bowl has dots, not a paw) |
-| Dog & cat in tartan scarves | plush golden retriever + tabby beside the basket in the real fringed scarf | match |
+| Cozy pet blanket or throw | red flannel with white paws & snowflakes | close: flannel, not knit; same colours and paws |
+| Gold accents and festive greens | gold crown + gold glitter sprays, pine & cone picks, glossy red berries | match |
+| Burlap paw-print topper | 24" 4-loop bow from 4" burlap, black paws stamped (DIY), streamers to the floor | match |
+| Sherpa bone pillow & red bowl under the tree | 15" cream sherpa bone + black felt paw; red bowl with two painted white paws | match |
+| Dog & cat in tartan scarves | plush golden retriever in the doghouse doorway + tabby beside it, in the real fringed scarf | match |
+| Doghouse (board panel) | 28" giant doghouse centrepiece built from a shipping box (DIY, $0) | match |
+
+**Where the 3D preview approximates:** the plush pets, stockings and pine picks are photo cutouts that turn to face you; the person is a neutral mannequin at the chosen height; the rooms are drawn, not photographed.
 
 ## For Muntaz to decide or buy in person
 
 - **Order these first (low stock):** 4" natural burlap for the topper (2 left).
+- **Giant doghouse:** keep the largest shipping box (about 26 x 22 in) and one more for the roof; plan it for the second craft session.
 - **Plush pets on the tree:** secure each with floral wire around the body under the scarf and to a sturdy inner branch; the 10" goldens go on the lower-middle branches at the front.
 - **Gift basket is about $479** (incl. the plush dog & cat that sit beside it). It is above the original ~$400 guideline, but it is the auction prize, so I think it is worth it. Drop the Zigby cat (-$24.99) if you want it lower.
 - **Shipping:** 7 listings charge $5-6 shipping without Prime (about $39 total). Use a Prime account, or keep it within the buffer.

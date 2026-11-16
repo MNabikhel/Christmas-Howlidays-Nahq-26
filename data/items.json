@@ -38,7 +38,8 @@
      32
     ]
    ]
-  }
+  },
+  "form_name": "Shatterproof baubles, red/green/gold (100 pc)"
  },
  {
   "id": "baubles_champ",
@@ -78,7 +79,8 @@
      33
     ]
    ]
-  }
+  },
+  "form_name": "Shatterproof baubles, champagne/cream (100 pc)"
  },
  {
   "id": "glitter_red",
@@ -106,7 +108,8 @@
   "photo": "https://m.media-amazon.com/images/I/81eZrnLDP1L._AC_SX679_.jpg",
   "size_in": {
    "d": 3.15
-  }
+  },
+  "form_name": "Red & gold glitter baubles 3.15\" (12 pc)"
  },
  {
   "id": "glitter_champ",
@@ -133,12 +136,13 @@
   "photo": "https://m.media-amazon.com/images/I/81tkO5Iuh4L._AC_SX679_.jpg",
   "size_in": {
    "d": 3.15
-  }
+  },
+  "form_name": "Champagne glitter baubles 3.15\" (12 pc)"
  },
  {
   "id": "golden",
   "section": "Tree ornaments",
-  "name": "Golden retriever plush, sitting, ~10\" (2 on the tree, 1 under it in a tartan scarf)",
+  "name": "Golden retriever plush, sitting, ~10\" (2 on the tree, 1 in the doorway of the giant doghouse)",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B01N4NC8QY",
   "price": 19.37,
@@ -163,7 +167,8 @@
    "h": 10,
    "w": 7,
    "d": 11
-  }
+  },
+  "form_name": "Golden retriever plush, sitting 10\""
  },
  {
   "id": "tabby_grey",
@@ -192,7 +197,8 @@
    "h": 4.7,
    "w": 3.7,
    "d": 5.9
-  }
+  },
+  "form_name": "Grey tabby kitten plush, sitting 4.7\""
  },
  {
   "id": "tabby_brown",
@@ -221,7 +227,8 @@
    "h": 6,
    "w": 3,
    "d": 8
-  }
+  },
+  "form_name": "Grey tabby cat plush, 6\""
  },
  {
   "id": "paw_disc",
@@ -253,7 +260,9 @@
    "h": 4.3,
    "w": 3.5,
    "d": 0.1
-  }
+  },
+  "form_name": "Paw-print bauble ornaments, 4\" (DIY)",
+  "how": "Paint both sides of the 4\" bauble-shaped rounds cream (a little baking soda in the paint gives texture), paint the rim and cap tab gold, stamp a black paw in the centre and dust it with black glitter while wet, then thread gold cord through the hole and wire a mini velvet bow on top."
  },
  {
   "id": "bones",
@@ -285,7 +294,9 @@
    "h": 1.8,
    "w": 5,
    "d": 1
-  }
+  },
+  "form_name": "3D dog-bone ornaments, 5\" (DIY)",
+  "how": "Roll foam clay into 5\" logs, pinch two round knobs at each end and press to 1\" thick (print a bone template to keep them even). Push a gold cord loop into one end, dry 24 h, paint biscuit-cream, dry-brush tan on the edges and seal."
  },
  {
   "id": "doghouse",
@@ -317,7 +328,9 @@
    "h": 4.3,
    "w": 3.4,
    "d": 2.7
-  }
+  },
+  "form_name": "Red doghouse ornaments, 4.3\" (DIY)",
+  "how": "Paint the walls barn-red and draw brick lines with a dark red paint pen, paint the roof cream, paint an arched door around the round hole in dark brown with cream trim, and stamp a cream paw on the gable."
  },
  {
   "id": "stockings",
@@ -345,12 +358,13 @@
   "size_in": {
    "h": 4.3,
    "w": 3.9
-  }
+  },
+  "form_name": "Mini knit stockings, 4\" (12 pc)"
  },
  {
   "id": "topper",
   "section": "Tree ornaments",
-  "name": "Tree topper (makes 1): 24\" four-loop bow with 3 ft streamers, from 4\" natural burlap stamped with black paws",
+  "name": "Tree topper (makes 1): 24\" four-loop bow with two floor-length streamers, from 4\" natural burlap stamped with black paws",
   "store": "Amazon.ca",
   "url": "https://www.amazon.ca/dp/B0CHMLF3NP",
   "diy": true,
@@ -368,7 +382,7 @@
   "match": "match",
   "checked_on": "2026-11-13",
   "arrives_by": "2026-11-17",
-  "notes": "No 4\" burlap with black paws exists; the 2.5\" one had brown paws. 4\" natural burlap + black paw stamps = exactly the inspiration topper. Only 2 rolls left, order first.",
+  "notes": "No 4\" burlap with black paws exists; the 2.5\" one had brown paws. 4\" natural burlap + black paw stamps = the inspiration topper. The full 10 yd is used: a 24\" bow plus two streamers that cascade all the way to the floor. Only 2 rolls left, order first.",
   "verdict_before": "no",
   "action": "DIY",
   "photo": "https://m.media-amazon.com/images/I/81p175ygSKL._AC_SX679_.jpg",
@@ -378,7 +392,9 @@
    "d": 8,
    "ribbon_w": 4,
    "len_yd": 10
-  }
+  },
+  "form_name": "Burlap paw-print bow topper, 24\" (DIY)",
+  "how": "Stamp black paws every 4-5\" along all 10 yd of the 4\" burlap. Tie a 24\" bow with four loops (two up, two down), wire it to the top, and let two streamers pour down the front of the tree to the doghouse roof, pinched in and puffed out every 12\"."
  },
  {
   "status": "listed",
@@ -405,7 +421,8 @@
   "look": "Large forest-green glitter baubles.",
   "viz": "Green glitter balls",
   "photo": "https://m.media-amazon.com/images/I/912GngceVvL._AC_SX679_.jpg",
-  "verdict_before": "new"
+  "verdict_before": "new",
+  "form_name": "Dark green glitter baubles 4\" (6 pc)"
  },
  {
   "id": "tartan_ribbon",
@@ -434,7 +451,8 @@
   "size_in": {
    "w": 4,
    "len_yd": 10
-  }
+  },
+  "form_name": "Tartan wired ribbon, 4\" x 10 yd"
  },
  {
   "id": "velvet_ribbon",
@@ -463,7 +481,8 @@
   "size_in": {
    "w": 2.5,
    "len_yd": 10
-  }
+  },
+  "form_name": "Red velvet wired ribbon, 2.5\" x 10 yd"
  },
  {
   "id": "plaid_bows",
@@ -491,7 +510,8 @@
   "size_in": {
    "h": 7,
    "w": 5
-  }
+  },
+  "form_name": "Plaid tree bows, 5\" x 7\" (12 pc)"
  },
  {
   "id": "velvet_bows",
@@ -520,7 +540,8 @@
    "h": 10.2,
    "w": 5.1,
    "d": 1
-  }
+  },
+  "form_name": "Wine velvet bows, 5\" x 10\" (12 pc)"
  },
  {
   "id": "mini_bows",
@@ -549,7 +570,8 @@
   "size_in": {
    "h": 3.5,
    "w": 3.5
-  }
+  },
+  "form_name": "Mini red velvet bows, 3.5\" (12 pc)"
  },
  {
   "status": "listed",
@@ -580,7 +602,9 @@
   "look": "Large tartan bows with long tails.",
   "viz": "Big tartan bows",
   "photo": "https://m.media-amazon.com/images/I/61otY0qPR-L._AC_SX679_.jpg",
-  "verdict_before": "new"
+  "verdict_before": "new",
+  "form_name": "Big tartan bows, 11\" (DIY)",
+  "how": "Each bow takes about 1.5 yd of the 4\" tartan ribbon: two 5\" loops on each side, wire the centre, wrap a short piece over the wire, and leave two 18\" tails cut in a V."
  },
  {
   "id": "red_picks",
@@ -607,7 +631,8 @@
   "photo": "https://m.media-amazon.com/images/I/81ChEM+CCRL._AC_SX679_.jpg",
   "size_in": {
    "h": 17
-  }
+  },
+  "form_name": "Red glitter berry sprays (24 pc)"
  },
  {
   "id": "gold_picks",
@@ -628,13 +653,14 @@
   "match": "match",
   "checked_on": "2026-11-13",
   "arrives_by": "2026-11-23",
-  "notes": "Gold glitter berry & leaf picks.",
+  "notes": "Gold glitter berry & leaf picks. Twelve stems fan out behind the topper bow as a gold crown; the rest are tucked through the tree.",
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/71S70YCkJ2L._AC_SX679_.jpg",
   "size_in": {
    "h": 17
-  }
+  },
+  "form_name": "Gold glitter berry sprays (28 pc)"
  },
  {
   "id": "pine_picks",
@@ -662,7 +688,8 @@
   "size_in": {
    "h": 4,
    "w": 3
-  }
+  },
+  "form_name": "Pine cone & berry picks (24 pc)"
  },
  {
   "id": "paint",
@@ -684,7 +711,8 @@
   "notes": "Michaels site blocks automated browsing (403); price not re-checked. Buy in store.",
   "verdict_before": null,
   "action": "kept",
-  "size_in": {}
+  "size_in": {},
+  "form_name": "Acrylic craft paint set"
  },
  {
   "id": "paw_stamp",
@@ -708,7 +736,8 @@
   "action": "kept",
   "size_in": {
    "w": 2
-  }
+  },
+  "form_name": "Paw-print stamp"
  },
  {
   "id": "floral_wire",
@@ -731,7 +760,8 @@
   "verdict_before": "match",
   "action": "kept",
   "photo": "https://m.media-amazon.com/images/I/715LG1i1U7L._SX522_.jpg",
-  "size_in": {}
+  "size_in": {},
+  "form_name": "Green floral wire, 22 gauge (3 rolls)"
  },
  {
   "id": "bone_cutters",
@@ -756,7 +786,8 @@
   "reference_crops": [],
   "viz": null,
   "photo": "https://m.media-amazon.com/images/I/71jfakagczL._AC_SX679_.jpg",
-  "verdict_before": "new"
+  "verdict_before": "new",
+  "form_name": "Bone cookie cutters (3 pc)"
  },
  {
   "id": "felt",
@@ -782,7 +813,8 @@
   "reference_crops": [],
   "viz": null,
   "photo": "https://m.media-amazon.com/images/I/71DA89e+QOL._AC_SX679_.jpg",
-  "verdict_before": "new"
+  "verdict_before": "new",
+  "form_name": "Black felt sheets (7 pc)"
  },
  {
   "status": "listed",
@@ -810,7 +842,8 @@
   "look": "Glossy red holly-berry clusters.",
   "viz": "Red berry clusters",
   "photo": "https://m.media-amazon.com/images/I/71fAv9LDNiL._AC_SX679_.jpg",
-  "verdict_before": "new"
+  "verdict_before": "new",
+  "form_name": "Glossy red berry stems, 7\" (48 pc)"
  },
  {
   "id": "gift_boxes",
@@ -865,7 +898,9 @@
      6
     ]
    ]
-  }
+  },
+  "form_name": "Wrapped display gift boxes (DIY)",
+  "how": "Keep the sturdiest shipping boxes from our orders (about 14x11x12, 12x10x9, 10x10x10, 16x12x7 and 9x9x6 inches), tape them shut, wrap in tartan or kraft paw paper, and tie with velvet or tartan ribbon and a bow."
  },
  {
   "id": "tartan_wrap",
@@ -893,7 +928,8 @@
   "size_in": {
    "w": 17,
    "len_ft": 33
-  }
+  },
+  "form_name": "Red tartan wrapping paper"
  },
  {
   "id": "paw_wrap",
@@ -921,7 +957,8 @@
   "size_in": {
    "w": 17,
    "len_ft": 20
-  }
+  },
+  "form_name": "Kraft paw-print wrapping paper"
  },
  {
   "id": "bone_pillow",
@@ -951,7 +988,8 @@
    "h": 3,
    "w": 15,
    "d": 9
-  }
+  },
+  "form_name": "Cream sherpa bone pillow, 15\""
  },
  {
   "id": "bowl",
@@ -969,17 +1007,54 @@
   ],
   "priority": "high",
   "image_checked": true,
-  "match": "close",
+  "match": "match",
   "checked_on": "2026-11-13",
   "arrives_by": "2026-11-17",
-  "notes": "Old bowl unavailable. No red bowl with a white paw exists on Amazon.ca; this is glossy red ceramic with white dots. Optional: add a white paw with a paint pen.",
+  "notes": "Glossy red ceramic with white dots (no red bowl with a white paw exists on Amazon.ca). We paint two white paws on the side with the cream paint, like the bowl under the tree in the inspiration.",
   "verdict_before": "no",
   "action": "replaced",
   "photo": "https://m.media-amazon.com/images/I/61hHZgycaXL._AC_SX679_.jpg",
   "size_in": {
    "h": 1.8,
    "w": 5.9
-  }
+  },
+  "form_name": "Red ceramic pet bowl",
+  "how": "Paint two white paw prints on the outside of the bowl with the cream acrylic and seal (display only)."
+ },
+ {
+  "id": "doghouse_xl",
+  "section": "Under-tree display",
+  "name": "Giant doghouse centrepiece (makes 1): 26\" x 22\" x 28\" from a shipping box, red brick walls, cream shingle roof, \"Home for the Howlidays\" sign; the plush golden retriever sits in the doorway",
+  "store": "DIY (shipping box + our paint)",
+  "url": "https://canada.michaels.com/product/acrylic-paint-value-pack-by-craft-smart-10278752",
+  "price": 0.0,
+  "qty": 1,
+  "diy": true,
+  "made": 1,
+  "status": "listed",
+  "priority": "high",
+  "image_checked": true,
+  "match": "match",
+  "checked_on": "2026-11-16",
+  "arrives_by": "2026-11-21",
+  "action": "new",
+  "verdict_before": "new",
+  "size_in": {
+   "w": 26,
+   "d": 22,
+   "h": 28,
+   "door_w": 11,
+   "door_h": 14
+  },
+  "notes": "The wow piece: a full-size version of the doghouse ornaments, so the tree reads as the dog's home. Built from one of our larger shipping boxes; paint, stamp and burlap are already on the list.",
+  "look": "Large red doghouse with cream roof and arched door under the tree, plush golden retriever in the doorway, painted sign.",
+  "reference_crops": [
+   "doghouse",
+   "tree_full"
+  ],
+  "viz": "Giant doghouse",
+  "form_name": "Giant doghouse centrepiece (DIY)",
+  "how": "Use the largest shipping box (about 26 x 22 in) as the walls and a second box cut into two roof panels. Cut an 11\" x 14\" arched door. Paint the walls barn-red with dark brick lines, the roof cream with shingle lines, the door trim cream and the opening dark brown. Paint \"Home for the Howlidays\" on a 20\" x 4.5\" foam-board sign and glue it under the roof edge, with a cream paw stamped on the gable above it. Sit the plush golden retriever in the doorway in its tartan scarf."
  },
  {
   "id": "gift_card",
@@ -1007,7 +1082,8 @@
   "size_in": {
    "h": 2.1,
    "w": 3.4
-  }
+  },
+  "form_name": "Homes Alive Pets gift card, $100"
  },
  {
   "id": "basket",
@@ -1037,7 +1113,8 @@
    "w": 13,
    "d": 10.5,
    "handle_h": 11
-  }
+  },
+  "form_name": "Natural wicker gift basket"
  },
  {
   "id": "blanket",
@@ -1065,7 +1142,8 @@
   "size_in": {
    "w": 50,
    "len": 60
-  }
+  },
+  "form_name": "Red paw-print throw, 50\" x 60\""
  },
  {
   "id": "jar",
@@ -1093,7 +1171,8 @@
   "size_in": {
    "h": 9.9,
    "w": 7
-  }
+  },
+  "form_name": "Glass treat jar with lid"
  },
  {
   "id": "holiday_toy",
@@ -1122,7 +1201,8 @@
    "h": 1.8,
    "w": 8.7,
    "d": 5.7
-  }
+  },
+  "form_name": "Plush bone dog toy"
  },
  {
   "id": "rope",
@@ -1149,7 +1229,8 @@
   "photo": "https://m.media-amazon.com/images/I/71k5KfmM3hL._AC_SX679_.jpg",
   "size_in": {
    "w": 10
-  }
+  },
+  "form_name": "Christmas rope dog toys (9 pc)"
  },
  {
   "id": "balls",
@@ -1176,7 +1257,8 @@
   "photo": "https://m.media-amazon.com/images/I/91c4ZS4+rPL._AC_SX679_.jpg",
   "size_in": {
    "d": 2.58
-  }
+  },
+  "form_name": "Red tennis balls (4 pc)"
  },
  {
   "id": "bandanas",
@@ -1204,7 +1286,8 @@
   "size_in": {
    "w": 12,
    "len": 72
-  }
+  },
+  "form_name": "Red tartan fringed scarf"
  },
  {
   "id": "faux_treats",
@@ -1234,6 +1317,8 @@
   ],
   "viz": "Biscuits in the jar",
   "photo": "https://m.media-amazon.com/images/I/71jfakagczL._AC_SX679_.jpg",
-  "verdict_before": "new"
+  "verdict_before": "new",
+  "form_name": "Faux dog biscuits for the jar (DIY)",
+  "how": "Roll leftover foam clay 1/4\" thick, cut bones with the cookie cutters, poke little dots with a toothpick, dry, paint biscuit-tan and seal. Inedible, so they last until the 2027 auction."
  }
 ]
