@@ -1,14 +1,16 @@
 /* Printable templates at true size (print at 100% / "Actual size", never "Fit to page"). Every page has a 1" check square.
    output/HP26_Templates.pdf:
      1-2  10" doghouse ornament (11 x 17): walls with brick lines; roof, floor, corner trims and the board cut plan
-     3    paw templates (Letter): 3.6" hoop paw, 3" topper paw, 4.5" pillow paw, 1.5" bowl stencil, 1" paw
-     4    9" clay bone (wire-eye marks for a level hang) and the 3" biscuit outline (Letter landscape)
+     3    paw templates (Letter): 3.6" hoop paw, 3" topper / holiday-toy paw, 4.5" pillow paw, 1" stocking-cuff paw
+     4    9" clay bone (foil-core line; red wire-anchor / drill marks for the two-cord level hang) and the 2.7" biscuit outline (Letter landscape)
      5    option: 4.3" doghouse ornament with its trims (Letter)
      6-7  option: giant doghouse door and cut plan (Letter)
      8    10" doghouse trims and small parts (Letter): arch trim, barge boards, threshold, ridge cap, raised gable paw
      9    6" felt back circle for the hoop ornaments, and the 5" bone option (Letter)
+   Text that names a step must agree with the CAT/SUP 'how' text in build/build_plan.py (same sizes, counts, tools, page numbers).
    output/HP26_Doghouse_Sign_11x17.pdf: the 16 x 4" sign for the giant doghouse option.
-   Sizes come from data/options.json render dicts (doghouses, bones, topper, paws), so the 3D and the templates agree.
+   Sizes and counts come from data/options.json render dicts (doghouses, bones, topper, paws, stockings, flourish) and the
+   catalog size_in of faux_treats, so the 3D, the plan and the templates agree.
    Needs Playwright (used only here); if it is not installed the committed PDFs are kept. */
 const fs = require('fs'); const path = require('path');
 const ROOT = path.join(__dirname, '..');
@@ -34,9 +36,13 @@ const check = (x, y, mode = 'r') => {
 };
 const T16 = 0.1875;
 const opt = (el, id) => { const e = O.elements.find(x => x.id === el); const o = id ? e.options.find(x => x.id === id) : e.options[0]; return (o && o.render) || {}; };
-const DH = opt('doghouses', 'diy10'), BONES = opt('bones', 'clay9'), TOP = opt('topper', 'burlap6'), PAWS = opt('paws', 'hoop');
+const DH = opt('doghouses', 'diy10'), DHS = opt('doghouses', 'diy43'), BONES = opt('bones', 'clay9'), BONES5 = opt('bones', 'clay5'), TOP = opt('topper', 'burlap6'),
+  PAWS = opt('paws'), STOCK = opt('stockings', 'knit'), STREAM = opt('flourish', 'streamers');
+const BISC = (O.catalog.faux_treats && O.catalog.faux_treats.size_in) || {};
+const BISC_L = BISC.w || 2.7, BISC_SPAN = BISC.h || 1.08;   // the 2.7" bone cutter the plan buys: the fallback outline is the same size so the jar ring maths holds
 const BRICK_L = DH.brick_l || 1.5, BRICK_H = +(DH.wall / Math.round(DH.wall / (DH.brick_h || 0.9))).toFixed(3);   // board: big blocks about 0.9-1" high, 1.5" long (LO-8); whole courses up the wall
-const NH = DH.n || 6, NHOOP = PAWS.n || 10, NBONE = BONES.n || 8, TOPPAWS = TOP.paws || 20, TOPPAW_IN = TOP.paw_in || 3;
+const NH = DH.n || 6, NHS = DHS.n || 12, NHOOP = PAWS.n || 10, NBONE = BONES.n || 8, TOPPAWS = TOP.paws || 24, TOPPAW_IN = TOP.paw_in || 3;
+const NCUFF = STOCK.paws ? (STOCK.n || 12) : 0, NSTREAM = STREAM.paws || 24, NBONE5 = BONES5.n || 24, BONE5_T = BONES5.thick || 0.75;
 const BONE_L = BONES.len || BONES.l || 9, SHAFT_R = BONES.shaft_ratio || 0.27, SPAN_R = BONES.span_ratio || 0.53, BONE_T = BONES.thick || 1;
 
 // ---- doghouse geometry (true size) ----
@@ -44,7 +50,7 @@ function doghouse(r, door, trim, pawIn, over) {
   const { w: W, d: D, wall: WALL, ridge: RIDGE } = r, SL = Math.hypot(W / 2, RIDGE - WALL) + over, PITCH = Math.atan2(RIDGE - WALL, W / 2);
   const gable = (x, y) => `M ${f2(x)} ${f2(y + RIDGE)} L ${f2(x + W)} ${f2(y + RIDGE)} L ${f2(x + W)} ${f2(y + RIDGE - WALL)} L ${f2(x + W / 2)} ${f2(y)} L ${f2(x)} ${f2(y + RIDGE - WALL)} Z`;
   const doorD = (x, y) => arch(x + W / 2 - door[0] / 2, y + RIDGE - door[1], door[0], door[1]);
-  const pawY = (RIDGE - WALL) * 0.71;                     // paw centre below the peak: clear of the barge boards and of the arch trim
+  const pawY = r.paw_y || (RIDGE - WALL) * 0.71;          // paw centre below the peak (render paw_y, the 3D's value): clear of the barge boards and of the arch trim
   return { W, D, WALL, RIDGE, SL, PITCH, door, trim, pawIn, over, gable, doorD, pawY, base: T16 };
 }
 let clipN = 0;
@@ -80,8 +86,8 @@ function barge(h, x, y, w) {
   return { d: `M ${f2(x)} ${f2(y)} L ${f2(x + L)} ${f2(y)} L ${f2(x + L - s)} ${f2(y + w)} L ${f2(x)} ${f2(y + w)} Z`, L, s };
 }
 
-const big = doghouse(DH, [3.8, 4.6], 0.5, 2.5, 0.75);
-const small = doghouse(opt('doghouses', 'diy43'), [1.5, 1.9], 0.22, 1.0, 0.35);   // door 1.5 x 1.9 and 0.22" trims: the same as the 3D (DH-14)
+const big = doghouse(DH, DH.door || [3.8, 4.6], 0.5, 2.5, 0.75);
+const small = doghouse(DHS, DHS.door || [1.5, 1.9], 0.22, 1.0, 0.35);   // door 1.5 x 1.9 and 0.22" trims: the same as the 3D (DH-14)
 const ROOF_W = big.D + 2 * big.over;                                                 // 7.5
 const BARGE_W = 0.6, RIDGE_W = 0.5, THR = [big.door[0] + 2 * big.trim, 0.75];
 
@@ -94,7 +100,7 @@ p1 += bricks(`M 0.2 ${sideY} h ${sideW} v ${big.WALL} h ${-sideW} Z`, 0.2, 0.2 +
 p1 += check(6.3, sideY + 0.1);
 [[`Grey lines: score the bricks with a ballpoint that has run dry`, 1], [`(courses ${BRICK_H.toFixed(2)}" high, bricks ${BRICK_L}" long, staggered).`, 0],
  ['Dashed U round the door: where the cream arch trim sits.', 1], ['Cut the trim itself from page 8.', 0],
- ['Dotted paw: where the raised 2.5" paw sits (page 8).', 1], ['Cut it from the door you remove from the front.', 0]]
+ ['Dotted paw: where the raised 2.5" paw sits (page 8),', 1], [`centred ${big.pawY}" below the peak. Cut it from the door piece.`, 0]]
   .forEach(([t, b], i) => { p1 += T(6.3, sideY + 1.6 + i * 0.2 + (b ? 0.12 * i / 2 : 0.12 * (i - 1) / 2), t, { size: 0.11, w: b ? 700 : 400 }); });
 
 // ---- page 2: roof, floor, corner trims, board cut plan ----
@@ -138,37 +144,59 @@ p2 += `<rect x="0.2" y="${f2(flY)}" width="${flD}" height="${flW}" ${cut}/>` + T
 
 // ---- page 3: paw templates ----
 const pawT = (x, y, sz, title, use, use2) => `<g stroke="#111" stroke-width="0.015" fill="none">${paw(x, y + sz * 0.55, sz, 'none')}</g>` + T(x, y + sz + 0.22, title, { a: 'middle', size: 0.15, w: 700 }) + T(x, y + sz + 0.42, use, { a: 'middle', size: 0.12 }) + (use2 ? T(x, y + sz + 0.6, use2, { a: 'middle', size: 0.12 }) : '');
-let p3 = pawT(1.95, 0.1, 3.6, '3.6" paw', `black glitter cardstock: hoop ornaments (cut ${NHOOP})`)
-  + pawT(5.75, 0.1, TOPPAW_IN, `${TOPPAW_IN}" paw (5 pieces: pad + 4 toes)`, `black felt: topper bow (cut ${TOPPAWS})`, 'and the holiday toy (cut 1)')
+let p3 = pawT(1.95, 0.1, 3.6, '3.6" paw', `black glitter cardstock: hoop ornaments (cut ${NHOOP})`, 'stencil: giant doghouse gable (option)')
+  + pawT(5.75, 0.1, TOPPAW_IN, `${TOPPAW_IN}" paw (5 pieces: pad + 4 toes)`, `black felt: topper bow (cut ${TOPPAWS}),`, 'holiday toy (cut 1)')
+  + T(5.75, 0.1 + TOPPAW_IN + 0.78, `streamers option: ${NSTREAM} more;`, { a: 'middle', size: 0.12 }) + T(5.75, 0.1 + TOPPAW_IN + 0.96, 'stencil: wood-round ornaments (option)', { a: 'middle', size: 0.12 })
   + pawT(2.45, 4.45, 4.5, '4.5" paw', 'black felt: bone pillow (cut 1)')
-  + pawT(6.2, 4.05, 1.5, '1.5" paw', 'bowl stencil (white paint marker)')
-  + pawT(6.2, 6.15, 1.0, '1" paw', 'felt: stocking cuffs;', '4.3" doghouse gables (option)');
-p3 += check(5.7, 7.8, 'b');
+  + pawT(6.2, 4.75, 1.0, '1" paw', NCUFF ? `black felt: stocking cuffs (cut ${NCUFF})` : 'black felt: stocking cuffs', 'stencil: 4.3" doghouse gable (option)');
+p3 += check(5.7, 7.6, 'b');
 
-// ---- page 4: 9" bone at board proportions, 3" biscuit ----
-// knob span = SPAN_R x L, shaft = SHAFT_R x L, four round lobes (two circles per end that overlap enough to leave a clear notch)
-function boneGeo(L) { const H = SPAN_R * L, r = 0.29 * H, b = H / 2 - r, a = L / 2 - r, h = SHAFT_R * L / 2, q = Math.sqrt(r * r - b * b), s = Math.sqrt(r * r - (h - b) ** 2); return { H, r, b, a, h, q, s }; }
-function bone(x, y, L, marks) {
-  const g = boneGeo(L), cx = x + L / 2, cy = y + g.H / 2, P = (px, py) => `${f2(cx + px)} ${f2(cy + py)}`, A = `A ${f2(g.r)} ${f2(g.r)} 0 1 1`;
-  let out = `<path d="M ${P(-g.a - g.q, 0)} ${A} ${P(-g.a + g.s, -g.h)} L ${P(g.a - g.s, -g.h)} ${A} ${P(g.a + g.q, 0)} ${A} ${P(g.a - g.s, g.h)} L ${P(-g.a + g.s, g.h)} ${A} ${P(-g.a - g.q, 0)} Z" ${cut}/>`;
-  if (marks) [-1, 1].forEach(sx => { const mx = cx + sx * g.a, my = cy - g.b - 0.45 * g.r;
-    out += `<circle cx="${f2(mx)}" cy="${f2(my)}" r="0.09" fill="none" stroke="#c00" stroke-width="0.012"/><path d="M ${f2(mx - 0.16)} ${f2(my)} H ${f2(mx + 0.16)} M ${f2(mx)} ${f2(my - 0.16)} V ${f2(my + 0.16)}" stroke="#c00" stroke-width="0.008"/>` +
-      T(mx, my + 0.32, 'wire eye', { a: 'middle', size: 0.1, c: '#c00' }); });
-  if (marks) out += `<path d="M ${f2(cx - g.a)} ${f2(cy - g.b - 0.45 * g.r)} H ${f2(cx + g.a)}" stroke="#c00" stroke-width="0.006" stroke-dasharray="0.05 0.05"/>` + T(cx, cy - g.b - 0.45 * g.r - 0.06, 'both eyes on this line: the bone hangs level', { a: 'middle', size: 0.1, c: '#c00' });
+// ---- page 4: 9" bone at board proportions, 2.7" biscuit ----
+// knob span = spanR x L, shaft = shaftR x L, four round lobes (two circles per end that overlap enough to leave a clear notch).
+// inset > 0 shrinks the lobes and shaft by that much with the same knob centres: the foil-core line (1/4" inside, BONE_HOW step 1).
+function boneGeo(L, spanR = SPAN_R, shaftR = SHAFT_R, inset = 0) { const H = spanR * L, R0 = 0.29 * H, b = H / 2 - R0, a = L / 2 - R0, r = R0 - inset, h = shaftR * L / 2 - inset;
+  if (r <= b + 0.02) return null;
+  return { H, r, b, a, h, q: Math.sqrt(r * r - b * b), s: Math.sqrt(r * r - (h - b) ** 2), mark: -b - 0.45 * R0 }; }
+const bonePath = (g, cx, cy) => { const P = (px, py) => `${f2(cx + px)} ${f2(cy + py)}`, A = `A ${f2(g.r)} ${f2(g.r)} 0 1 1`;
+  return `M ${P(-g.a - g.q, 0)} ${A} ${P(-g.a + g.s, -g.h)} L ${P(g.a - g.s, -g.h)} ${A} ${P(g.a + g.q, 0)} ${A} ${P(g.a - g.s, g.h)} L ${P(-g.a + g.s, g.h)} ${A} ${P(-g.a - g.q, 0)} Z`; };
+// marks: the red wire-anchor / drill marks in the two upper knobs, on one level line (BONE_HOW steps 1 and 4); core: the dashed foil-core line
+function bone(x, y, L, o = {}) {
+  const g = boneGeo(L, o.spanR, o.shaftR), cx = x + L / 2, cy = y + g.H / 2;
+  let out = `<path d="${bonePath(g, cx, cy)}" ${cut}/>`;
+  const gc = o.core && boneGeo(L, o.spanR, o.shaftR, 0.25);
+  if (gc) out += `<path d="${bonePath(gc, cx, cy)}" ${dash}/>` + T(cx, cy + 0.05, 'dashed: foil core, 1/4" inside the outline', { a: 'middle', size: 0.1, c: '#666' });
+  if (o.marks) {
+    const my = cy + g.mark;
+    [-1, 1].forEach(sx => { const mx = cx + sx * g.a;
+      out += `<circle cx="${f2(mx)}" cy="${f2(my)}" r="0.09" fill="none" stroke="#c00" stroke-width="0.012"/><path d="M ${f2(mx - 0.16)} ${f2(my)} H ${f2(mx + 0.16)} M ${f2(mx)} ${f2(my - 0.16)} V ${f2(my + 0.16)}" stroke="#c00" stroke-width="0.008"/>` +
+        T(mx, my + 0.3, 'wire anchor:', { a: 'middle', size: 0.1, c: '#c00' }) + T(mx, my + 0.43, 'drill here', { a: 'middle', size: 0.1, c: '#c00' }); });
+    out += `<path d="M ${f2(cx - g.a)} ${f2(my)} H ${f2(cx + g.a)}" stroke="#c00" stroke-width="0.006" stroke-dasharray="0.05 0.05"/>` + T(cx, my - 0.06, 'both marks on this line: the bone hangs level', { a: 'middle', size: 0.1, c: '#c00' });
+  }
   return out;
 }
-const B9 = boneGeo(BONE_L), B3 = boneGeo(3), B5 = boneGeo(5);
-let p4 = bone(0.4, 0.25, BONE_L, true);
+const BISC_SPAN_R = BISC_SPAN / BISC_L, BISC_SHAFT_R = 0.5 * BISC_SPAN_R;   // a cutter biscuit: slimmer knobs, shaft half the knob span
+const B9 = boneGeo(BONE_L), BB = boneGeo(BISC_L, BISC_SPAN_R, BISC_SHAFT_R);
+const in1 = v => +v.toFixed(1);
+let p4 = bone(0.4, 0.25, BONE_L, { marks: true, core: true });
 const b9y = 0.25 + B9.H;
-[[`${BONE_L}" bone (make ${NBONE}), about ${BONE_T}" thick`, 0.14, 700], ['Shape the clay over a foil core to this outline: four round knobs, a flat-faced shaft.', 0.12],
- [`Knob span ${B9.H.toFixed(2)}", shaft ${(SHAFT_R * BONE_L).toFixed(2)}" (the board's proportions). Before covering the core, twist two`, 0.12],
- ['floral-wire eyes into the two upper knobs at the red marks; after painting, tie one gold cord', 0.12], ['through both eyes so the bone hangs level.', 0.12]]
-  .forEach(([t, sz, w], i) => { p4 += T(0.4, b9y + 0.28 + i * 0.18 + (i ? 0.03 : 0), t, { size: sz, w: w || 400 }); });
-p4 += check(0.4, b9y + 1.2);
-p4 += bone(7.0, b9y + 0.15, 3, false) + T(8.5, b9y + 0.15 + B3.H + 0.2, '3" biscuit: only if there is no bone cutter.', { a: 'middle', size: 0.11, w: 700 }) + T(8.5, b9y + 0.15 + B3.H + 0.37, 'Trace onto rolled clay, cut with the knife.', { a: 'middle', size: 0.11 });
+p4 += check(0.4, b9y + 0.22, 'b');
+[[`${BONE_L}" bone (make ${NBONE}), about ${BONE_T}" thick`, 0.13, 700],
+ [`Knob span ${in1(B9.H)}", shaft ${in1(SHAFT_R * BONE_L)}": the board's proportions, four round knobs.`],
+ ['Core: scrunch foil to the dashed line, about 1/2" thick, a firm ball in each knob.'],
+ ['Red marks = wire anchors: wrap the tail of a 4" floral-wire loop round the foil'],
+ ['in each upper knob, with the loop just under the surface at the mark.'],
+ ['Clay: cover the core with a 1/4" sheet; shape it to the solid outline, flat-faced shaft.'],
+ ['Hang, after drying and painting: drill each red mark with a toothpick down to the'],
+ ['anchor, 3/4" deep. Knot each end of a 50 cm gold cord twice, fill each hole with hot'],
+ ['glue and push one knot into each: two cords from the upper knobs, so it hangs level.']]
+  .forEach(([t, sz, w], i) => { p4 += T(1.85, b9y + 0.36 + i * 0.175 + (i ? 0.04 : 0), t, { size: sz || 0.115, w: w || 400 }); });
+{ const bx = 10.05 - BISC_L, by = b9y + 0.3, mx = bx + BISC_L / 2, ly = by + BB.H + 0.25;
+  p4 += bone(bx, by, BISC_L, { spanR: BISC_SPAN_R, shaftR: BISC_SHAFT_R }) +
+    [[`${BISC_L}" biscuit (the cutter's size)`, 700], ['only if there is no bone cutter:'], ['trace onto the 1/4" clay sheet'], ['and cut with the knife.']]
+      .map(([t, w], i) => T(mx, ly + i * 0.17, t, { a: 'middle', size: 0.11, w: w || 400 })).join(''); }
 
 // ---- page 5: option 4.3" doghouse with its trims ----
-const sBH = 0.4, sBL = 0.7, sSideW = small.D - 2 * T16, sFlW = small.W - 2 * T16;
+const sBH = DHS.brick_h || 0.4, sBL = DHS.brick_l || 0.7, sSideW = small.D - 2 * T16, sFlW = small.W - 2 * T16;
 let p5 = front(small, 0.2, 0.4, sBH, sBL) + T(0.2 + small.W / 2, 0.4 + small.RIDGE + 0.25, 'FRONT (cut the door); BACK: trace it without the door', { a: 'middle', size: 0.11 });
 p5 += roofScore(4.2, 0.4, small.D + 2 * small.over, small.SL, 0.55, 0.65) + `<rect x="4.2" y="0.4" width="${small.D + 2 * small.over}" height="${f2(small.SL)}" ${cut}/>` +
   T(4.2 + (small.D + 2 * small.over) / 2, 0.4 + small.SL / 2, 'ROOF x2', { a: 'middle', size: 0.12, w: 700, halo: 1 }) + T(4.2 + (small.D + 2 * small.over) / 2, 0.4 + small.SL / 2 + 0.18, 'eave at the bottom', { a: 'middle', size: 0.1, halo: 1 });
@@ -182,7 +210,7 @@ p5 += bricks(`M 0.2 5.45 h ${sSideW} v ${small.WALL} h ${-sSideW} Z`, 0.2, 0.2 +
 p5 += `<rect x="3.0" y="5.45" width="${sSideW}" height="${sFlW}" ${cut}/>` + T(3.0 + sSideW / 2, 5.45 + sFlW / 2, 'FLOOR', { a: 'middle', size: 0.12, w: 700 });
 { const u = uSize(small); p5 += `<path d="${uPath(small, 5.65, 5.6)}" ${cut}/>` + T(5.65 + u.w / 2, 5.6 + u.h + 0.2, 'ARCH TRIM x1', { a: 'middle', size: 0.1, w: 700 }) + T(5.65 + u.w / 2, 5.6 + u.h + 0.36, '(one flat U)', { a: 'middle', size: 0.1 }); }
 p5 += check(0.2, 8.3);
-p5 += T(3.0, 8.85, `Trims 0.22" wide; paint cream. Bricks: courses ${sBH}", staggered.`, { size: 0.1 }) + T(3.0, 9.02, 'Gable paw: the 1" paw on page 3 (stencil it, or felt).', { size: 0.1 });
+p5 += T(3.0, 8.85, `Trims 0.22" wide: cream, ridge caps barn red. Bricks: courses ${sBH}", staggered.`, { size: 0.1 }) + T(3.0, 9.02, 'Gable paw: cut a drafting-film stencil of the 1" paw (page 3); sponge-dab cream.', { size: 0.1 });
 
 // ---- page 6: option giant doghouse door (true size) ----
 let p6 = `<path d="M 1.25 9.3 L 1.25 7.9 A 5 5 0 0 1 6.25 2.9" fill="none" stroke="#111" stroke-width="0.015"/>`;
@@ -220,31 +248,31 @@ const px8 = 6.3, py8 = 4.0;
 p8 += `<g stroke="#111" stroke-width="0.015" fill="none">${paw(px8, py8 + 2.5 * 0.55, 2.5, 'none')}</g>` +
   ['RAISED GABLE PAW (2.5")', '5 pieces: pad + 4 toes.', 'Cut from the door piece you', 'removed from the front; paint', 'cream; glue on at the dotted', 'paw on page 1.'].map((t, i) => T(px8, py8 + 2.75 + i * 0.18, t, { a: 'middle', size: i ? 0.11 : 0.12, w: i ? 400 : 700 })).join('');
 p8 += check(5.1, 7.95);
-p8 += T(0.1, 9.3, `Per house: 1 arch trim, 2 barge boards, 1 threshold, 2 ridge caps, 1 paw (make ${NH} sets). Corner trims are on page 2. Paint all cream.`, { size: 0.11, w: 700 });
+p8 += T(0.1, 9.3, `Per house: 1 arch trim, 2 barge boards, 1 threshold, 2 ridge caps, 1 paw (make ${NH} sets). Corner trims: page 2. Cream, ridge caps barn red.`, { size: 0.11, w: 700 });
 
 // ---- page 9: hoop back circle (felt) and the 5" bone option ----
 let p9 = `<circle cx="3.2" cy="3.2" r="3" ${cut}/><circle cx="3.2" cy="3.2" r="0.04" fill="#111"/>` +
-  T(3.2, 3.55, 'BACK CIRCLE, 6"', { a: 'middle', size: 0.15, w: 700 }) + T(3.2, 3.77, `felt: cut ${NHOOP}, one per hoop ornament`, { a: 'middle', size: 0.12 }) +
-  T(3.2, 3.97, 'glue it over the back of the inner ring', { a: 'middle', size: 0.12 }) + T(3.2, 4.15, 'to hide the trimmed Aida', { a: 'middle', size: 0.12 });
+  T(3.2, 3.55, 'BACK CIRCLE, 6"', { a: 'middle', size: 0.15, w: 700 }) + T(3.2, 3.77, `black felt: cut ${NHOOP}, one per hoop ornament`, { a: 'middle', size: 0.12 }) +
+  T(3.2, 3.97, 'hot-glue it to the back edge of the inner ring', { a: 'middle', size: 0.12 }) + T(3.2, 4.15, 'over the trimmed Aida', { a: 'middle', size: 0.12 });
 p9 += check(6.45, 0.25, 'b');
 p9 += T(0.2, 6.6, 'Option: 5" bone', { size: 0.15, w: 700 });
-p9 += bone(0.2, 6.75, 5, true);
-['Make 24 if the 5" option is', 'chosen. Same build as the', '9" bone (page 4), about', '3/4" thick; wire eyes at the', 'red marks.'].forEach((t, i) => { p9 += T(5.45, 7.3 + i * 0.19, t, { size: 0.11 }); });
+p9 += bone(0.2, 6.75, 5, { marks: true });
+[`Make ${NBONE5} if the 5" option is`, `chosen, about ${BONE5_T === 0.75 ? '3/4' : BONE5_T}" thick. Same build`, 'as the 9" bone (page 4): foil', 'core 1/4" thick, a wire anchor', 'at each red mark, then drill', 'and glue in the 50 cm gold', 'cord after painting.'].forEach((t, i) => { p9 += T(5.45, 7.0 + i * 0.19, t, { size: 0.11 }); });
 
 const css = `@page { size: Letter; margin: 0.3in 0.4in; } @page tabloid { size: 11in 17in; margin: 0.25in 0.3in; } @page land { size: 11in 8.5in; margin: 0.3in 0.4in; }
 .tab { page: tabloid; } .land { page: land; }
 body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #222; } .pg { break-after: page; } .pg:last-child { break-after: auto; }
 h1 { font-size: 15pt; margin: 0 0 2pt; } p { font-size: 9.5pt; margin: 0 0 6pt; color: #444; } svg { display: block; }`;
 const PAGES = [
-  page('tab', `1. Doghouse ornament, 10" (make ${NH}): front, back, sides. Print on 11 x 17.`, 'Trace onto 3/16" foam board and cut on the cutting surface with a fresh blade against the steel ruler. Score the grey brick lines before painting. Trims, threshold, ridge cap and the raised paw: page 8.', 10.4, 15.6, p1),
-  page('tab', '2. Doghouse ornament, 10" (continued): roof, floor, corner trims, cut plan. Print on 11 x 17.', 'Sides fit between the front and back; the floor fits inside all four walls. Roof panels overhang 3/4" at the front, back and eaves. Trims: paint cream, glue on after the walls are red.', 10.4, 15.6, p2),
-  page('', '3. Paw templates and stencils, true size', 'Felt and glitter-card paws: trace onto the back and cut with scissors; each paw is 5 pieces (pad + 4 toes). Stencils: cut the paw out with the art knife and fill it. Options only: 3" (wood rounds) and 3.6" (giant doghouse gable) use the same shapes.', 7.7, 9.5, p3),
-  page('land', '4. Clay bone and biscuit, true size', 'Shape the bone over a scrunched-foil core so it stays light. The 5" bone option is on page 9.', 10.2, 7.3, p4),
-  page('', '5. Option: 4.3" doghouse ornament (make 12), true size', 'Only if the smaller doghouses are chosen in the swap list. Same build as the 10" version (pages 1, 2 and 8), with these smaller trims.', 7.7, 9.6, p5),
+  page('tab', `1. Doghouse ornament, 10" (make ${NH}): front, back, sides. Print on 11 x 17.`, 'Tape it to 3/16" foam board and cut on the flattened moving box with a fresh blade against the steel ruler (mark in pencil). Score the grey brick lines through the paper with the empty ballpoint before painting. Trims, threshold, barge boards, ridge caps and the raised paw: page 8.', 10.4, 15.6, p1),
+  page('tab', '2. Doghouse ornament, 10" (continued): roof, floor, corner trims, cut plan. Print on 11 x 17.', 'Sides fit between the front and back; the floor fits inside all four walls. Roof panels overhang 3/4" at the front, back and eaves. Score the roof board lines with the empty ballpoint. Trims: cream (ridge caps barn red), glued on after the walls are red.', 10.4, 15.6, p2),
+  page('', '3. Paw templates and stencils, true size', 'Each paw is 5 pieces (pad + 4 toes). Felt: trace with the white fabric marker (or tape the paper paw on and cut round it) and cut with scissors. Glitter card: trace on the back in pencil. Stencils (options only): cut the paw from drafting film with the art knife and sponge-dab paint through it.', 7.7, 9.5, p3),
+  page('land', '4. Clay bone and biscuit, true size', `Foam clay over a foil core, so each bone stays light (about ${Math.round(BONE_T * 100) / 100}" thick). The 5" bone option is on page 9.`, 10.2, 7.3, p4),
+  page('', `5. Option: 4.3" doghouse ornament (make ${NHS}), true size`, 'Only if the smaller doghouses are chosen in the swap list. Same build as the 10" version (pages 1, 2 and 8), with these smaller trims.', 7.7, 9.6, p5),
   page('', '6. Option: giant doghouse door, true size', 'Only if the giant doghouse is chosen. Trace onto the 24" front wall of box A, centred, bottom on the floor line.', 7.7, 9.5, p6),
   page('', '7. Option: giant doghouse cut plan (drawn at 1:7)', 'Finished size 24" wide x 20" deep x 26" to the ridge. All dimensions in inches.', 7.7, 9.7, p7),
   page('', '8. Doghouse ornament, 10": trims and small parts, true size', `Cut from foam-board offcuts (see the cut plan on page 2), ${NH} sets. Paint cream (the ridge cap barn red) and glue on after the walls are red.`, 7.7, 9.5, p8),
-  page('', '9. Hoop ornament back circle, and the 5" bone option, true size', 'Trace the circle onto felt with the white paint marker or chalk and cut with scissors.', 7.7, 9.5, p9),
+  page('', '9. Hoop ornament back circle, and the 5" bone option, true size', 'Trace the circle onto the black felt with the white fabric marker and cut with scissors: two circles per 9 x 12" sheet.', 7.7, 9.5, p9),
 ];
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>${css}</style></head><body>\n${PAGES.join('\n')}\n</body></html>`;
 const signSvg = `<svg width="16in" height="4in" viewBox="0 0 16 4"><rect width="16" height="4" fill="#ecdcb6"/><rect x="0.2" y="0.2" width="15.6" height="3.6" fill="none" stroke="#8b1a1f" stroke-width="0.12"/>

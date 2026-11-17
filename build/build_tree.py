@@ -43,10 +43,17 @@ for f in [ROOT / 'build' / 'tree.js', *extras, ROOT / 'build' / 'resolve.js', RO
     syntax(f.name, f.read_text(encoding='utf-8'))
 syntax('tree.js + extras', script)   # also catches clashing top-level names between tree.js and the extras
 resolve_js = (ROOT / 'build' / 'resolve.js').read_text(encoding='utf-8')
+DEPTH = ROOT / 'data' / 'depth'   # written offline by build/make_depth.py (committed): depth maps, clean stocking cutouts, cuff boxes
+cuffs = json.loads((DEPTH / 'cuffs.json').read_text()) if (DEPTH / 'cuffs.json').exists() else {}
 cuts = {}
 for f in sorted((ROOT / 'data' / 'cutouts').glob('*.webp')):
     w, h = Image.open(f).size
-    cuts[f.stem] = {'src': 'data:image/webp;base64,' + base64.b64encode(f.read_bytes()).decode(), 'w': w, 'h': h}
+    clean = DEPTH / f'{f.stem}.clean.webp'   # the knit stockings without the photo's staged greenery sprig
+    data = clean.read_bytes() if clean.exists() else f.read_bytes()
+    cuts[f.stem] = {'src': 'data:image/webp;base64,' + base64.b64encode(data).decode(), 'w': w, 'h': h}
+    if f.stem in cuffs: cuts[f.stem]['cuff'] = cuffs[f.stem]   # [x, y, height] of the white cuff, for the felt paw
+    d = ROOT / 'data' / 'depth' / f'{f.stem}.png'   # monocular depth map from build/make_depth.py (committed; shapes the plush reliefs)
+    if d.exists(): cuts[f.stem]['depth'] = 'data:image/png;base64,' + base64.b64encode(d.read_bytes()).decode()
 template = (ROOT / 'build' / 'tree_template.html').read_text(encoding='utf-8')
 b64 = lambda f: base64.b64encode(f.read_bytes()).decode() if f.exists() else ''
 docx_b64 = b64(ROOT / 'output' / 'HP26_Tree_Gallery_Form_Corporate_Finance.docx')   # built first by build_docx.js
@@ -72,4 +79,4 @@ preview = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
            '<style>body{margin:0}</style></head><body>' + page + '</body></html>')
 (ROOT / 'output' / 'howlidays_tree_preview.html').write_text(preview, encoding='utf-8')
 t = json.loads((ROOT / 'data' / 'supplies.json').read_text())['totals']
-print(f"page {len(page) / 1e6:.1f} MB | elements {len(O['elements'])} | extras {', '.join(f.name for f in extras) or 'none'} | default total ${t['grand']:,.2f}, ${t['left']:,.2f} left | word builder {'in page' if builder else 'NOT embedded'}")
+print(f"page {len(page) / 1e6:.1f} MB | depth maps {sum('depth' in c for c in cuts.values())} | elements {len(O['elements'])} | extras {', '.join(f.name for f in extras) or 'none'} | default total ${t['grand']:,.2f}, ${t['left']:,.2f} left | word builder {'in page' if builder else 'NOT embedded'}")

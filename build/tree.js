@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
@@ -169,8 +168,9 @@ document.querySelectorAll('[data-tab]').forEach(t => t.onclick = () => {
      cascades with poufs, baubles (glossy / glitter / painted), DIY
      doghouses, paw-print bauble discs, foam-clay bones, gift boxes,
      basket, glass jar, bowl, sherpa bone pillow.
-   - Photo cutouts (camera-facing on the vertical axis only): the plush
-     pets, knit stockings and the berry / gold / pine picks.
+   - Photo cutouts as fixed two-sided reliefs (they never turn to the
+     camera): the plush pets, knit stockings and basket toys, shaped by
+     depth maps (data/depth), with a plain fur-coloured back.
    ================================================================ */
 const CUT = window.HOWL_CUTS;
 const IN = 1 / 14;
@@ -192,12 +192,12 @@ renderer.shadowMap.autoUpdate = false;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, 1, 0.03, 120);
 // Home view: close, a little below the tree's middle, normal lens, like the board photo.
-const HOME_POS = new THREE.Vector3(0.4, 2.9, 10.0);
-const HOME_TARGET = new THREE.Vector3(0, 3.45, 0);
+const HOME_POS = new THREE.Vector3(0.4, 3.1, 10.8);   // bow to gifts in frame (tree about 90% of the height at fov 40), with room for the HUD row
+const HOME_TARGET = new THREE.Vector3(0, 3.65, 0);
 camera.position.copy(HOME_POS);
 const controls = new OrbitControls(camera, canvas);
 controls.target.copy(HOME_TARGET);
-Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 1.0, maxDistance: 10.5, maxPolarAngle: Math.PI * 0.54, minPolarAngle: Math.PI * 0.1, autoRotate: true, autoRotateSpeed: 0.5, enablePan: false });
+Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 1.0, maxDistance: 11.5, maxPolarAngle: Math.PI * 0.54, minPolarAngle: Math.PI * 0.1, autoRotate: true, autoRotateSpeed: 0.5, enablePan: false });
 
 /* ---------------- Helpers ---------------- */
 function canvasTex(w, h, draw, { repeat = [1, 1], srgb = true, clamp = false } = {}) {
@@ -299,7 +299,7 @@ const ROOM = (() => {
       { x: 2.55, h: 5 * IN, r: 1.5 * IN, accent: 1 }, { x: 4.02, h: 7 * IN, r: 1.5 * IN, accent: 1 },
     ],
     candleZ: -4.5 - 0.06,
-    fire: { wall: 'left', x: -5, z: -2.3, w: 3.8, depth: 0.8, mantelY: 54 * IN, normal: [1, 0, 0] },   // clear slot kept for a fireplace (extras)
+    fire: { wall: 'left', x: -5, z: -2.2, w: 3.4, depth: 0.8, hearth: 1.0, mantelY: 54 * IN, normal: [1, 0, 0] },   // clear slot kept for a fireplace (extras): z -3.9..-0.5, clear of the window sill and the person
     door: { wall: 'front', x: 2.9, w: 36 * IN, h: 80 * IN, normal: [0, 0, -1] },
     backdropZ: -7, snow: { z0: -4.9, z1: -6.9 },                   // night backdrop plane behind the windows; snow slab between glass and backdrop
     groups: {},                                                    // back, left, right, front, ceiling, floor (filled when built)
@@ -436,7 +436,7 @@ function buildLivingRoom() {
         g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(x, y, pw, 2); y += L; }
       g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(x, 0, 2, w); }
   }, { repeat: [W / (54 * IN), D / (54 * IN)] });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.58, envMapIntensity: 0.55 }));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.7, envMapIntensity: 0.5 }));
   floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, (R0.zBack + R0.zFront) / 2); floor.receiveShadow = true; G.floor.add(floor);
   const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshStandardMaterial({ color: 0x8a6a52, map: panelTex, roughness: 0.8, envMapIntensity: 0.3 }));
   wallUV(ceil.geometry, x => x); ceil.geometry.attributes.uv.array.forEach((v, i, a) => { if (i % 2) a[i] = 0.35; }); ceil.geometry.attributes.uv.needsUpdate = true;   // boards only, no wainscot
@@ -447,19 +447,8 @@ function buildLivingRoom() {
   room.traverse(o => { if (o.isMesh) o.castShadow = o.castShadow && o.geometry.type === 'CylinderGeometry'; });
   return room;
 }
-// living-room reflections: panelled walls, two cool windows, warm bulbs (LDR; a placeholder until an HDR env replaces it)
+// Reflections: every room gets an HDR environment (see 'HDR environment maps' after the tree lights).
 const ENV = {};
-{
-  const envTex = canvasTex(1024, 512, (g, w, h) => {
-    g.fillStyle = '#1a110b'; g.fillRect(0, 0, w, h * 0.3);
-    const wg = g.createLinearGradient(0, h * 0.3, 0, h * 0.56); wg.addColorStop(0, '#4a2e1b'); wg.addColorStop(1, '#6a4428'); g.fillStyle = wg; g.fillRect(0, h * 0.3, w, h * 0.26);
-    const fg = g.createLinearGradient(0, h * 0.56, 0, h); fg.addColorStop(0, '#2e1d12'); fg.addColorStop(1, '#110a06'); g.fillStyle = fg; g.fillRect(0, h * 0.56, w, h * 0.44);
-    [[0.149, 0.06], [0.351, 0.05]].forEach(([u, du]) => { const sg = g.createLinearGradient(0, h * 0.3, 0, h * 0.52); sg.addColorStop(0, '#5f7798'); sg.addColorStop(1, '#a9bbd0'); g.fillStyle = sg; g.fillRect((u - du / 2) * w, h * 0.3, du * w, h * 0.22); });
-    for (let i = 0; i < 6; i++) { const x = (0.12 + i * 0.01) * w + (i > 2 ? 0.2 * w : 0), y = h * 0.53; const cg = g.createRadialGradient(x, y, 0, x, y, 6); cg.addColorStop(0, 'rgba(255,225,170,1)'); cg.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = cg; g.fillRect(x - 6, y - 6, 12, 12); }
-    for (let i = 0; i < 90; i++) { const x = Math.random() * w, y = h * (0.3 + Math.random() * 0.3), r = 3 + Math.random() * 9; const cg = g.createRadialGradient(x, y, 0, x, y, r); cg.addColorStop(0, 'rgba(255,215,150,1)'); cg.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = cg; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
-  });
-  envTex.mapping = THREE.EquirectangularReflectionMapping; ENV.living = pmremGen.fromEquirectangular(envTex).texture;
-}
 const LIVING_BG = canvasTex(16, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#120b07'); gr.addColorStop(0.6, '#1d120b'); gr.addColorStop(1, '#0a0604'); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, { clamp: true });
 /* Office lobby like NAHQ (36 x 36 ft, 10 ft ceiling), built the first time it is chosen. */
 const OFFICE = { w: 36 * 12 * IN, d: 36 * 12 * IN, h: 120 * IN };   // 36 x 36 ft lobby, 10 ft ceiling
@@ -555,7 +544,7 @@ function buildOffice() {
     const s = g.createLinearGradient(0, h * 0.3, 0, h * 0.5); s.addColorStop(0, '#2b4062'); s.addColorStop(1, '#7c8ba3'); g.fillStyle = s; g.fillRect(0, h * 0.3, w * 0.25, h * 0.2);
     g.fillStyle = '#a07a52'; g.fillRect(w * 0.5, h * 0.3, w * 0.25, h * 0.2); g.fillStyle = '#3f4349'; g.fillRect(0, h * 0.5, w, h * 0.5);
   });
-  envTex.mapping = THREE.EquirectangularReflectionMapping; ENV.office = pmremGen.fromEquirectangular(envTex).texture;
+  ENV.office = envFromEquirect(envTex, true).texture;   // the office shell plus the lit tree, as an HDR env
 }
   return officeRoom;
 }
@@ -605,13 +594,18 @@ const NEEDLE = canvasTex(256, 512, (g, w, h) => {
   [[128, 430, 50, 270], [128, 410, 206, 262], [128, 320, 60, 168], [128, 300, 196, 156], [128, 210, 82, 92], [128, 196, 174, 86]].forEach(([a, b, c, d]) => twig(a, b, c, d, 28, 48, 3));
 });
 NEEDLE.wrapS = NEEDLE.wrapT = THREE.ClampToEdgeWrapping;
+// FOLIAGE: the three needle layers with each instance's base matrix and needle tip, so clearFoliage() can pull
+// needles back where they would poke through the front of a pet, doghouse or hoop (and restore them after).
+const FOLIAGE = [];
+let NEEDLE_GEO, NEEDLE_MAT;
 {
   const a = new THREE.PlaneGeometry(0.5, 1); a.translate(0, 0.5, 0);
   const b = a.clone(); b.rotateY(Math.PI / 2);
-  const geo = mergeGeometries([a, b]);
+  const geo = NEEDLE_GEO = mergeGeometries([a, b]);
   // alpha-to-coverage turns the alpha edge into MSAA coverage (rt has 4 samples): soft, stable needle edges while orbiting.
   // alphaTest stays above 0 so the shadow pass still cuts the card shapes out.
-  const m = new THREE.MeshStandardMaterial({ map: NEEDLE, alphaTest: 0.2, alphaToCoverage: true, side: THREE.DoubleSide, roughness: 0.78, envMapIntensity: 0.35 });
+  const m = NEEDLE_MAT = new THREE.MeshStandardMaterial({ map: NEEDLE, alphaTest: 0.2, alphaToCoverage: true, side: THREE.DoubleSide, roughness: 0.78, envMapIntensity: 0.2 });
+  m.color.setRGB(0.82, 1.0, 1.2);   // emerald albedo: under the warm tree light the needles read deep green, not olive (board)
   const up = new THREE.Vector3(0, 1, 0), d = new THREE.Object3D(), col = new THREE.Color();
   [[2600, 0.12, 0.7, 0.62], [3400, 0.45, 0.98, 0.85], [2600, 0.82, 1.06, 1.05]].forEach(([n, f0, f1, bright]) => {
     const mesh = new THREE.InstancedMesh(geo, m, n);
@@ -631,6 +625,10 @@ NEEDLE.wrapS = NEEDLE.wrapT = THREE.ClampToEdgeWrapping;
     }
     if (LOW) mesh.count = Math.round(n * 0.65);   // fewer needle cards on phones (all are generated, so the random layout matches desktop)
     mesh.castShadow = mesh.receiveShadow = true; treeGroup.add(mesh);
+    const base = mesh.instanceMatrix.array.slice(), tip = new Float32Array(n * 3), mid = new Float32Array(n * 3), wd = new Float32Array(n);
+    for (let i = 0; i < n; i++) { const e = base.subarray(i * 16, i * 16 + 16); for (let k = 0; k < 3; k++) { tip[i * 3 + k] = e[12 + k] + e[4 + k]; mid[i * 3 + k] = e[12 + k] + e[4 + k] * 0.6; } wd[i] = Math.hypot(e[0], e[1], e[2]) * 0.25; }   // half the card width
+    const order = Uint32Array.from({ length: n }, (_, i) => i).sort((a, b) => tip[a * 3 + 1] - tip[b * 3 + 1]), ys = Float32Array.from(order, i => tip[i * 3 + 1]);   // needles by tip height, for range lookups
+    FOLIAGE.push({ mesh, base, tip, mid, wd, n, order, ys, mark: new Uint8Array(n), touched: [] });
   });
 }
 const coreGeo = new THREE.ConeGeometry(RB * 0.6, YTOP - Y0, 32, 1, true); coreGeo.translate(0, (YTOP + Y0) / 2, 0);
@@ -646,7 +644,7 @@ const INTERIOR = [], INTERIOR_I = [];
   const l = new THREE.PointLight(0xffb870, 7 - i * 0.6, rAt(y) * 2.6, 2); l.position.set(Math.cos(i * 2.1) * rAt(y) * f, y, Math.sin(i * 2.1) * rAt(y) * f); scene.add(l);
   INTERIOR.push(l); INTERIOR_I.push(l.intensity);
 });
-const base = new THREE.PointLight(0xffb070, 3, 3.5, 2); base.position.set(0, 0.6, 0.4); scene.add(base);   // low, wide glow onto the presents
+const base = new THREE.PointLight(0xffb070, 3, 2.8, 2); base.position.set(0, 0.6, 0); scene.add(base);   // low glow onto the presents; the short range keeps its reflection off the floor in front
 const accent = [0, 1].map(() => { const l = new THREE.PointLight(0xff9a40, 0, 3, 2); l.position.set(0, 2.6, -4.3); scene.add(l); return l; });   // candles / fire; parked at the sill
 // pre-lit warm white bulbs: small round HDR bulbs (they bloom) + soft additive halos. Steady, as delivered.
 const LIGHT_N = 650;
@@ -698,6 +696,175 @@ bulbs.tick = (t, dt) => {
   ic.needsUpdate = true;
 };
 
+/* ---------------- HDR environment maps (reflections) ----------------
+   Each room's reflections are a tiny HDR scene rendered once into a PMREM cube (half float, no tone mapping), so
+   values above 1 survive: the tree's own lit bulbs (about 15-40) give the glass and metal balls pin-sharp warm glints
+   that also bloom, candle flames sit at 25 and the windows at about 1. The scene is seen from just inside the front of
+   the tree, where most balls hang, so the tree's bulbs surround the view toward the trunk and the room fills the
+   view outward. Built lazily per room and cached; the Daytime look ('off') uses a copy without the bulbs.
+   Rooms registered by extras keep their own env: look.env may be a texture or a function returning one, and
+   pmremGen.fromEquirectangular(tex) (used by extras_env.js) now returns this HDR version of their equirect with the
+   tree's bulbs added. pmremGen.fromEquirectangularPlain(tex) is the original. */
+const ENV_C = new THREE.Vector3(0, 3.3, 0.75);   // capture point: just inside the front of the foliage at mid height
+const ENV_OFF = new Map();                         // env texture with the bulbs -> () => the same room without them
+const PMREM_EQ = pmremGen.fromEquirectangular.bind(pmremGen);
+pmremGen.fromEquirectangularPlain = PMREM_EQ;
+function envTreeGroup(lit) {   // the tree as seen from the capture point: a dark green core and (lit) the pre-lit bulbs at HDR values
+  const g = new THREE.Group();
+  const core = new THREE.Mesh(new THREE.ConeGeometry(RB * 0.5, YTOP - Y0, 24, 1, true), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.012, 0.03, 0.016), side: THREE.DoubleSide }));
+  core.position.y = (YTOP + Y0) / 2; g.add(core);
+  if (lit) {
+    const ids = []; for (let i = 0; i < LIGHT_N; i += 2) ids.push(i);   // every other bulb (325): enough glints, little extra diffuse light
+    const m = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial(), ids.length), d = new THREE.Object3D(), c = new THREE.Color(), r = rng(9011);
+    ids.forEach((i, k) => {
+      d.position.fromArray(BULB_POS, i * 3); const dist = d.position.distanceTo(ENV_C);
+      d.scale.setScalar(THREE.MathUtils.clamp(dist * 0.009, 0.004, 0.03)); d.updateMatrix(); m.setMatrixAt(k, d.matrix);   // about 0.5 degree across from the capture point
+      const kk = (BULB_BASE[i * 3] / 9) * (18 + 16 * r()); m.setColorAt(k, c.setRGB(kk, kk * 0.66, kk * 0.32));
+    });
+    g.add(m);
+  }
+  return g;
+}
+function envRender(scene) {   // render a small env scene from ENV_C into a PMREM cube; returns the render target
+  scene.position.sub(ENV_C); scene.updateMatrixWorld(true);
+  const t0 = performance.now(), rt = pmremGen.fromScene(scene, 0.02, 0.05, 80);
+  scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) [].concat(o.material).forEach(m => m.dispose()); });
+  ENV_MS.push(Math.round(performance.now() - t0));
+  return rt;
+}
+const ENV_MS = [];
+function livingEnvScene(lit) {
+  const s = new THREE.Scene(), R0 = ROOM, B = (r, g, b) => new THREE.MeshBasicMaterial({ color: new THREE.Color(r, g, b), side: THREE.DoubleSide });
+  const day = !lit, k = day ? 2.2 : 1;   // daytime: brighter walls, no bulbs
+  const W = R0.x1 - R0.x0, D = R0.zFront - R0.zBack, H = R0.h, cz = (R0.zBack + R0.zFront) / 2;
+  const plane = (w, h, m, x, y, z, ry = 0, rx = 0) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); p.position.set(x, y, z); p.rotation.set(rx, ry, 0); s.add(p); return p; };
+  const wall = B(0.1 * k, 0.055 * k, 0.03 * k), wain = B(0.05 * k, 0.028 * k, 0.016 * k);
+  [[R0.zBack, 0], [R0.zFront, Math.PI]].forEach(([z, ry]) => { plane(W, H - R0.wainscot, wall, 0, (H + R0.wainscot) / 2, z, ry); plane(W, R0.wainscot, wain, 0, R0.wainscot / 2, z, ry); });
+  [[R0.x0, Math.PI / 2], [R0.x1, -Math.PI / 2]].forEach(([x, ry]) => { plane(D, H - R0.wainscot, wall, x, (H + R0.wainscot) / 2, cz, ry); plane(D, R0.wainscot, wain, x, R0.wainscot / 2, cz, ry); });
+  plane(W, D, B(0.06 * k, 0.034 * k, 0.02 * k), 0, 0, cz, 0, -Math.PI / 2);          // oak floor
+  plane(W, D, B(0.045 * k, 0.03 * k, 0.02 * k), 0, H, cz, 0, Math.PI / 2);           // ceiling boards
+  const glass = day ? B(1.6, 1.8, 2.2) : B(0.5, 0.62, 0.9);                            // frosted windows: night snow-light, or daylight
+  R0.windows.forEach(wn => { const p = plane(wn.w, wn.y1 - wn.y0, glass, wn.x, (wn.y0 + wn.y1) / 2, R0.zBack + 0.01); p.renderOrder = 1; });
+  const flame = B(25, 13, 4.5);
+  R0.candles.forEach(c => { const f = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), flame); f.position.set(c.x, R0.sill.top + c.h + 0.06, R0.candleZ); s.add(f); });
+  plane(R0.door.w, R0.door.h, B(0.012, 0.008, 0.005), R0.door.x, R0.door.h / 2, R0.zFront - 0.01, Math.PI);
+  s.add(envTreeGroup(lit));
+  return s;
+}
+const EQ_MAT = tex => new THREE.ShaderMaterial({ uniforms: { tEq: { value: tex } }, side: THREE.BackSide, depthWrite: false,
+  vertexShader: 'varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: 'uniform sampler2D tEq; varying vec3 vDir; void main(){ vec3 d = normalize(vDir); vec2 uv = vec2(atan(d.z, d.x) * 0.15915494 + 0.5, asin(clamp(d.y, -1.0, 1.0)) * 0.31830989 + 0.5); gl_FragColor = vec4(texture2D(tEq, uv).rgb, 1.0); }' });
+function envFromEquirect(tex, lit = true) {   // an LDR equirect room as the far shell, plus the lit tree, as one HDR env
+  const s = new THREE.Scene(), sky = new THREE.Mesh(new THREE.SphereGeometry(60, 48, 24), EQ_MAT(tex));
+  sky.position.copy(ENV_C); sky.renderOrder = -1; s.add(sky);   // centred on the capture point, so directions match the equirect
+  s.add(envTreeGroup(lit));
+  const sm = sky.material; const rt = envRender(s); sm.dispose();
+  if (lit) { let off = null; ENV_OFF.set(rt.texture, () => (off ||= envFromEquirect(tex, false).texture)); }
+  return rt;
+}
+pmremGen.fromEquirectangular = (tex, target) => (target ? PMREM_EQ(tex, target) : envFromEquirect(tex, true));   // extras' rooms get the tree's glints too
+function livingEnv() {
+  if (!ENV.living) { ENV.living = envRender(livingEnvScene(true)).texture; let off = null; ENV_OFF.set(ENV.living, () => (off ||= envRender(livingEnvScene(false)).texture)); }
+  return ENV.living;
+}
+
+/* ---------------- Bulbs warm the needles near them (glow volume) ----------------
+   A 48 x 96 x 48 volume over the tree holds, per texel, the sum over bulbs within 0.25 units (3.5 in) of
+   1/(d^2 + 0.008) - 1/(0.25^2 + 0.008) (so it falls to 0 at the edge). The needle shader samples it at each
+   fragment's world position and adds a warm emissive term: needle tips round a bulb glow gold, the needles in
+   between stay deep green, as in the board photo. One texture fetch per needle fragment, no extra lights.
+   LOW tier (phones, WebGL1): no 3D texture; each needle card gets one baked value in its instance colour instead. */
+const GLOW = (() => {
+  const t0 = performance.now(), NX = 48, NY = 96, NZ = 48, RC = 0.25, EPS = 0.008, K0 = 1 / (RC * RC + EPS), GMAX = 40;
+  const min = new THREE.Vector3(-RB - 0.3, Y0 - 0.35, -RB - 0.3), size = new THREE.Vector3(2 * RB + 0.6, YTOP - Y0 + 0.7, 2 * RB + 0.6);
+  // bulbs bucketed in RC cubes over the volume (integer grid, no string keys)
+  const CX = Math.ceil(size.x / RC), CY = Math.ceil(size.y / RC), CZ = Math.ceil(size.z / RC), bucket = Array.from({ length: CX * CY * CZ }, () => []);
+  const ci = (v, m, n) => Math.min(n - 1, Math.max(0, Math.floor((v - m) / RC)));
+  for (let b = 0; b < LIGHT_N; b++) bucket[ci(BULB_POS[b * 3], min.x, CX) + CX * (ci(BULB_POS[b * 3 + 1], min.y, CY) + CY * ci(BULB_POS[b * 3 + 2], min.z, CZ))].push(b);
+  const field = (x, y, z) => {
+    let g = 0; const i0 = ci(x, min.x, CX), j0 = ci(y, min.y, CY), k0 = ci(z, min.z, CZ);
+    for (let k = Math.max(0, k0 - 1); k <= Math.min(CZ - 1, k0 + 1); k++) for (let j = Math.max(0, j0 - 1); j <= Math.min(CY - 1, j0 + 1); j++) for (let i = Math.max(0, i0 - 1); i <= Math.min(CX - 1, i0 + 1); i++)
+      for (const b of bucket[i + CX * (j + CY * k)]) { const dx = x - BULB_POS[b * 3], dy = y - BULB_POS[b * 3 + 1], dz = z - BULB_POS[b * 3 + 2], d2 = dx * dx + dy * dy + dz * dz; if (d2 < RC * RC) g += (BULB_BASE[b * 3] / 9) * (1 / (d2 + EPS) - K0); }
+    return Math.min(1, g / GMAX);
+  };
+  const data = new Uint8Array(NX * NY * NZ);
+  if (!LOW) for (let k = 0; k < NZ; k++) for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++)
+    data[i + NX * (j + NY * k)] = Math.round(255 * Math.sqrt(field(min.x + size.x * (i + 0.5) / NX, min.y + size.y * (j + 0.5) / NY, min.z + size.z * (k + 0.5) / NZ)));   // sqrt: more steps near 0
+  const tex = new THREE.Data3DTexture(data, NX, NY, NZ);
+  tex.format = THREE.RedFormat; tex.type = THREE.UnsignedByteType; tex.minFilter = tex.magFilter = THREE.LinearFilter; tex.unpackAlignment = 1; tex.needsUpdate = true;
+  const ms = Math.round(performance.now() - t0);
+  return { tex, min, size, field, ms, uniforms: { uGlow: { value: tex }, uGlowMin: { value: min }, uGlowSize: { value: size }, uGlowK: { value: 1 } } };
+})();
+const GLOW_K = 4.5;   // emissive gain at full glow (scaled by GLOW.uniforms.uGlowK: 0 when the tree lights are off)
+if (!LOW && renderer.capabilities.isWebGL2) {
+  NEEDLE_MAT.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, GLOW.uniforms);
+    sh.vertexShader = 'varying vec3 vGlowP;\n' + sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+      { vec4 gp = vec4(transformed, 1.0);
+      #ifdef USE_INSTANCING
+        gp = instanceMatrix * gp;
+      #endif
+        vGlowP = (modelMatrix * gp).xyz; }`);
+    sh.fragmentShader = 'uniform lowp sampler3D uGlow; uniform vec3 uGlowMin; uniform vec3 uGlowSize; uniform float uGlowK; varying vec3 vGlowP;\n' + sh.fragmentShader.replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      { vec3 gq = (vGlowP - uGlowMin) / uGlowSize; float g = texture(uGlow, gq).r; g *= g * ${GLOW_K.toFixed(1)} * uGlowK;
+        // warm bulb light on the needle: its own colour pulled toward gold (light through thin needles reads yellow-gold, not lime)
+        vec3 nc = diffuseColor.rgb; float nl = dot(nc, vec3(0.3, 0.59, 0.11));
+        totalEmissiveRadiance += mix(nc, vec3(1.6, 1.15, 0.35) * nl, 0.6) * vec3(1.0, 0.75, 0.4) * g; }`);
+  };
+  NEEDLE_MAT.customProgramCacheKey = () => 'needleGlow';
+} else {   // LOW: one baked glow value per needle card (at its 60% point), warming its instance colour
+  const c = new THREE.Color(), warm = new THREE.Color(1.7, 1.35, 0.65);
+  FOLIAGE.forEach(F => { const ic = F.mesh.instanceColor; for (let i = 0; i < F.n; i++) { const g = GLOW.field(F.mid[i * 3], F.mid[i * 3 + 1], F.mid[i * 3 + 2]); if (g <= 0.01) continue; c.fromBufferAttribute(ic, i); c.lerp(warm.clone().multiplyScalar(c.g), Math.min(0.6, 1.2 * Math.sqrt(g))); ic.setXYZ(i, c.r, c.g, c.b); } ic.needsUpdate = true; });
+}
+
+/* ---------------- Keep needles off the front of the hero pieces ---------------- */
+// After the pets are seated on the branches, a needle card can still poke out in front of a face. clearFoliage()
+// shortens (scale.y 0.35, or 0.12 if that is not enough) only the needles whose tip or middle would show in front
+// of a visible pet, stocking, doghouse or hoop, inside its outline. Needles behind a piece are left alone, so no bald
+// patch shows when you orbit. It restores every needle from its base matrix first, so it follows option swaps.
+const HERO_BOX = [];   // { g (visibility), p, rot, hw, y0, y1, zf } in the piece's local frame
+let CLEAR_STATS = { ms: 0, shortened: 0, heroes: 0 };
+function clearFoliage() {
+  const t0 = performance.now(), heroes = [], v = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
+  cards.forEach(g => { const RL = g.userData.relief; if (!RL || !RL.hero || !RL.F || !shown(g)) return; g.updateMatrixWorld(true);
+    heroes.push({ RL, inv: g.matrixWorld.clone().invert(), c: new THREE.Vector3(0, RL.dy, 0).applyMatrix4(g.matrixWorld), rad: Math.hypot(RL.w, RL.h) / 2 + RL.D }); });
+  HERO_BOX.forEach(b => { if (!shown(b.g)) return; const m = new THREE.Matrix4().compose(b.p, new THREE.Quaternion().setFromEuler(b.rot), one);
+    heroes.push({ b, inv: m.clone().invert(), c: new THREE.Vector3(0, (b.y0 + b.y1) / 2, 0).applyMatrix4(m), rad: Math.hypot(b.hw, (b.y1 - b.y0) / 2) + 0.05 }); });
+  const over = (H, x, y, z, pad) => {   // is local point (x, y, z) in front of the piece and inside its outline (grown by pad)?
+    v.set(x, y, z).applyMatrix4(H.inv);
+    if (H.b) return Math.abs(v.x) < H.b.hw + pad && v.y > H.b.y0 - pad && v.y < H.b.y1 + pad && v.z > H.b.zf - pad * 0.5;
+    const RL = H.RL, F = RL.F, u = v.x / RL.w + 0.5, w = (v.y - RL.dy) / RL.h + 0.5, du = pad / RL.w, dw = pad / RL.h;
+    if (u < -du || u > 1 + du || w < -dw || w > 1 + dw) return false;
+    const cu = Math.min(1, Math.max(0, u)), cw = Math.min(1, Math.max(0, w));
+    const A = Math.max(sampleArr(F, F.a, cu, cw), sampleArr(F, F.a, Math.min(1, cu + du), cw), sampleArr(F, F.a, Math.max(0, cu - du), cw), sampleArr(F, F.a, cu, Math.min(1, cw + dw)), sampleArr(F, F.a, cu, Math.max(0, cw - dw)));
+    return A > 0.3 && v.z > reliefZ(F, cu, cw, RL.D) * 0.8 - pad * 0.5;
+  };
+  let shortened = 0;
+  FOLIAGE.forEach(FL => {
+    const arr = FL.mesh.instanceMatrix.array, B = FL.base;
+    FL.touched.forEach(i => arr.set(B.subarray(i * 16, i * 16 + 16), i * 16)); FL.touched = [];
+    FL.mark.fill(0);
+    const lower = y => { let lo = 0, hi = FL.n; while (lo < hi) { const m = (lo + hi) >> 1; if (FL.ys[m] < y) lo = m + 1; else hi = m; } return lo; };
+    for (const H of heroes) {
+      const R2 = (H.rad + 0.4) * (H.rad + 0.4);
+      for (let q = lower(H.c.y - H.rad - 0.4), qe = lower(H.c.y + H.rad + 0.4); q < qe; q++) {
+        const i = FL.order[q]; if (FL.mark[i]) continue;
+        const tx = FL.tip[i * 3], ty = FL.tip[i * 3 + 1], tz = FL.tip[i * 3 + 2], o = i * 16;
+        const dx = tx - H.c.x, dy = ty - H.c.y, dz = tz - H.c.z; if (dx * dx + dy * dy + dz * dz > R2) continue;
+        const pad = FL.wd[i] * 0.5, at = k => [B[o + 12] + B[o + 4] * k, B[o + 13] + B[o + 5] * k, B[o + 14] + B[o + 6] * k];
+        if (!over(H, ...at(1), pad) && !over(H, ...at(0.6), pad)) continue;
+        const s = [0.35, 0.12].find(k => !over(H, ...at(k), pad) && !over(H, ...at(k * 0.6), pad)) || 0.05;
+        for (let k = 4; k < 7; k++) arr[o + k] = B[o + k] * s;
+        FL.mark[i] = 1; FL.touched.push(i); shortened++;
+      }
+    }
+    FL.mesh.instanceMatrix.needsUpdate = true;
+  });
+  renderer.shadowMap.needsUpdate = true;
+  CLEAR_STATS = { ms: +(performance.now() - t0).toFixed(2), shortened, heroes: heroes.length };
+  return CLEAR_STATS;
+}
+
 /* ---------------- Placement ---------------- */
 // Each option avoids the board-match pieces of every other element, and its own pieces, but not the
 // other options of its own element (they are never shown together).
@@ -738,9 +905,9 @@ function strip(pts, nrm, width, { uLen = width, notch = false, taper = null, fli
   g.setIndex(idx); g.computeVertexNormals(); return g;
 }
 // a hand-tied bow: loops (ribbon width vertical), centre knot, two hanging V-cut tails. All sizes in inches.
-function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1, open = 0, flare = 0.32 }) {
+function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1, open = 0, flare = 0.32, loopTilt = 0.22 }) {
   const r = rng(seed), parts = [], W = ribbon * IN, Lb = span / 2 * IN, T = tail * IN;
-  const loopDefs = loops === 2 ? [[0, 0.22, 1], [Math.PI, 0.22, 1]] : [[0, 0.5, 1], [Math.PI, 0.5, 1], [0, -0.32, 0.82], [Math.PI, -0.32, 0.82]];
+  const loopDefs = loops === 2 ? [[0, loopTilt, 1], [Math.PI, loopTilt, 1]] : [[0, 0.5, 1], [Math.PI, 0.5, 1], [0, -0.32, 0.82], [Math.PI, -0.32, 0.82]];
   loopDefs.forEach(([yaw, tilt, len]) => {
     const pts = [], nrm = [], L = Lb * len * (0.95 + r() * 0.1), dz = Math.max(W * 0.62, L * 0.34);
     for (let i = 0; i <= 40; i++) {
@@ -770,19 +937,46 @@ function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1, open =
 
 /* ---------------- Materials from the real products ---------------- */
 const tartanTex = photoTex('tx_tartan4', [1, 1]);
-const velvet = (id, c = 0x6c0a16) => mat(id, THREE.MeshPhysicalMaterial, { color: c, roughness: 0.85, sheen: 1, sheenRoughness: 0.3, sheenColor: new THREE.Color(0xff5064), side: THREE.DoubleSide, envMapIntensity: 0.4 });
-const tartanMat = id => mat(id, THREE.MeshStandardMaterial, { map: tartanTex, color: new THREE.Color(1.35, 1.2, 1.2), roughness: 0.75, side: THREE.DoubleSide, envMapIntensity: 0.4 });
-const ribbonMat = (id, tex) => mat(id, THREE.MeshStandardMaterial, { map: photoTex(tex, [1, 1]), roughness: 0.95, side: THREE.DoubleSide, envMapIntensity: 0.3 });
+const velvet = (id, c = 0x6c0a16) => mat(id, THREE.MeshPhysicalMaterial, { color: c, roughness: 0.85, sheen: 1, sheenRoughness: 0.45, sheenColor: new THREE.Color(0xb02838), side: THREE.DoubleSide, envMapIntensity: 0.35 });
+// woven twill: 45-degree ribs as a normal map (shared by the tartan pieces)
+const TWILL_N = canvasTex(256, 256, (g, w) => { const im = g.createImageData(w, w); for (let y = 0; y < w; y++) for (let x = 0; x < w; x++) { const ph = ((x + y) % 16) / 16 * Math.PI * 2, nx = Math.cos(ph) * 0.38, i = (y * w + x) * 4; im.data[i] = 128 + nx * 127 * 0.7071; im.data[i + 1] = 128 - nx * 127 * 0.7071; im.data[i + 2] = 255 * Math.sqrt(1 - nx * nx); im.data[i + 3] = 255; } g.putImageData(im, 0, 0); }, { repeat: [4, 4], srgb: false });
+const tartanMat = id => mat(id, THREE.MeshPhysicalMaterial, { map: tartanTex, color: 0xffffff, roughness: 0.78, sheen: 0.4, sheenRoughness: 0.6, sheenColor: new THREE.Color(0x803030), normalMap: TWILL_N, normalScale: new THREE.Vector2(0.35, 0.35), side: THREE.DoubleSide, envMapIntensity: 0.3 });
+function bumpTex(name, repeat = [1, 1]) {   // a linear (non-sRGB) copy of a photo texture, for bump maps
+  const key = 'bump:' + name + repeat.join(); if (texCache[key]) return texCache[key];
+  const t = loader.load(CUT[name].src); t.colorSpace = THREE.NoColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); return (texCache[key] = t);
+}
+const ribbonMat = (id, tex) => mat(id, THREE.MeshStandardMaterial, { map: photoTex(tex, [1, 1]), bumpMap: bumpTex(tex), bumpScale: 1.5, roughness: 0.95, side: THREE.DoubleSide, envMapIntensity: 0.3 });   // burlap weave in light and shadow
 const RIB = { 6: ['tx_burlap6', 10], 4: ['tx_burlap4', 10], 2.5: ['tx_burlap25', 6], 1.5: ['tx_burlap15', 6] };   // ribbon width (in) -> texture, inches per repeat
 const goldMetal = id => mat(id, THREE.MeshStandardMaterial, { color: 0xcfa24e, metalness: 0.95, roughness: 0.3 });
 const sherpaTex = canvasTex(256, 256, (g, w) => { g.fillStyle = '#e9e1d2'; g.fillRect(0, 0, w, w); for (let i = 0; i < 1400; i++) { const x = Math.random() * w, y = Math.random() * w, r = 2 + Math.random() * 4; g.fillStyle = Math.random() < .5 ? '#f6f0e4' : '#cfc4b0'; g.beginPath(); g.arc(x, y, r, 0, 6.28); g.fill(); } }, { repeat: [3, 2] });
 const BUILD = {};
 
 /* ---------------- Topper bow and its optional extras ---------------- */
+// burlap with black felt paws glued on (render keys paws = how many on the bow, paw_in = paw size in inches)
+function pawBurlapTex(name, tileIn, widthIn, pawIn, perTile) {
+  const c = CUT[name], cv = document.createElement('canvas'); cv.width = c.w; cv.height = c.h;
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
+  loadImg(c.src).then(img => {
+    const g = cv.getContext('2d'), W2 = cv.width, H2 = cv.height; g.drawImage(img, 0, 0, W2, H2);
+    // the shop texture carries the old 2.2" paws (at 0.14-0.34 and 0.64-0.86 of the tile): cover them with plain weave from the middle first
+    [0.11, 0.62].forEach(x => g.drawImage(img, img.width * 0.36, 0, img.width * 0.26, img.height, W2 * x, 0, W2 * 0.26, H2));
+    const pr = rng(31), pxIn = W2 / tileIn, n = Math.max(1, Math.round(perTile));
+    for (let k = 0; k < n; k++) {   // staggered along the tile, alternately high and low across the ribbon, each turned a little
+      const x = (k + 0.5) / n * cv.width + (pr() - 0.5) * pxIn * 0.6, y = cv.height * (k % 2 ? 0.66 : 0.36) + (pr() - 0.5) * pxIn * 0.4, rot = (pr() - 0.5) * 0.9;
+      g.globalAlpha = 0.25; [0, cv.width, -cv.width].forEach(dx => drawPaw(g, x + dx + 1.5, y + 1.5, pawIn * pxIn * 0.95, '#000', rot)); g.globalAlpha = 1;   // felt edge
+      [0, cv.width, -cv.width].forEach(dx => drawPaw(g, x + dx, y, pawIn * pxIn * 0.95, '#141210', rot));
+    }
+    t.needsUpdate = true;
+  });
+  return t;
+}
 BUILD.topper = (r, id) => {
   const [tex, rep] = RIB[r.ribbon];
-  const g = bowGeo({ ribbon: r.ribbon, span: r.span, tail: r.tail, loops: r.loops, uLen: rep, seed: 9, open: r.loops === 2 ? 0.62 : 0.2, flare: r.loops === 2 ? 0.58 : 0.4 });
-  const bow = new THREE.Mesh(g, ribbonMat(id, tex)); bow.position.set(0, YTOP + 0.1 + (r.ribbon - 4) * IN * 0.45, 0.14); bow.castShadow = true;
+  const two = r.loops === 2;   // board bow: two big upswept loops over shorter tails (render keys tail 14, loop_tilt 0.35)
+  const g = bowGeo({ ribbon: r.ribbon, span: r.span, tail: r.tail, loops: r.loops, uLen: rep, seed: 9, open: two ? 0.62 : 0.2, flare: two ? 0.45 : 0.4, loopTilt: r.loop_tilt ?? 0.22 });
+  const ribbonLen = 2 * Math.PI * r.span / 2 * 0.9 + 2 * r.tail + 8;   // inches of ribbon in the bow (loops + tails + knot)
+  const m = r.paws ? mat(id, THREE.MeshStandardMaterial, { map: pawBurlapTex(tex, rep, r.ribbon, r.paw_in || 3, r.paws / (ribbonLen / rep)), roughness: 0.95, side: THREE.DoubleSide, envMapIntensity: 0.3 }) : ribbonMat(id, tex);
+  const bow = new THREE.Mesh(g, m); bow.position.set(0, YTOP + 0.1 + (r.ribbon - 4) * IN * 0.45, 0.14); bow.castShadow = true;
   TARGET.add(bow); tag(bow, id); addInstancePos(id, bow.position);
 };
 BUILD.flourish = r => {
@@ -811,17 +1005,41 @@ BUILD.flourish = r => {
 };
 
 /* ---------------- Plush pets on the tree (real product photos, cut out, with their tartan scarves) ---------------- */
+// Each pet sits on the branches: pushed out along the outward normal by 0.6 x its relief depth + 1.5" (so its back
+// rests on the needle tips instead of being skewered), with a few short sprigs in front of its lower edge.
+// clearFoliage() then pulls back only the needles that would still poke out in front of it.
+function seatPet(cut, id, hIn, p, depth, dyOff) {
+  const c = CUT[cut], h = hIn * IN, w = h * c.w / c.h, D = Math.min(w, h) * depth, th = faceY(p);
+  const out = new THREE.Vector3(Math.sin(th), 0, Math.cos(th));
+  const at = p.clone().add(new THREE.Vector3(0, dyOff, 0)).addScaledVector(out, 0.6 * D + 1.5 * IN);
+  const g = photoCard(cut, id, hIn, at, { depth, hero: true });
+  // seating sprigs: 4 short needle sprays rising from the branch in front of the pet's feet
+  const list = [], up = new THREE.Vector3(0, 1, 0), q = new THREE.Quaternion(), e = new THREE.Euler();
+  for (let k = 0; k < 4; k++) {
+    const side = new THREE.Vector3(Math.cos(g.rotation.y), 0, -Math.sin(g.rotation.y)), x = (k / 3 - 0.5) * w * 0.8 + yawJ(0.03);
+    const base = at.clone().addScaledVector(side, x).addScaledVector(out, -0.05).add(new THREE.Vector3(0, -0.02, 0));
+    const dir = out.clone().multiplyScalar(0.9).add(new THREE.Vector3(yawJ(0.25), 0.05 + yawJ(0.15), 0)).addScaledVector(side, x * 0.6).normalize();
+    q.setFromUnitVectors(up, dir); e.setFromQuaternion(q); e.y += yawJ(1);
+    const len = 0.22 + YAW() * 0.1;
+    list.push({ p: base, rot: e.clone(), sv: new THREE.Vector3(0.3 + len * 0.5, len, 0.3 + len * 0.5), c: new THREE.Color(1, 1, 1).multiplyScalar(0.95 + yawJ(0.1)), noMark: true });
+  }
+  if (NEEDLE_GEO) instanced(NEEDLE_GEO, NEEDLE_MAT, list, null);
+  return g;
+}
 BUILD.dogs = (r, id) => {
   for (let i = 0; i < r.n; i++) {
     const { p } = spotFront(r.h * IN * 1.1, 2.0, 3.7, 1.0, i ? 1.7 : 0.55);
-    photoCard(r.cut, id, r.h, p.clone().add(new THREE.Vector3(0, -0.12, 0)), { depth: 0.45 });
+    seatPet(r.cut, id, r.h, p, 0.45, -0.12);
     addInstancePos('bandanas', p.clone().add(new THREE.Vector3(0, r.h * IN * 0.45, 0.05)));
   }
 };
+// cats: render keys h (tall), l (long) and pose ('sit' | 'stand'). A standing cat is longer than it is wide in
+// the photo, so its relief is deeper (the body runs back toward the tree).
+const catDepth = r => r.pose === 'stand' && r.l ? Math.min(0.62, 0.45 * Math.max(1, r.l / r.h * 0.8)) : 0.45;
 BUILD.cats = (r, id) => {
   for (let i = 0; i < r.n; i++) {
     const { p } = spotFront(r.h * IN * 1.2, 2.9, 5.4, 1.0, i ? 1.4 : 0.85);
-    photoCard(r.cut, id, r.h, p.clone().add(new THREE.Vector3(0, -0.08, 0)), { depth: 0.45 });
+    seatPet(r.cut, id, r.h, p, catDepth(r), -0.08);
     addInstancePos('bandanas', p.clone().add(new THREE.Vector3(0, r.h * IN * 0.5, 0.05)));
   }
 };
@@ -865,6 +1083,7 @@ BUILD.doghouses = (r, id) => {
     list.push({ p: p.clone().add(new THREE.Vector3(0, -H * 0.5, 0)), rot: new THREE.Euler(0, faceY(p) + R(-0.25, 0.25), R(-0.05, 0.05)) });
   }
   instanced(geoBrick, mBrick, list, id); instanced(front, mFront, list.map(l => ({ ...l, noMark: true })), id); instanced(geoRoof, mRoof, list.map(l => ({ ...l, noMark: true })), id);
+  list.forEach(l => HERO_BOX.push({ g: TARGET, p: l.p, rot: l.rot, hw: W / 2 + over, y0: 0, y1: H + 0.3 * IN, zf: D / 2 + over }));   // clearFoliage keeps needles off the front
 };
 
 /* ---------------- Paw ornaments ---------------- */
@@ -875,10 +1094,14 @@ BUILD.paws = (r, id) => {
     const ring = new THREE.TorusGeometry(Rr, tube, 10, 72); ring.scale(1, 1, 1.4);
     const face = new THREE.CircleGeometry(Rr - tube * 0.5, 64);
     const clasp = mergeGeometries([new THREE.BoxGeometry(0.55 * IN, 0.6 * IN, 0.75 * IN).translate(0, Rr + 0.25 * IN, 0).toNonIndexed(), new THREE.CylinderGeometry(0.13 * IN, 0.13 * IN, 1.1 * IN, 10).rotateZ(Math.PI / 2).translate(0, Rr + 0.45 * IN, 0).toNonIndexed()]);
-    const bow = bowGeo({ ribbon: 1.5, span: r.bow || 9, tail: 8, loops: 2, uLen: 3, seed: 31, open: 0.5, flare: 0.85 }); bow.translate(0, Rr + 1.3 * IN, 0.45 * IN);
-    [ring, face, clasp, bow].forEach(g => g.translate(0, -top, 0));
+    // broad velvet loops turned to face out (open 0.15), about 1.7x the disc wide, as on board_paw.jpg (LO-7)
+    const bow = bowGeo({ ribbon: 1.5, span: Math.max(r.bow || 9, 10), tail: 8, loops: 2, uLen: 3, seed: 31, open: 0.15, flare: 0.45, loopTilt: 0.3 }); bow.translate(0, Rr + 1.3 * IN, 0.45 * IN);
+    // the back is finished with a black felt circle (render key back: 'felt'), so from behind it is not a mirrored paw
+    const backDisc = new THREE.CircleGeometry(Rr - tube * 0.3, 48); backDisc.rotateY(Math.PI); backDisc.translate(0, 0, -tube * 0.9);
+    [ring, face, clasp, bow, backDisc].forEach(g => g.translate(0, -top, 0));
+    face.translate(0, 0, tube * 0.15);
     const faceTex = canvasTex(512, 512, (g, w) => {
-      g.fillStyle = '#e8dcc0'; g.fillRect(0, 0, w, w);
+      g.fillStyle = r.face || '#e8dcc0'; g.fillRect(0, 0, w, w);
       g.strokeStyle = 'rgba(120,100,70,.18)'; g.lineWidth = 1; for (let k = 0; k < w; k += 6) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k, w); g.stroke(); g.beginPath(); g.moveTo(0, k); g.lineTo(w, k); g.stroke(); }   // 14-count weave
       noise(g, w, w, 9000, 0.25, ['#fff7e6', '#b9a57f']);
       const m = document.createElement('canvas'); m.width = m.height = w; const mg = m.getContext('2d'); drawPaw(mg, w / 2, w * 0.53, w * 0.66, '#111');
@@ -890,7 +1113,11 @@ BUILD.paws = (r, id) => {
       list.push({ p, rot: new THREE.Euler(R(-0.08, 0.04), faceY(p) + R(-0.3, 0.3), R(-0.08, 0.08)) });
     }
     instanced(ring, goldMetal(id), list, id);
-    instanced(face, mat(id, THREE.MeshStandardMaterial, { map: faceTex, roughness: 0.9, side: THREE.DoubleSide }), list.map(l => ({ ...l, noMark: true })), id);
+    list.forEach(l => HERO_BOX.push({ g: TARGET, p: l.p, rot: l.rot, hw: Rr + tube, y0: -top - Rr - tube, y1: -top + Rr + 2 * IN, zf: tube * 0.8 }));
+    instanced(face, mat(id, THREE.MeshStandardMaterial, { map: faceTex, roughness: 0.9 }), list.map(l => ({ ...l, noMark: true })), id);
+    const feltBack = r.back === 'felt' ? mat(id, THREE.MeshStandardMaterial, { color: 0x161412, roughness: 1, map: canvasTex(128, 128, (g, w) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, w); noise(g, w, w, 2500, 0.25, ['#999', '#ddd']); }) })
+                                       : mat(id, THREE.MeshStandardMaterial, { color: 0xcdb48a, roughness: 0.95 });   // plain backing otherwise
+    instanced(backDisc, feltBack, list.map(l => ({ ...l, noMark: true })), id);
     instanced(clasp, mat(id, THREE.MeshStandardMaterial, { color: 0xb8954a, metalness: 1, roughness: 0.35 }), list.map(l => ({ ...l, noMark: true })), id);
     instanced(bow, velvet(id, 0x5a0a14), list.map(l => ({ ...l, noMark: true })), id);
   } else {                   // 4" painted wood rounds with a mini velvet bow (the earlier design)
@@ -902,29 +1129,61 @@ BUILD.paws = (r, id) => {
 };
 
 /* ---------------- Bone ornaments ---------------- */
+// A chunky dog-bone outline (scene units): a straight shaft and FOUR clearly separate round lobes, two at each end,
+// with a notch between them (never one bulb per end). L = length, shaftRatio = shaft height / L, spanRatio = end
+// height (lobe to lobe) / L. Lobe radius 0.27 x span, lobe centres 0.23 x span off the axis (so they overlap by
+// less than a radius and the notch reads), as on board_bone.jpg and template page 4.
+function boneShape(L, shaftRatio = 0.27, spanRatio = 0.53) {
+  const S = spanRatio * L, r = 0.27 * S, yc = 0.23 * S, sh = Math.min(shaftRatio * L, 2 * (yc + r * 0.55)) / 2, xc = L / 2 - r;
+  const xj = xc - Math.sqrt(Math.max(1e-6, r * r - (sh - yc) * (sh - yc))), xn = xc + Math.sqrt(Math.max(1e-6, r * r - yc * yc));
+  const pts = [], arc = (cx, cy, a0, a1) => { let b = a1; while (b > a0) b -= Math.PI * 2; const n = 28; for (let i = 0; i <= n; i++) { const a = a0 + (b - a0) * i / n; pts.push(new THREE.Vector2(cx + Math.cos(a) * r, cy + Math.sin(a) * r)); } };   // clockwise from a0 to a1
+  const ang = (x, y, cx, cy) => Math.atan2(y - cy, x - cx);
+  arc(xc, yc, ang(xj, sh, xc, yc), ang(xn, 0, xc, yc));        // top-right lobe: shaft top -> over the end -> notch
+  arc(xc, -yc, ang(xn, 0, xc, -yc), ang(xj, -sh, xc, -yc));    // bottom-right lobe: notch -> under -> shaft bottom
+  arc(-xc, -yc, ang(-xj, -sh, -xc, -yc), ang(-xn, 0, -xc, -yc)); // bottom-left lobe
+  arc(-xc, yc, ang(-xn, 0, -xc, yc), ang(-xj, sh, -xc, yc));   // top-left lobe, back to the shaft top
+  const shape = new THREE.Shape(pts); shape.userData = { xc, yc, r }; return shape;
+}
+function boneGeo(L, shaftRatio, spanRatio, thick, bevel) {
+  const shp = boneShape(L, shaftRatio, spanRatio);
+  const g = new THREE.ExtrudeGeometry(shp, { depth: thick, bevelEnabled: true, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 3, curveSegments: 24 });
+  g.translate(0, 0, -thick / 2); g.computeVertexNormals(); g.userData = shp.userData; return g;
+}
+// dry-brushed clay: burnt sienna caught on the edges and crevices (where the face turns away from the front)
+function dryBrush(g, cream, sienna, k = 0.6) {
+  const n = g.attributes.normal, col = new Float32Array(n.count * 3), a = new THREE.Color(cream), b = new THREE.Color(sienna), c = new THREE.Color();
+  for (let i = 0; i < n.count; i++) { const t = Math.pow(1 - Math.abs(n.getZ(i)), 2) * k; c.copy(a).lerp(b, t); col.set([c.r, c.g, c.b], i * 3); }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3)); return g;
+}
 BUILD.bones = (r, id) => {
-  const L = r.l * IN, H = L * 0.36, T = L * 0.15;
-  const parts = [new THREE.CapsuleGeometry(H * 0.28, L * 0.6, 6, 14).rotateZ(Math.PI / 2)];
-  [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([x, y]) => parts.push(new THREE.SphereGeometry(H * 0.3, 16, 12).translate(x * L * 0.36, y * H * 0.21, 0)));
-  const geo = mergeGeometries(parts.map(p => p.toNonIndexed())); geo.scale(1, 1, T / (H * 0.6));
+  const Lin = r.len || r.l || 9, L = Lin * IN, thick = (r.thick || (r.kind === 'fleece' ? 1.6 : 1)) * IN;
+  const geo = boneGeo(L, r.shaft_ratio || 0.27, r.span_ratio || 0.53, thick, Math.min(0.12 * IN, thick * 0.2));
   const m = r.kind === 'fleece' ? mat(id, THREE.MeshStandardMaterial, { map: sherpaTex, bumpMap: sherpaTex, bumpScale: 2, roughness: 1 })
-                                : mat(id, THREE.MeshPhysicalMaterial, { color: 0xEBDAB6, roughness: 0.55, clearcoat: 0.35, clearcoatRoughness: 0.4 });
+                                : mat(id, THREE.MeshPhysicalMaterial, { vertexColors: true, roughness: 0.6, clearcoat: 0.25, clearcoatRoughness: 0.5 });
+  if (r.kind !== 'fleece') dryBrush(geo, 0xEBDAB6, 0x8a4a24, 0.6);
   const list = [];
-  for (let i = 0; i < r.n; i++) { const { p } = i < 2 ? spotFront(L, 1.8, 4.8, 1.03, i ? 1.2 : 0.45) : spot(L, Y0 + 0.3, YTOP - 0.6, 1.03); list.push({ p, rot: new THREE.Euler(R(-0.15, 0.15), faceY(p) + R(-0.3, 0.3), R(-0.22, 0.22)) }); }
+  for (let i = 0; i < r.n; i++) { const { p } = i < 2 ? spotFront(L, 1.8, 4.8, 1.03, i ? 1.2 : 0.45) : spot(L, Y0 + 0.3, YTOP - 0.6, 1.03); const zr = R(-0.22, 0.22); list.push({ p, rot: new THREE.Euler(0.05 + R(-0.15, 0.15) * 0.2, faceY(p) + R(-0.3, 0.3), zr * 0.2) }); }   // hangs level from its two cords
   instanced(geo, m, list, id);
+  if ((r.hang || 'two_cord') === 'two_cord') {   // a gold cord glued into each top lobe, meeting in a V over the bone and hooked into the branch behind
+    const { xc, yc, r: lr } = geo.userData, apex = new THREE.Vector3(0, yc + lr + Math.min(3.2, Lin * 0.4) * IN, -1.1 * IN);
+    const cords = [-1, 1].map(sg => { const a = new THREE.Vector3(sg * xc * 0.92, yc + lr * 0.8, 0), mid = a.clone().lerp(apex, 0.5); mid.x += sg * 0.15 * IN; mid.y -= 0.25 * IN;
+      return new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(a, mid, apex), 12, 0.05 * IN, 5, false).toNonIndexed(); });
+    instanced(mergeGeometries(cords), mat('gold_cord', THREE.MeshStandardMaterial, { color: 0xd4a94e, metalness: 0.85, roughness: 0.35 }), list.map(l => ({ ...l, noMark: true })), null);
+  }
 };
 
 /* ---------------- Baubles: what each pack holds, at its listed size ---------------- */
 const SPH = new THREE.SphereGeometry(1, 40, 24);
 const capGeo = (() => { const c = new THREE.CylinderGeometry(0.2, 0.22, 0.22, 16); c.translate(0, 1.0, 0); const l = new THREE.TorusGeometry(0.08, 0.02, 6, 12); l.translate(0, 1.16, 0); return mergeGeometries([c.toNonIndexed(), l.toNonIndexed()]); })();
-const capMat = new THREE.MeshStandardMaterial({ color: 0xcaa25a, metalness: 1, roughness: 0.28 });
+const capMat = new THREE.MeshStandardMaterial({ color: 0xcaa25a, metalness: 1, roughness: 0.28, envMapIntensity: 1.2 });
 const glitterNormal = canvasTex(512, 512, (g, w) => { const im = g.createImageData(w, w); for (let i = 0; i < w * w; i++) { const a = Math.random() * Math.PI * 2, s = Math.random() < 0.6 ? Math.random() * 0.9 : 0; im.data[i * 4] = 128 + Math.cos(a) * s * 127; im.data[i * 4 + 1] = 128 + Math.sin(a) * s * 127; im.data[i * 4 + 2] = 255 * Math.sqrt(1 - s * s * 0.5); im.data[i * 4 + 3] = 255; } g.putImageData(im, 0, 0); }, { repeat: [5, 3], srgb: false });
 const glitterRough = canvasTex(256, 256, (g, w) => { const im = g.createImageData(w, w); for (let i = 0; i < w * w; i++) { const v = Math.random() < 0.35 ? 20 : 150 + Math.random() * 90; im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 255; } g.putImageData(im, 0, 0); }, { repeat: [5, 3], srgb: false });
 const finish = {
-  shiny: () => ({ color: 0xffffff, metalness: 0.7, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.4 }),
-  mirror: () => ({ color: 0xffffff, metalness: 1, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.7 }),
-  matte: () => ({ color: 0xffffff, metalness: 0.35, roughness: 0.45, clearcoat: 0.3, envMapIntensity: 1.2 }),
-  glitter: () => ({ color: 0xffffff, metalness: 0.8, roughness: 0.42, roughnessMap: glitterRough, normalMap: glitterNormal, normalScale: new THREE.Vector2(0.9, 0.9) }),
+  // shiny = lacquered glass: a coloured mirror under a clear coat, so the bulb glints on top stay white-hot
+  shiny: () => ({ color: 0xffffff, metalness: 1, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 1.6 }),
+  mirror: () => ({ color: 0xffffff, metalness: 1, roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.6 }),
+  matte: () => ({ color: 0xffffff, metalness: 0.35, roughness: 0.5, clearcoat: 0.15, clearcoatRoughness: 0.4, envMapIntensity: 0.3 }),
+  glitter: () => ({ color: 0xffffff, metalness: 0.8, roughness: 0.42, roughnessMap: glitterRough, normalMap: glitterNormal, normalScale: new THREE.Vector2(0.9, 0.9), envMapIntensity: 1.1 }),
 };
 const PATTERN = {}, PATTERN_M = {};
 ['meridian', 'swirl', 'lattice', 'half'].forEach(kind => {
@@ -943,7 +1202,7 @@ const PATTERN = {}, PATTERN_M = {};
 const pickOne = arr => arr[(rand() * arr.length) | 0];
 const RED = '#b3121d', GOLD = '#d4ae5c';
 const BALL = {      // one pack, as sold
-  baubles_rgg: () => (SZ('baubles_rgg').d_mix || [[2.4, 32], [1.6, 36], [1.2, 32]]).flatMap(([d, n]) => Array.from({ length: n }, () => ({ d, c: pickOne(['#b8121f', '#b8121f', '#17683d', '#17683d', '#d7a64a']), f: pickOne(['shiny', 'shiny', 'glitter', 'matte']) }))),
+  baubles_rgg: () => (SZ('baubles_rgg').d_mix || [[2.4, 32], [1.6, 36], [1.2, 32]]).flatMap(([d, n]) => Array.from({ length: n }, () => ({ d, c: pickOne(SZ('baubles_rgg').palette || ['#b8121f', '#b8121f', '#9e0f1c', '#d7a64a', '#c9a14a']), f: pickOne(['shiny', 'shiny', 'glitter', 'matte']) }))),   // the pack as now chosen: red and gold only
   baubles_champ: () => (SZ('baubles_champ').d_mix || [[2.4, 33], [1.6, 34], [1.2, 33]]).flatMap(([d, n]) => Array.from({ length: n }, () => ({ d, c: pickOne(['#d9c39a', '#cdb07a', '#e8dcc2', '#b9a07a']), f: pickOne(['shiny', 'matte', 'glitter']) }))),
   glitter_red: () => Array.from({ length: 12 }, (_, i) => ({ d: 3.15, f: 'tex:' + ['meridian', 'swirl', 'lattice', 'half'][i % 4] })),
   glitter_champ: () => Array.from({ length: 12 }, () => ({ d: 3.15, c: '#dcc08a', f: 'glitter' })),
@@ -954,12 +1213,20 @@ const BALL = {      // one pack, as sold
   red6_benjia: () => ['shiny', 'shiny', 'matte', 'glitter'].map(f => ({ d: 6, c: '#b0101c', f })),
   redgold6: () => ['swirl', 'lattice', 'half', 'meridian'].map(k => ({ d: 6, f: 'tex:' + k })),
 };
+const BDEPTH = rng(7331);   // ball depth stream (separate from rand(), the placement stream)
 function balls(id, list, spots) {   // list: [{ d (in), c, f }]; big first so they get the best spots
   const groups = {};
-  list.forEach(b => { const r = b.d / 2 * IN; const { p } = spot(r * 2.2, Y0 + 0.25 + r, YTOP - 0.3, b.d >= 3.9 ? 0.93 : 0.9); (groups[b.f] ||= []).push({ p, s: r, c: b.c, rot: new THREE.Euler(R(-0.2, 0.2), R(0, 6.28), R(-0.2, 0.2)) }); spots.push({ p, s: r }); });
+  list.forEach(b => {
+    const r = b.d / 2 * IN, d0 = b.d >= 3.9 ? 0.93 : 0.9, p = spot(r * 2.2, Y0 + 0.25 + r, YTOP - 0.3, d0).p.clone();   // a copy: the spot itself stays in placed[]
+    // depth: smooth glossy balls ride the tips, sequin/glitter and small balls are tucked deeper and lit by the bulb glow
+    // (LD5, R9). Drawn from BDEPTH, so spot() and rand() run exactly as before and every later piece lands where it did.
+    const u = BDEPTH(), dep = b.f === 'shiny' || b.f === 'mirror' ? 0.86 + 0.08 * u : b.f === 'glitter' || b.f.startsWith('tex:') ? (b.d >= 3.9 ? 0.74 + 0.12 * u : 0.7 + 0.22 * u) : 0.65 + 0.3 * u;
+    const rr = Math.hypot(p.x, p.z), rn = (rr - 0.02) * dep / d0 + 0.02; p.x *= rn / rr; p.z *= rn / rr;
+    const rx = R(-0.2, 0.2), ry = R(0, 6.28), rz = R(-0.2, 0.2), yawOnly = b.f === 'glitter' || b.f.startsWith('tex:');   // stripes and sequin rows stay square to the cap
+    (groups[b.f] ||= []).push({ p, s: r, c: b.c, rot: new THREE.Euler(yawOnly ? 0 : rx, ry, yawOnly ? 0 : rz) }); spots.push({ p, s: r }); });
   Object.entries(groups).forEach(([f, l]) => {
     const tex = f.startsWith('tex:') ? f.slice(4) : null;
-    const m = tex ? mat(id, THREE.MeshPhysicalMaterial, { map: PATTERN[tex], metalnessMap: PATTERN_M[tex], metalness: 1, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.1, normalMap: glitterNormal, normalScale: new THREE.Vector2(0.35, 0.35) })
+    const m = tex ? mat(id, THREE.MeshPhysicalMaterial, { map: PATTERN[tex], metalnessMap: PATTERN_M[tex], metalness: 1, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.1, normalMap: glitterNormal, normalScale: new THREE.Vector2(0.35, 0.35), envMapIntensity: 1.2 })
                   : mat(id, THREE.MeshPhysicalMaterial, finish[f]());
     instanced(SPH, m, l, id);
   });
@@ -989,58 +1256,163 @@ BUILD.ribbon = r => {
   }
   const B = SZ('big_bows'), list = [];
   for (let i = 0; i < r.bows; i++) { const { p } = spot((B.w || 11) * IN * 1.45, 1.6, 5.6, 1.0);   /* wide berth: the tails must not cover the pets and ornaments */ list.push({ p, rot: new THREE.Euler(R(-0.12, 0.12), faceY(p), R(-0.15, 0.15)) }); }
-  instanced(bowGeo({ ribbon: 4, span: B.w || 11, tail: (B.h || 18) - 3, seed: 3 }), tartanMat('big_bows'), list, 'big_bows');
+  instanced(bowGeo({ ribbon: 4, span: B.w || 11, tail: r.bow_tail || (B.h || 18) - 3, loops: r.bow_loops || 2, seed: 3 }), tartanMat('big_bows'), list, 'big_bows');
+  if (r.velvet_bows) {   // solid deep-red velvet bows (9", 8" tails) wired between the tartan, mostly on the right side and lower half, as on the board
+    const V = SZ('velvet_tree_bows'), vl = [];
+    for (let i = 0; i < r.velvet_bows; i++) { const { p } = spot((V.w || 9) * IN * 1.3, 1.5, 4.6, 1.0); const th = faceY(p); vl.push({ p, rot: new THREE.Euler(R(-0.12, 0.12), th, R(-0.15, 0.15)) }); }
+    instanced(bowGeo({ ribbon: V.ribbon || 1.5, span: V.w || 9, tail: (V.h || 12) - 4, loops: 2, uLen: 3, seed: 41, open: 0.2, flare: 0.4, loopTilt: 0.3 }), velvet('velvet_tree_bows', 0x5a0a14), vl, 'velvet_tree_bows');
+  }
 };
 
 /* ---------------- Stockings and the gold, pine and berry picks ---------------- */
-// Real products from their photos, as solid pieces that stay put when you orbit: the cutout's outline is
-// inflated into a rounded relief (front photo, slightly darker back), lit like everything else.
-const RELIEF = {};   // cutout name -> Promise of { G, W, H, f: Float32Array } height field (0 at the outline, 1 at the thickest)
+// Real products from their photos, as solid two-sided reliefs that stay put when you orbit (they never turn to
+// the camera). Front: the product photo, shaped by a monocular depth map (data/depth/<cut>.png from
+// build/make_depth.py) so muzzles, noses and paws stand out of a rounded body. Back: the same silhouette in
+// plain fur colour (the photo blurred, so no mirrored face, eyes or scarf print), rounded like a stuffed body.
+// Front and back meet in a vertical seam on the cutout's outline. One geometry per cutout and size, shared.
+const loadImg = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+const RELIEF = {};   // cutout name -> Promise of { W, H, a: alpha 0..1 (1 px blur), f: inflation 0..1, dep: depth 0..1 | null }
 function reliefField(name) {
   if (RELIEF[name]) return RELIEF[name];
-  return (RELIEF[name] = new Promise(res => {
-    const img = new Image(); img.onload = () => {
-      const W = 72, H = Math.max(8, Math.round(72 * img.height / img.width)), cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-      const g = cv.getContext('2d'); g.drawImage(img, 0, 0, W, H); const a = g.getImageData(0, 0, W, H).data;
-      const d = new Float32Array(W * H), BIG = 1e6;
-      for (let i = 0; i < W * H; i++) d[i] = a[i * 4 + 3] > 100 ? BIG : 0;
-      const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : d[y * W + x];
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (d[i]) d[i] = Math.min(d[i], at(x - 1, y) + 1, at(x, y - 1) + 1, at(x - 1, y - 1) + 1.41, at(x + 1, y - 1) + 1.41); }
-      for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) { const i = y * W + x; if (d[i]) d[i] = Math.min(d[i], at(x + 1, y) + 1, at(x, y + 1) + 1, at(x + 1, y + 1) + 1.41, at(x - 1, y + 1) + 1.41); }
-      let mx = 1; for (let i = 0; i < W * H; i++) mx = Math.max(mx, d[i]);
-      const f = new Float32Array(W * H); for (let i = 0; i < W * H; i++) f[i] = Math.sqrt(d[i] / mx);   // rounded, like a stuffed toy
-      res({ W, H, f });
-    }; img.src = CUT[name].src;
+  return (RELIEF[name] = Promise.all([loadImg(CUT[name].src), CUT[name].depth ? loadImg(CUT[name].depth) : null]).then(([img, dimg]) => {
+    const W = 128, H = Math.max(8, Math.round(128 * img.height / img.width)), cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const g = cv.getContext('2d'); g.filter = 'blur(1px)'; g.drawImage(img, 0, 0, W, H); g.filter = 'none';   // blur the alpha 1 px: no stair-step outline
+    const px = g.getImageData(0, 0, W, H).data, a = new Float32Array(W * H);
+    for (let i = 0; i < W * H; i++) a[i] = px[i * 4 + 3] / 255;
+    const d = new Float32Array(W * H), BIG = 1e6;
+    for (let i = 0; i < W * H; i++) d[i] = a[i] >= 0.5 ? BIG : 0;
+    const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : d[y * W + x];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (d[i]) d[i] = Math.min(d[i], at(x - 1, y) + 1, at(x, y - 1) + 1, at(x - 1, y - 1) + 1.41, at(x + 1, y - 1) + 1.41); }
+    for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) { const i = y * W + x; if (d[i]) d[i] = Math.min(d[i], at(x + 1, y) + 1, at(x, y + 1) + 1, at(x + 1, y + 1) + 1.41, at(x - 1, y + 1) + 1.41); }
+    let mx = 1; for (let i = 0; i < W * H; i++) mx = Math.max(mx, d[i]);
+    const f = new Float32Array(W * H); for (let i = 0; i < W * H; i++) f[i] = Math.sqrt(d[i] / mx);   // rounded, like a stuffed toy
+    let dep = null;
+    if (dimg) { const c2 = document.createElement('canvas'); c2.width = W; c2.height = H; const g2 = c2.getContext('2d'); g2.drawImage(dimg, 0, 0, W, H); const q = g2.getImageData(0, 0, W, H).data; dep = new Float32Array(W * H); for (let i = 0; i < W * H; i++) dep[i] = q[i * 4] / 255; }
+    return { W, H, a, f, dep };
   }));
 }
-function sampleField(F, u, v) {
+function sampleArr(F, arr, u, v) {
   const x = Math.min(F.W - 1.001, Math.max(0, u * (F.W - 1))), y = Math.min(F.H - 1.001, Math.max(0, (1 - v) * (F.H - 1))), x0 = x | 0, y0 = y | 0, fx = x - x0, fy = y - y0;
-  const q = (a, b) => F.f[b * F.W + a];
+  const q = (a, b) => arr[b * F.W + a];
   return (q(x0, y0) * (1 - fx) + q(x0 + 1, y0) * fx) * (1 - fy) + (q(x0, y0 + 1) * (1 - fx) + q(x0 + 1, y0 + 1) * fx) * fy;
 }
-function photoCard(name, id, heightIn, pos, { anchor = 'bottom', mark = true, depth = 0.3, ry = null } = {}) {
-  const c = CUT[name], h = heightIn * IN, w = h * c.w / c.h, dy = anchor === 'top' ? -h / 2 : anchor === 'center' ? 0 : h / 2;
-  const nx = 40, ny = Math.max(8, Math.round(40 * h / w));
-  const front = new THREE.PlaneGeometry(w, h, nx, ny), back = new THREE.PlaneGeometry(w, h, nx, ny); back.rotateY(Math.PI);
-  const tex = photoTex(name);
-  const mF = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.2, alphaToCoverage: true, roughness: 0.92, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.08, envMapIntensity: 0.35 });
-  const mB = mat(id, THREE.MeshStandardMaterial, { map: tex, alphaTest: 0.2, alphaToCoverage: true, roughness: 0.95, color: 0xb8b0a6, envMapIntensity: 0.25 });
-  const grp = new THREE.Group(); const meshes = [new THREE.Mesh(front, mF), new THREE.Mesh(back, mB)];
+const sampleField = (F, u, v) => sampleArr(F, F.f, u, v);
+// relief heights (scene units) for a field at (u, v); D = the piece's depth scale
+const reliefZ = (F, u, v, D) => { const f = sampleField(F, u, v); return F.dep ? D * (0.35 * f + 0.9 * sampleArr(F, F.dep, u, v) * Math.min(1, 3 * f)) : D * f; };
+const reliefZBack = (F, u, v, D) => -0.85 * D * Math.pow(sampleField(F, u, v), 0.7);
+const GEO_CACHE = new Map();   // name|w|h|D -> Promise of { front, back, F }
+function reliefGeo(name, w, h, D) {
+  const k = [name, w.toFixed(4), h.toFixed(4), D.toFixed(4)].join('|');
+  if (GEO_CACHE.has(k)) return GEO_CACHE.get(k);
+  const pr = reliefField(name).then(F => {
+    const nx = LOW ? 56 : 80, ny = Math.max(8, Math.round(nx * h / w)), N = (nx + 1) * (ny + 1);
+    const U = new Float32Array(N), V = new Float32Array(N), A = new Float32Array(N), id = (i, j) => j * (nx + 1) + i;
+    for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) { const n = id(i, j); U[n] = i / nx; V[n] = j / ny; A[n] = sampleArr(F, F.a, U[n], V[n]); }
+    const inside = n => A[n] >= 0.5, idx = [], used = new Uint8Array(N);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const a = id(i, j), b = id(i + 1, j), c = id(i + 1, j + 1), d = id(i, j + 1);
+      [[a, b, c], [a, c, d]].forEach(t => { if (t.some(inside)) { idx.push(...t); t.forEach(n => { used[n] = 1; }); } });   // drop triangles wholly outside the mask
+    }
+    // snap each outside vertex onto the outline (alpha 0.5), found by bisection toward its inside neighbours,
+    // so the front and back meet in a vertical seam instead of a slanted, torn fin
+    // The texture is sampled a little inside the outline (where alpha >= 0.92), so the steep rim shows the
+    // product's own colour, never the cutout's dark fringe or a see-through edge: the geometry is the silhouette.
+    const su = U.slice(), sv = V.slice(), tu = U.slice(), tv = V.slice(), seam = new Uint8Array(N);
+    const cross = (n, m, thr) => { let lo = 0, hi = 1; for (let it = 0; it < 7; it++) { const t = (lo + hi) / 2; if (sampleArr(F, F.a, U[n] + (U[m] - U[n]) * t, V[n] + (V[m] - V[n]) * t) >= thr) hi = t; else lo = t; } return hi; };
+    for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+      const n = id(i, j); if (!used[n] || inside(n)) continue;
+      let cu = 0, cv = 0, ku = 0, kv = 0, cn = 0;
+      for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+        const ii = i + di, jj = j + dj; if ((!di && !dj) || ii < 0 || jj < 0 || ii > nx || jj > ny) continue;
+        const m = id(ii, jj); if (!inside(m)) continue;
+        const t = cross(n, m, 0.5), t2 = Math.max(t, cross(n, m, 0.92));   // 0 = this (outside) vertex, 1 = the inside neighbour
+        cu += U[n] + (U[m] - U[n]) * t; cv += V[n] + (V[m] - V[n]) * t; ku += U[n] + (U[m] - U[n]) * t2; kv += V[n] + (V[m] - V[n]) * t2; cn++;
+      }
+      if (cn) { su[n] = cu / cn; sv[n] = cv / cn; tu[n] = ku / cn; tv[n] = kv / cn; seam[n] = 1; }
+    }
+    const mk = back => {
+      const pos = new Float32Array(N * 3), uv = new Float32Array(N * 2);
+      for (let n = 0; n < N; n++) {
+        const u = su[n], v = sv[n]; pos[n * 3] = (u - 0.5) * w; pos[n * 3 + 1] = (v - 0.5) * h;
+        pos[n * 3 + 2] = seam[n] || !inside(n) ? 0 : back ? reliefZBack(F, u, v, D) : reliefZ(F, u, v, D);
+        uv[n * 2] = seam[n] ? tu[n] : u; uv[n * 2 + 1] = seam[n] ? tv[n] : v;
+      }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+      const ix = back ? idx.slice() : idx; if (back) for (let t = 0; t < ix.length; t += 3) { const tmp = ix[t + 1]; ix[t + 1] = ix[t + 2]; ix[t + 2] = tmp; }
+      g.setIndex(ix); g.computeVertexNormals(); g.computeBoundingSphere(); g.computeBoundingBox();
+      const nz = g.attributes.normal;
+      for (let n = 0; n < N; n++) if (seam[n]) { const ex = (su[n] - tu[n]) * w, ey = (sv[n] - tv[n]) * h, l = Math.hypot(ex, ey); if (l > 1e-6) nz.setXYZ(n, ex / l, ey / l, 0); }   // the seam faces straight out on both halves: no lighting crease
+      const side = new Float32Array(N); for (let n = 0; n < N; n++) side[n] = 1 - Math.abs(nz.getZ(n));
+      g.setAttribute('aSide', new THREE.BufferAttribute(side, 1)); return g;   // how steeply the surface turns away: the rim gets plain fur colour
+    };
+    return { front: mk(false), back: mk(true), F };
+  });
+  GEO_CACHE.set(k, pr); return pr;
+}
+// back of a relief: the cutout blurred into plain fur/knit colour, with the original alpha (no face or print)
+const FUR = {};
+function furTex(name) {
+  if (FUR[name]) return FUR[name];
+  const cv = document.createElement('canvas'); cv.width = cv.height = 4; const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+  loadImg(CUT[name].src).then(img => {
+    const s = Math.min(1, 256 / Math.max(img.width, img.height)); cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s);
+    const g = cv.getContext('2d'); g.filter = 'blur(' + Math.round(cv.width / 22) + 'px)'; g.drawImage(img, 0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+    g.filter = 'none'; g.globalCompositeOperation = 'destination-in'; g.drawImage(img, 0, 0, cv.width, cv.height); t.dispose(); t.needsUpdate = true;
+  });
+  return (FUR[name] = t);
+}
+// de-light the photo: the product photos carry their own studio light, so flatten it a little and let the scene light them
+// The rim (where the relief turns side-on) takes the blurred fur colour instead of the photo, which would smear there.
+const delight = (m, fur, tint) => {
+  m.onBeforeCompile = sh => {
+    sh.uniforms.furMap = { value: fur }; sh.uniforms.furTint = { value: tint };
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aSide;\nvarying float vSide;').replace('#include <uv_vertex>', '#include <uv_vertex>\n  vSide = aSide;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D furMap;\nuniform vec3 furTint;\nvarying float vSide;')
+      .replace('#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(furMap, vMapUv).rgb * furTint, smoothstep(0.45, 0.85, vSide));\n  diffuseColor.rgb = pow(max(diffuseColor.rgb, vec3(0.0)), vec3(1.15));');
+  };
+  m.customProgramCacheKey = () => 'photoRelief'; return m;
+};
+const CARD_MATS = {};
+function cardMats(name, id, tex) {
+  const k = name + '|' + id + '|' + (tex ? tex.uuid : '');
+  return CARD_MATS[k] ||= {
+    // the relief geometry follows the outline, so the edge is geometry (antialiased by MSAA), not an alpha cut;
+    // a low alphaTest only trims what a coarse grid cell could still carry past the outline
+    mF: delight(mat(id, THREE.MeshStandardMaterial, { map: tex || photoTex(name), color: 0xffe6cc, alphaTest: 0.06, roughness: 0.92, envMapIntensity: 0.3 }), furTex(name), new THREE.Color(0xd9c8b4)),
+    mB: delight(mat(id, THREE.MeshStandardMaterial, { map: furTex(name), color: 0xd9c8b4, alphaTest: 0.06, roughness: 0.97, envMapIntensity: 0.25 }), furTex(name), new THREE.Color(0xd9c8b4)),
+  };
+}
+const YAW = rng(5150);   // natural yaw/tilt jitter: its own stream, so the placement stream (rand) and every placement stay as they were
+const yawJ = a => (YAW() * 2 - 1) * a;
+const cards = [], RELIEF_READY = [];
+function photoCard(name, id, heightIn, pos, { anchor = 'bottom', mark = true, depth = 0.3, ry = null, tex = null, tilt = 0, hero = false } = {}) {
+  const c = CUT[name], h = heightIn * IN, w = h * c.w / c.h, dy = anchor === 'top' ? -h / 2 : anchor === 'center' ? 0 : h / 2, D = Math.min(w, h) * depth;
+  const { mF, mB } = cardMats(name, id, tex);
+  const flat = new THREE.PlaneGeometry(w, h); flat.setAttribute('aSide', new THREE.Float32BufferAttribute(new Float32Array(4), 1));   // until the relief is ready
+  const grp = new THREE.Group(); const meshes = [new THREE.Mesh(flat, mF), new THREE.Mesh(flat, mB)];
   meshes.forEach(m => { m.position.y = dy; m.castShadow = true; m.receiveShadow = true; m.userData.itemId = id; pickables.push(m); grp.add(m); });
   grp.position.copy(pos);
-  grp.rotation.y = ry ?? ((Math.hypot(pos.x, pos.z) > 0.25 && pos.y > 0.9) ? faceY(pos) : Math.atan2(-pos.x * 0.15, 1));   // on the tree: face out from the trunk
+  grp.rotation.y = ry ?? ((Math.hypot(pos.x, pos.z) > 0.25 && pos.y > 0.9) ? faceY(pos) + yawJ(0.35) : Math.atan2(-pos.x * 0.15, 1));   // on the tree: face out from the trunk, give or take 20 degrees
+  grp.rotation.order = 'YXZ'; grp.rotation.x = tilt;   // tilt about the piece's own left-right axis
+  grp.userData.relief = { name, w, h, D, dy, F: null, hero };
   TARGET.add(grp); cards.push(grp);
-  reliefField(name).then(F => {   // inflate once the cutout has decoded
-    const D = Math.min(w, h) * depth;
-    [[front, 1], [back, -0.85]].forEach(([g, sgn]) => { const P = g.attributes.position, UV = g.attributes.uv; for (let i = 0; i < P.count; i++) P.setZ(i, sgn * D * sampleField(F, UV.getX(i), UV.getY(i))); P.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingSphere(); });
-    renderer.shadowMap.needsUpdate = true;
-  });
+  RELIEF_READY.push(reliefGeo(name, w, h, D).then(G => { meshes[0].geometry = G.front; meshes[1].geometry = G.back; grp.userData.relief.F = G.F; flat.dispose(); renderer.shadowMap.needsUpdate = true; }));
   if (mark) addInstancePos(id, pos.clone().add(new THREE.Vector3(0, dy, 0)));
   return grp;
 }
-const cards = [];
-function updateCards() {}   // pieces no longer turn to face the camera
-BUILD.stockings = r => { ['stock_red', 'stock_green', 'stock_cream'].forEach(n => { for (let i = 0; i < r.n / 3; i++) { const { p } = spot(SZ('stockings').h * IN, 1.4, 5.5, 1.0); photoCard(n, 'stockings', (SZ('stockings').h || 4.3) * 1.25, p, { anchor: 'top', depth: 0.18 }); } }); };
+function updateCards() {}   // pieces never turn to face the camera
+// knit stockings, with a small black felt paw on each cuff when the option says so (render key stockings.paws)
+const STOCK_TEX = {};
+function stockPawTex(name) {
+  if (STOCK_TEX[name]) return STOCK_TEX[name];
+  const c = CUT[name], cv = document.createElement('canvas'); cv.width = c.w; cv.height = c.h; const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  loadImg(c.src).then(img => { const g = cv.getContext('2d'); g.drawImage(img, 0, 0); const [cx, cy, s] = c.cuff || [0.45, 0.33, 0.2];
+    g.globalCompositeOperation = 'source-atop'; drawPaw(g, cx * c.w, cy * c.h, Math.min(s, 0.16) * c.h * 0.62, '#151313', -0.15); t.needsUpdate = true; });
+  return (STOCK_TEX[name] = t);
+}
+BUILD.stockings = r => { ['stock_red', 'stock_green', 'stock_cream'].forEach(n => { for (let i = 0; i < r.n / 3; i++) { const { p } = spot(SZ('stockings').h * IN, 1.4, 5.5, 1.0);
+  const hIn = (SZ('stockings').h || 4.3) * 1.25, D = Math.min(hIn * CUT[n].w / CUT[n].h, hIn) * IN * 0.22, th = faceY(p);   // hung on the branch tips, in front of the needles
+  photoCard(n, 'stockings', hIn, p.clone().add(new THREE.Vector3(Math.sin(th), 0, Math.cos(th)).multiplyScalar(0.6 * D + 1.2 * IN)), { anchor: 'top', depth: 0.22, ry: th + yawJ(0.4), tilt: 0.05, tex: r.paws ? stockPawTex(n) : null, hero: true }); } }); };
 function sprays(id, n, color, stemsPer, beadIn, lenIn) {   // glitter spray picks: thin stems tipped with glitter beads
   const beads = []; const L = lenIn * IN;
   for (let i = 0; i < n; i++) {
@@ -1100,7 +1472,20 @@ BUILD.floor = r => {
     g.position.set(-1.95, H * 0.42, 2.7); g.rotation.set(-0.35, 0.45, 0.06); TARGET.add(g); tag(g, 'bone_pillow'); addInstancePos('bone_pillow', g.position);
     contactShadow(-1.95, 2.65, L * 1.3, H * 1.1, 0.45, 0.75);
   }
-  if (r.bowl) {     // red glazed bowl with white dots and two painted paws
+  if (r.bowl && r.bowl_kind === 'steel') {   // Loving Pets Bella bowl: straight-sided deep red (merlot) shell, brushed steel inside, cream paw prints
+    const s = SZ('bowl'); const rr = (s.w || 8.5) / 2 * IN, h = (s.h || 2.5) * IN;
+    const shell = new THREE.LatheGeometry([[0, 0], [rr * 0.86, 0], [rr * 0.9, h * 0.04], [rr * 0.985, h * 0.9], [rr, h], [rr * 0.97, h * 1.02]].map(([x, y]) => new THREE.Vector2(x, y)), 72);
+    const steel = new THREE.LatheGeometry([[rr * 0.965, h * 1.02], [rr * 0.93, h * 1.03], [rr * 0.84, h * 0.3], [rr * 0.78, h * 0.12], [0, h * 0.1]].map(([x, y]) => new THREE.Vector2(x, y)), 72);
+    const paws = canvasTex(1024, 256, (g, w, hh) => { g.fillStyle = '#7d0f1a'; g.fillRect(0, 0, w, hh); noise(g, w, hh, 6000, 0.12, ['#a8202c', '#4a0710']);
+      for (let k = 0; k < 6; k++) drawPaw(g, (k + 0.5) / 6 * w, hh * (k % 2 ? 0.42 : 0.6), hh * 0.32, '#efe3c8', (k % 2 ? 0.3 : -0.3)); });
+    const brushed = canvasTex(256, 256, (g, w) => { g.fillStyle = '#9a9ea3'; g.fillRect(0, 0, w, w); for (let y = 0; y < w; y++) { g.fillStyle = `rgba(${Math.random() < 0.5 ? '255,255,255' : '40,40,45'},${Math.random() * 0.12})`; g.fillRect(0, y, w, 1); } }, { repeat: [4, 1] });
+    const bowl = new THREE.Group();
+    const mShell = new THREE.Mesh(shell, mat('bowl', THREE.MeshPhysicalMaterial, { map: paws, roughness: 0.28, clearcoat: 0.8, clearcoatRoughness: 0.15, side: THREE.DoubleSide }));
+    const mSteel = new THREE.Mesh(steel, mat('bowl', THREE.MeshStandardMaterial, { map: brushed, metalness: 1, roughness: 0.32, envMapIntensity: 1.2, side: THREE.DoubleSide }));
+    bowl.add(mShell, mSteel); bowl.position.set(-0.78, 0, 3.95); bowl.rotation.y = 0.4; bowl.traverse(o => { o.castShadow = o.receiveShadow = true; });
+    TARGET.add(bowl); tag(bowl, 'bowl'); addInstancePos('bowl', new THREE.Vector3(-0.78, h, 3.95));
+    contactShadow(-0.78, 3.95, rr * 3, rr * 3, 0, 0.7);
+  } else if (r.bowl) {     // red glazed bowl with white dots and two painted paws
     const s = SZ('bowl'); const rr = (s.w || 5.9) / 2 * IN, h = (s.h || 1.8) * IN;
     const prof = [[0, 0], [rr * 0.72, 0], [rr * 0.8, h * 0.06], [rr * 0.98, h * 0.85], [rr, h], [rr * 0.93, h], [rr * 0.76, h * 0.2], [0, h * 0.16]].map(([x, y]) => new THREE.Vector2(x, y));
     const geo = new THREE.LatheGeometry(prof, 64); const p = geo.attributes.position;
@@ -1142,12 +1527,26 @@ BUILD.basket = r => {
     const lid = new THREE.Mesh(new THREE.CylinderGeometry(jr * 0.82, jr * 0.82, 0.45 * IN, 36), glass); lid.position.y = jh * 0.92; jar.add(lid);
     const knob = new THREE.Mesh(new THREE.SphereGeometry(0.7 * IN, 20, 14), glass); knob.position.y = jh * 0.92 + 0.7 * IN; jar.add(knob);
     tag(jar, 'jar'); addInstancePos('jar', W(-bw * 0.18, bh * 0.45 + jh * 0.5, -bd * 0.1));
-    const bs = SZ('faux_treats'); const bl2 = (bs.w || 3) * IN * 0.9, bh2 = (bs.h || 1.2) * IN;
-    const parts = [new THREE.CapsuleGeometry(bh2 * 0.25, bl2 * 0.6, 4, 10).rotateZ(Math.PI / 2)]; [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([x, y]) => parts.push(new THREE.SphereGeometry(bh2 * 0.28, 10, 8).translate(x * bl2 * 0.38, y * bh2 * 0.2, 0)));
-    const bgeo = mergeGeometries(parts.map(p => p.toNonIndexed())); bgeo.scale(1, 1, 0.55);
-    const list = []; jar.updateMatrixWorld(true);
-    for (let i = 0; i < 30; i++) { const y = 0.25 * IN + i * jh * 0.026, a = R(0, 6.28), rr = R(jr * 0.35, jr * 0.8); list.push({ p: jar.localToWorld(new THREE.Vector3(Math.cos(a) * rr, y, Math.sin(a) * rr)), rot: new THREE.Euler(R(-1.2, 1.2), R(0, 6.28), R(-0.6, 0.6)), noMark: i > 0 }); }
-    instanced(bgeo, mat('faux_treats', THREE.MeshStandardMaterial, { color: 0xC8955A, roughness: 0.85 }), list, 'faux_treats');
+    // faux biscuits: flat bone biscuits (the same four-lobe outline as the clay bones, at the 2.7" cutter size),
+    // stood on edge against the glass ring by ring, face out, round a crumpled kraft core, plus 12 piled on top (as the plan builds it)
+    const bs = SZ('faux_treats'), bL = (bs.w || 2.7), bH = (bs.h || 1.08), bT = (bs.d || 0.25) * IN;
+    const bgeo = boneGeo(bL * IN, 0.21, bH / bL, bT, 0.06 * IN); dryBrush(bgeo, 0xc8955a, 0x8a5a2c, 0.5);
+    const ring = Math.floor(Math.PI * ((js.w || 7) - 0.4) / bL), rings = Math.floor(((js.h || 9.9) - 1.4) / (bH + 0.12));
+    for (let i = 0; i < 150; i++) rand();   // the old scattered biscuits drew 150 placement numbers: keep the stream, so every piece after this lands where it did
+    const list = [], tan = [0xffffff, 0xf0e2d2, 0xe2cdb6, 0xfff2e2], br = rng(77);   // tints on the baked tan (#c8955a to #a8703a overall) jar.updateMatrixWorld(true);
+    const jarR = y => { const t = y / jh; return t < 0.12 ? jr * (0.85 + 1.25 * t) : t < 0.55 ? jr * (1 + 0.04 * (t - 0.12) / 0.43) : jr * (1.02 - 0.3 * (t - 0.55) / 0.29); };
+    for (let k = 0; k < rings; k++) {
+      const y = (0.35 + bH * 0.5) * IN + k * (bH + 0.12) * IN, rr = jarR(y) - bT * 0.8;
+      for (let i = 0; i < ring; i++) { const a = (i + (k % 2) * 0.5) / ring * Math.PI * 2 + (br() - 0.5) * 0.1;
+        list.push({ p: jar.localToWorld(new THREE.Vector3(Math.sin(a) * rr, y, Math.cos(a) * rr)), rot: new THREE.Euler(0, ry + a, (br() - 0.5) * 0.12), c: tan[(br() * 4) | 0], noMark: !!(k + i) }); }
+    }
+    const topY = (0.35 + rings * (bH + 0.12)) * IN;
+    for (let i = 0; i < 12; i++) { const a = br() * 6.28, rr = br() * jr * 0.55; list.push({ p: jar.localToWorld(new THREE.Vector3(Math.cos(a) * rr, topY + (i % 4) * 0.3 * IN, Math.sin(a) * rr)), rot: new THREE.Euler(-Math.PI / 2 + (br() - 0.5) * 0.9, br() * 6.28, (br() - 0.5) * 0.6), c: tan[(br() * 4) | 0], noMark: true }); }
+    instanced(bgeo, mat('faux_treats', THREE.MeshStandardMaterial, { vertexColors: true, roughness: 0.85 }), list, 'faux_treats');
+    const kraft = canvasTex(256, 256, (c2, w2) => { c2.fillStyle = '#a77a4c'; c2.fillRect(0, 0, w2, w2); for (let i = 0; i < 260; i++) { c2.strokeStyle = Math.random() < 0.5 ? 'rgba(70,45,20,.35)' : 'rgba(220,180,130,.3)'; c2.lineWidth = 1 + Math.random() * 2; c2.beginPath(); const x = Math.random() * w2, y = Math.random() * w2; c2.moveTo(x, y); c2.lineTo(x + (Math.random() - 0.5) * 60, y + (Math.random() - 0.5) * 60); c2.stroke(); } });
+    const core = new THREE.Mesh(new THREE.CylinderGeometry(jr * 0.72, jr * 0.75, topY - 0.3 * IN, 16, 6), mat('faux_treats', THREE.MeshStandardMaterial, { map: kraft, bumpMap: kraft, bumpScale: 3, roughness: 0.95 }));
+    { const pp = core.geometry.attributes.position; for (let i = 0; i < pp.count; i++) { const k2 = 1 + 0.12 * Math.sin(pp.getY(i) * 90 + Math.atan2(pp.getZ(i), pp.getX(i)) * 5) * Math.cos(pp.getY(i) * 60); pp.setX(i, pp.getX(i) * k2); pp.setZ(i, pp.getZ(i) * k2); } core.geometry.computeVertexNormals(); }
+    core.position.y = (topY - 0.3 * IN) / 2 + 0.3 * IN; jar.add(core);
     const jb = new THREE.Mesh(bowGeo({ ribbon: 1.5, span: 7, tail: 6, loops: 2, uLen: 3, seed: 33 }), velvet('velvet_ribbon', 0x5a0a14)); jb.position.copy(W(-bw * 0.18, bh * 0.45 + jh * 0.8, -bd * 0.1 + jr * 1.02)); jb.rotation.y = ry; TARGET.add(jb); tag(jb, 'jar');
   }
   const felt = canvasTex(256, 128, (c, w, hh2) => { c.fillStyle = '#b01322'; c.fillRect(0, 0, w, hh2); noise(c, w, hh2, 5000, 0.35, ['#e04050', '#70060f']); c.strokeStyle = '#f4ece0'; c.lineWidth = 5; c.beginPath(); for (let x = 0; x <= w; x += 4) c.lineTo(x, hh2 / 2 + Math.sin(x / w * Math.PI * 4) * hh2 * 0.28); c.stroke(); });
@@ -1156,24 +1555,28 @@ BUILD.basket = r => {
   [0, 1].forEach(k => { const c = new THREE.Mesh(new THREE.BoxGeometry(3.4 * IN, 2.1 * IN, 0.003), [0, 1, 2, 3, 4, 5].map(f => f === 4 ? mat('gift_card', THREE.MeshStandardMaterial, { map: photoTex('tx_card'), roughness: 0.4 }) : mat('gift_card', THREE.MeshStandardMaterial, { color: 0xFBFAF6, roughness: 0.4 })));
     c.position.set(bw * 0.08 + k * 0.06, bh + 1.2 * IN + k * 0.02, -bd * 0.12 - k * 0.03); c.rotation.set(-0.25, 0.1 - k * 0.15, 0.05 - k * 0.12); g.add(c); tag(c, 'gift_card'); });
   addInstancePos('gift_card', W(bw * 0.1, bh + 1.4 * IN, -bd * 0.1));
-  photoCard('small_bone', 'holiday_toy', (SZ('holiday_toy').d || 5.7), W(bw * 0.28, bh * 0.75, -bd * 0.25));
-  photoCard('rope_cane', 'rope', 8, W(bw * 0.38, bh * 0.6, -bd * 0.05));
-  photoCard('rope_knot', 'rope', 5, W(bw * 0.42, bh * 0.7, bd * 0.2), { mark: false });
+  // toys stand in the basket, leaning back against the handle side and kept inside the rim (|x| <= 0.3 x width)
+  const ht = SZ('holiday_toy'), toyH = (ht.w || 9) * CUT.small_bone.h / CUT.small_bone.w;   // the cream sherpa bone, 9" long, with its black felt paw
+  photoCard('small_bone', 'holiday_toy', toyH, W(bw * 0.24, bh * 0.55, -bd * 0.22), { ry: ry - 0.35, tilt: -0.4, depth: 0.32 });
+  photoCard('rope_cane', 'rope', 8, W(bw * 0.3, bh * 0.45, -bd * 0.02), { ry: ry - 0.2, tilt: -0.3 });
+  photoCard('rope_knot', 'rope', 5, W(bw * 0.3, bh * 0.6, bd * 0.2), { mark: false, ry: ry + 0.1, tilt: -0.25 });
 };
 
 /* ---------------- Giant doghouse (extra): 24 x 20 x 26", sign; the pair sits in its doorway ---------------- */
 const GIANT = (() => { const S = SZ('doghouse_xl'); return { S, W: (S.w || 24) * IN, D: (S.d || 20) * IN, H: (S.h || 26) * IN }; })();
 GIANT.Z = RB + GIANT.D / 2 + 0.12; GIANT.front = GIANT.Z + GIANT.D / 2;
-BUILD.pair = () => {   // the board's dog-and-cat photo: a golden retriever and a tabby in fringed tartan scarves
+BUILD.pair = r => {   // the board's dog-and-cat photo: a golden retriever and a tabby in fringed tartan scarves
   const free = new THREE.Group(), door = new THREE.Group(); TARGET.add(free); TARGET.add(door); TARGET.userData.free = free; TARGET.userData.door = door;
-  const dh = SZ('golden').h || 11, ch = SZ('cat_fluffy').h || 8, prev = TARGET;
+  const catId = r.cat || 'cat_miyoni', catCut = r.cat_cut || catId, cs = SZ(catId);
+  const dh = SZ('golden').h || 11, ch = r.cat_h || cs.h || 6, prev = TARGET, cd = catDepth({ h: ch, l: r.cat_l || cs.l, pose: r.cat_pose || 'stand' });
   TARGET = free;
-  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0.42, 0, 2.62), { depth: 0.45 }); photoCard('cat_fluffy', 'cat_fluffy', ch, new THREE.Vector3(0.98, 0, 2.86), { depth: 0.45 });
+  // as in the board's pair photo they turn toward each other: the golden a little to its left (toward the cat), the cat to its right
+  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0.42, 0, 2.62), { depth: 0.45, ry: 0.35 }); photoCard(catCut, catId, ch, new THREE.Vector3(0.98, 0, 2.86), { depth: cd, ry: -0.5 });
   contactShadow(0.42, 2.66, 0.85, 0.5, 0, 0.8); contactShadow(0.98, 2.9, 0.6, 0.38, 0, 0.8);
   addInstancePos('bandanas', new THREE.Vector3(0.42, dh * IN * 0.55, 2.66));
   TARGET = door;
-  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0, 0, GIANT.front + 0.07), { depth: 0.45 }); photoCard('cat_fluffy', 'cat_fluffy', ch, new THREE.Vector3(GIANT.W * 0.62, 0, GIANT.front + 0.22), { depth: 0.45 });
-  contactShadow(0, GIANT.front + 0.1, 0.85, 0.5, 0, 0.8); contactShadow(GIANT.W * 0.62, GIANT.front + 0.24, 0.55, 0.32, 0, 0.8);
+  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0, 0, GIANT.front + 0.07), { depth: 0.45, ry: 0.35 }); photoCard(catCut, catId, ch, new THREE.Vector3(GIANT.W * 0.2, 0, GIANT.front + 0.24), { depth: cd, ry: -0.5 });   // both in the doorway (door 10" wide)
+  contactShadow(0, GIANT.front + 0.1, 0.85, 0.5, 0, 0.8); contactShadow(GIANT.W * 0.2, GIANT.front + 0.26, 0.55, 0.32, 0, 0.8);
   addInstancePos('bandanas', new THREE.Vector3(0, 0.45, GIANT.front + 0.1));
   TARGET = prev;
 };
@@ -1241,7 +1644,11 @@ ORDER.forEach(el => build(el, EL[el].default));                                 
 ORDER.forEach(el => EL[el].options.forEach(o => { if (o.id !== EL[el].default) build(el, o.id); }));   // each alternative fits round the others' defaults
 
 
-scene.traverse(o => { if (o.isMesh && o.material && !o.material.isMeshBasicMaterial) [].concat(o.material).forEach(m => { if (m.envMapIntensity === 1) m.envMapIntensity = 0.7; }); });
+// Reflection strength is set per material (three r160 has no scene.environmentIntensity). Anything still at the default 1
+// gets one by kind: polished metal 1.2, clear-coated glaze 0.8, cloth, paper, plush and wood 0.3, the rest 0.45.
+const envPolicy = m => m.metalness >= 0.8 ? 1.2 : m.clearcoat >= 0.5 ? 0.8 : m.roughness >= 0.7 ? 0.3 : 0.45;
+const envFix = root => { root.traverse(o => { if (o.isMesh && o.material && !o.material.isMeshBasicMaterial && !o.material.isShaderMaterial) [].concat(o.material).forEach(m => { if (m.envMapIntensity === 1) m.envMapIntensity = envPolicy(m); }); }); return root; };
+envFix(scene);   // tree.js's own rooms get the same when they are built (extras set their own)
 
 /* ---------------- Scale: a person at a chosen height and an 8 ft measuring rod ---------------- */
 const frameHooks = [];
@@ -1284,16 +1691,32 @@ const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.9, 0.75, 1.25);   /
 bloom.separableBlurMaterials.forEach(m => { const K = m.defines.KERNEL_RADIUS, sg = K / 2.5; m.uniforms.gaussianCoefficients.value = Array.from({ length: K }, (_, i) => Math.exp(-0.5 * i * i / (sg * sg))); });
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
+// Display-referred grade (after OutputPass, on sRGB values), aimed at the board photo's rich crimson and emerald:
+// hue steer (olive greens toward emerald, orange-reds toward crimson; gold, plush, kraft and wood untouched),
+// split-tone (warm highlights, near-neutral shadows), +12% saturation, a gentle S-curve, neutral blacks,
+// vignette to 0.55 and a midtone-weighted grain. uWarm scales the split-tone and uGrade the hue steer per room.
 const grade = new ShaderPass({
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uWarm: { value: 0.6 } },
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uWarm: { value: 0.6 }, uGrade: { value: 1 } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; uniform float uWarm; varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; uniform float uWarm; uniform float uGrade; varying vec2 vUv;
     float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233)) + uTime) * 43758.5453); }
+    vec3 rgb2hsv(vec3 c){ vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0); vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+      vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r)); float d = q.x - min(q.w, q.y); return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + 1e-6)), d / (q.x + 1e-6), q.x); }
+    vec3 hsv2rgb(vec3 c){ vec3 p = abs(fract(c.xxx + vec3(1.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0); return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y); }
     void main(){ vec4 c = texture2D(tDiffuse, vUv);
-      c.rgb = mix(c.rgb, c.rgb * vec3(1.05, 0.99, 0.9), uWarm);            // warm candle-light grade (less in the office)
+      vec3 q = rgb2hsv(clamp(c.rgb, 0.0, 1.0)); float H = q.x * 360.0;
+      float wg = smoothstep(58.0, 80.0, H) * (1.0 - smoothstep(105.0, 150.0, H)) * smoothstep(0.12, 0.3, q.y);                    // olive -> emerald
+      float wr = smoothstep(4.0, 8.0, H) * (1.0 - smoothstep(11.0, 17.0, H)) * smoothstep(0.75, 0.9, q.y) * smoothstep(0.18, 0.4, q.z);   // plush (hue ~18, less saturated) is left alone   // orange-red -> crimson
+      float dh = (wg * 24.0 - wr * 9.0) * uGrade;
+      if (abs(dh) > 0.01) { q.x = fract(q.x + dh / 360.0 + 1.0); q.y = min(1.0, q.y * (1.0 + 0.1 * wg * uGrade)); c.rgb = hsv2rgb(q); }
+      float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
+      vec3 tone = mix(vec3(1.0, 0.99, 0.985), vec3(1.04, 1.0, 0.93), smoothstep(0.15, 0.85, l));                           // split-tone
+      c.rgb *= mix(vec3(1.0), tone, clamp(uWarm / 0.6, 0.0, 1.5));
+      c.rgb = mix(vec3(l), c.rgb, 1.12 * mix(0.6, 1.0, smoothstep(0.015, 0.09, l)));                                      // +12% saturation; the deepest shadows go neutral
+      c.rgb = clamp(c.rgb, 0.0, 1.0); c.rgb = mix(c.rgb, c.rgb * c.rgb * (3.0 - 2.0 * c.rgb), 0.25);                     // gentle S-curve
       float v = smoothstep(0.95, 0.25, distance(vUv, vec2(0.5, 0.52)));      // vignette
-      c.rgb *= mix(0.62, 1.0, v);
-      c.rgb += (h(vUv * 800.0) - 0.5) * 0.025;                               // fine film grain
+      c.rgb *= mix(0.55, 1.0, v);
+      c.rgb += (h(vUv * 800.0) - 0.5) * 0.03 * (4.0 * l * (1.0 - l));      // film grain, mostly in the midtones
       gl_FragColor = c; }`,
 });
 composer.addPass(grade);
@@ -1447,12 +1870,13 @@ document.getElementById('loading').remove();
 /* ---------------- Settings (rooms), tree-light modes and scene extras ---------------- */
 const extrasGroup = new THREE.Group(); extrasGroup.name = 'extras'; scene.add(extrasGroup);
 const ACCENT_OWNER = [null, null];
-const envOf = e => (typeof e === 'function' ? e(core) : e) || ENV.living;
+const envOf = e => (typeof e === 'function' ? e(core) : e) || livingEnv();
 const BG_COLOR = new THREE.Color();
 // Apply the chosen room's light design to the fixed pool, then the tree-light mode on top.
 function applyLook() {
   const room = ROOMS[XS.room] || ROOMS.living, L = room.look || {}, day = bulbs.mode === 'off', D = L.day || {};
-  scene.environment = envOf(L.env);
+  let env = envOf(L.env); if (day && ENV_OFF.has(env)) env = ENV_OFF.get(env)();   // Daytime look: the same room without the bulb glints
+  scene.environment = env;
   if (L.bg && L.bg.isTexture) scene.background = L.bg; else { BG_COLOR.set(L.bg ?? 0x0d0806); scene.background = BG_COLOR; }
   const hm = L.hemi || [0xffd9b0, 0x20140c, 0.15]; hemi.color.set(hm[0]); hemi.groundColor.set(hm[1]); hemi.intensity = hm[2] + (day ? (D.hemi ?? 0.45) : 0);
   const K = { color: 0xffcf9a, intensity: 70, angle: 0.55, penumbra: 0.9, decay: 2, pos: [1.5, 9, 5], target: [0, 3, 0], ...(L.key || {}) };
@@ -1460,10 +1884,11 @@ function applyLook() {
   key.position.set(...K.pos); key.target.position.set(...K.target); key.target.updateMatrixWorld();
   const rm = L.rim || [0x8fa6d6, 0.18]; rim.color.set(rm[0]); rim.intensity = rm[1] + (day ? (D.rim ?? 0.25) : 0);
   INTERIOR.forEach((l, i) => { l.color.set(L.interiorColor ?? 0xffb870); l.intensity = day ? 0 : INTERIOR_I[i] * (L.interior ?? 1); });
-  const bs = L.base || [0xffb070, 3]; base.color.set(bs[0]); base.intensity = day ? 0 : bs[1];
+  const bs = L.base || [0xffb070, 3]; base.color.set(bs[0]); base.intensity = day ? 0 : bs[1]; base.position.set(...(bs[2] || [0, 0.6, 0]));
   accent.forEach((l, i) => { if (ACCENT_OWNER[i]) return; const a = (L.accent || [])[i] || [0xff9a40, 0, [0, 2.6, -4.3]]; l.color.set(a[0]); l.userData.base = a[1]; l.intensity = a[1]; if (a[2]) l.position.set(...a[2]); });
   renderer.toneMappingExposure = (L.exp ?? 1.2) * (day ? (D.exp ?? 1.05) : 1);
   bloom.strength = Math.max(0, (L.bloom ?? 0.9) - (day ? 0.3 : 0)); grade.uniforms.uWarm.value = L.warm ?? 0.6;
+  GLOW.uniforms.uGlowK.value = day ? 0 : (L.glow ?? 1); grade.uniforms.uGrade.value = L.grade ?? 1;   // bulb glow on the needles follows the tree lights
   controls.maxDistance = room.maxDist ?? 14.5;
   if (room.setMode) try { room.setMode(bulbs.mode, core); } catch (e) { console.error(e); }
   renderer.shadowMap.needsUpdate = true;
@@ -1523,8 +1948,8 @@ function toast(msg, ms = 2600) { toastEl.textContent = msg; toastEl.hidden = fal
 const CUT_V = new THREE.Vector3();
 // The living room and the office register like any other room, so extras_*.js can add more the same way.
 registerRoom({
-  id: 'living', label: 'Living room', order: 0, maxDist: 10.5, build: buildLivingRoom,
-  look: { env: ENV.living, bg: LIVING_BG, hemi: [0xffd9b0, 0x2a1a10, 0.35], key: { color: 0xffcf9a, intensity: 70, angle: 0.55, penumbra: 0.9, decay: 2 }, rim: [0x8fa6d6, 0.18],
+  id: 'living', label: 'Living room', order: 0, maxDist: 11.5, build: c => envFix(buildLivingRoom(c)),
+  look: { env: livingEnv, bg: LIVING_BG, hemi: [0xffd9b0, 0x2a1a10, 0.35], key: { color: 0xffcf9a, intensity: 70, angle: 0.55, penumbra: 0.9, decay: 2 }, rim: [0x8fa6d6, 0.18],
     base: [0xffb070, 2.2], interior: 1, accent: [[0xff9a40, 1.1, [-3.55, 2.75, -4.15]], [0xff9a40, 0.7, [3.3, 2.7, -4.15]]], exp: 1.2, bloom: 0.9, warm: 0.6,
     day: { hemi: 0.5, key: 1.2, rim: 0.3, exp: 1.05 } },
   setMode(mode) { if (ROOM.backdropMat) ROOM.backdropMat.color.setRGB(...(mode === 'off' ? [1.7, 1.75, 1.85] : [1.05, 1.05, 1.1])); },
@@ -1536,7 +1961,7 @@ registerRoom({
   },
 });
 registerRoom({
-  id: 'office', label: 'Office', order: 90, maxDist: 14.5, build: buildOffice,
+  id: 'office', label: 'Office', order: 90, maxDist: 14.5, build: c => envFix(buildOffice(c)),
   look: { env: () => ENV.office, bg: 0x2a2d31, hemi: [0xf3f5fb, 0x5a5650, 1.15], key: { color: 0xfff2e2, intensity: 1.3, angle: 1.1, penumbra: 0.5, decay: 0 }, rim: [0xd8e2ff, 0.5],
     base: [0xffb070, 3], interior: 1, accent: [[0xff9a40, 0], [0xff9a40, 0]], exp: 1.0, bloom: 0.5, warm: 0.2, day: { hemi: 0.15, key: 1.0, rim: 0, exp: 1.0 } },
 });
@@ -1626,6 +2051,7 @@ let applySel = function ({ focusEl } = {}) {
   O.elements.forEach(e => Object.entries(GROUPS[e.id] || {}).forEach(([o, g]) => { g.visible = o === SEL[e.id]; }));
   const pg = GROUPS.pair && GROUPS.pair.pair;   // the dog and cat sit in the giant doghouse's doorway when it is built
   if (pg && pg.userData.free) { pg.userData.free.visible = SEL.giant !== 'build'; pg.userData.door.visible = SEL.giant === 'build'; }
+  clearFoliage();   // needles follow the pieces now shown
   CUR = window.howlResolve(O, SEL); ITEMS = CUR.items; BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
   try { localStorage.setItem(SEL_KEY, JSON.stringify(SEL)); } catch (e) {}
   document.getElementById('about').textContent = window.howlDocs ? window.howlDocs.aboutText(SEL) : ABOUT;
@@ -1641,5 +2067,8 @@ let applySel = function ({ focusEl } = {}) {
   const prev = applySel; applySel = (...a) => { prev(...a); sync(); };
 }
 applySel();
+Promise.all(RELIEF_READY).then(() => clearFoliage());   // once every relief has its real shape
 window.__howl = { select, instancesOf, pickables, stop: () => renderer.setAnimationLoop(null), frame, camera, controls, setSel: s => { SEL = { ...SEL, ...s }; applySel(); }, sel: () => ({ ...SEL }), totals: () => CUR.totals, groups: GROUPS,
-  setExtras, setRoom: name => setRoom(name), extras: extrasState, renderer, scene, core, home: { pos: HOME_POS, target: HOME_TARGET }, bulbs };
+  setExtras, setRoom: name => setRoom(name), extras: extrasState, renderer, scene, core, home: { pos: HOME_POS, target: HOME_TARGET }, bulbs,
+  clearFoliage, foliageStats: () => CLEAR_STATS, reliefsReady: () => Promise.all(RELIEF_READY).then(() => RELIEF_READY.length),
+  light: () => ({ glowMs: GLOW.ms, envMs: ENV_MS.slice(), glowOn: !!NEEDLE_MAT.onBeforeCompile, env: scene.environment && scene.environment.uuid, low: LOW }), grade };
