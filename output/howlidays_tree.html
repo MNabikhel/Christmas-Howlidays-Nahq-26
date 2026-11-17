@@ -36749,6 +36749,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 let TARGET = null, CTX = null;   // the group new meshes go into, and the element/option being built
 /* ================================================================
@@ -37315,9 +37316,12 @@ const rim = new THREE.DirectionalLight(0x8fa6d6, 0.18); rim.position.set(-6, 5, 
 const Y0 = 12 * IN, YTOP = 90 * IN, RB = 26 * IN;            // foliage starts 12" up, 90" tall, 52" wide
 const rAt = y => RB * Math.pow(Math.max(0, 1 - (y - Y0) / (YTOP - Y0)), 0.92);
 const treeGroup = new THREE.Group(); scene.add(treeGroup);
-const NEEDLE = canvasTex(256, 512, (g, w, h) => {
+// one bottle-brush branch tip: a brown twig with tapered needles in three greens (darker at the base, fresher at the tip)
+const NEEDLE = canvasTex(512, 1024, (g, w, h) => {
   g.clearRect(0, 0, w, h);
-  const greens = ['#0f2a18', '#143220', '#183b25', '#1d452b', '#245033', '#2c5b3a', '#3a6b45', '#4d7d50'];
+  const greens = [['#0e2716', '#133019', '#17391f'], ['#1b4227', '#204b2d', '#265634'], ['#2d613b', '#3a6e45', '#4b7d4e']];   // deep, mid, fresh
+  const needle = (x, y, a, L, lw, col) => { const c = Math.cos(a), s = Math.sin(a), nx = -s * lw / 2, ny = c * lw / 2;
+    g.fillStyle = col; g.beginPath(); g.moveTo(x + nx, y + ny); g.lineTo(x + c * L, y + s * L); g.lineTo(x - nx, y - ny); g.closePath(); g.fill(); };
   const twig = (x0, y0, x1, y1, len, n, lw) => {
     g.strokeStyle = '#3a2a1a'; g.lineWidth = lw; g.lineCap = 'round'; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
     const ang = Math.atan2(y1 - y0, x1 - x0);
@@ -37326,21 +37330,38 @@ const NEEDLE = canvasTex(256, 512, (g, w, h) => {
       for (const side of [-1, 1]) for (let k = 0; k < 2; k++) {
         const a = ang + side * (0.45 + Math.random() * 0.6) + (k ? 0.25 : -0.1) * side;
         const L = len * (0.7 + Math.random() * 0.5) * (1 - t * 0.35);
-        g.strokeStyle = greens[Math.min(greens.length - 1, ((Math.random() * 5) | 0) + (t > 0.65 ? 3 : 0))];
-        g.lineWidth = 1.3 + Math.random() * 1.1;
-        g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * L, y + Math.sin(a) * L); g.stroke();
+        const tone = greens[t > 0.7 ? 2 : t > 0.3 ? 1 : 0];
+        needle(x, y, a, L, 2.6 + Math.random() * 1.8, tone[(Math.random() * 3) | 0]);
       }
     }
   };
-  twig(128, 505, 128, 20, 40, 120, 5);
-  [[128, 430, 50, 270], [128, 410, 206, 262], [128, 320, 60, 168], [128, 300, 196, 156], [128, 210, 82, 92], [128, 196, 174, 86]].forEach(([a, b, c, d]) => twig(a, b, c, d, 28, 48, 3));
+  twig(256, 1010, 256, 40, 82, 170, 9);
+  [[256, 860, 100, 540], [256, 820, 412, 524], [256, 640, 120, 336], [256, 600, 392, 312], [256, 420, 164, 184], [256, 392, 348, 172]].forEach(([a, b, c, d]) => twig(a, b, c, d, 56, 70, 5));
 });
 NEEDLE.wrapS = NEEDLE.wrapT = THREE.ClampToEdgeWrapping;
 // FOLIAGE: the three needle layers with each instance's base matrix and needle tip, so clearFoliage() can pull
 // needles back where they would poke through the front of a pet, doghouse or hoop (and restore them after).
-const FOLIAGE = [];
+// Layout (R4): 12 whorls of 9-16 hinged branches, each angled 10-25 degrees down, reaching the silhouette at its tip
+// (+/- 8%). The middle and tip layers are bottle-brush cards along those branches, so the outline is a ragged, layered
+// fir with dark gaps between the tiers (board_tree.jpg); the inner layer still fills the core. The layout has its own
+// random stream (FOL); rand() is advanced by exactly the draws the old even scatter used, so every ornament, light and
+// pet lands where it did.
+const FOLIAGE = [], BRANCHES = [];
 let NEEDLE_GEO, NEEDLE_MAT;
 {
+  for (let i = 0; i < (2600 + 3400 + 2600) * 9; i++) rand();
+  const FOL = rng(1717), FR = (a, b) => a + (b - a) * FOL(), NW = 12;
+  for (let k = 0; k < NW; k++) {
+    const yw = Y0 + 0.14 + (YTOP - Y0 - 0.62) * Math.pow(k / (NW - 1), 0.9), nb = Math.round(16 - 7 * k / (NW - 1)), off = k * 2.39996;
+    for (let b = 0; b < nb; b++) {
+      const th = off + b / nb * Math.PI * 2 + FR(-0.18, 0.18), down = FR(0.17, 0.44), f = FR(0.92, 1.08);
+      let L = rAt(yw); for (let it = 0; it < 5; it++) L = rAt(yw - L * Math.sin(down)) * f / Math.cos(down);
+      L = Math.max(0.12, L);
+      BRANCHES.push({ y: yw, th, L, o: new THREE.Vector3(Math.cos(th) * 0.04, yw, Math.sin(th) * 0.04), dir: new THREE.Vector3(Math.cos(th) * Math.cos(down), -Math.sin(down), Math.sin(th) * Math.cos(down)) });
+    }
+  }
+  const cum = []; let tot = 0; BRANCHES.forEach(B => { tot += Math.pow(B.L, 1.5); cum.push(tot); });
+  const pickB = () => { const x = FOL() * tot; let lo = 0, hi = cum.length - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] < x) lo = m + 1; else hi = m; } return BRANCHES[lo]; };
   const a = new THREE.PlaneGeometry(0.5, 1); a.translate(0, 0.5, 0);
   const b = a.clone(); b.rotateY(Math.PI / 2);
   const geo = NEEDLE_GEO = mergeGeometries([a, b]);
@@ -37348,30 +37369,47 @@ let NEEDLE_GEO, NEEDLE_MAT;
   // alphaTest stays above 0 so the shadow pass still cuts the card shapes out.
   const m = NEEDLE_MAT = new THREE.MeshStandardMaterial({ map: NEEDLE, alphaTest: 0.2, alphaToCoverage: true, side: THREE.DoubleSide, roughness: 0.78, envMapIntensity: 0.2 });
   m.color.setRGB(0.82, 1.0, 1.2);   // emerald albedo: under the warm tree light the needles read deep green, not olive (board)
-  const up = new THREE.Vector3(0, 1, 0), d = new THREE.Object3D(), col = new THREE.Color();
-  [[2600, 0.12, 0.7, 0.62], [3400, 0.45, 0.98, 0.85], [2600, 0.82, 1.06, 1.05]].forEach(([n, f0, f1, bright]) => {
+  const up = new THREE.Vector3(0, 1, 0), d = new THREE.Object3D(), col = new THREE.Color(), warm = new THREE.Color(1.1, 1.05, 0.8), side = new THREE.Vector3(), dir = new THREE.Vector3();
+  [[2600, 0.12, 0.7, 0.62, 'inner'], [3400, 0.45, 0.98, 0.85, 'mid'], [2600, 0.82, 1.06, 1.05, 'tip']].forEach(([n, f0, f1, bright, kind]) => {
     const mesh = new THREE.InstancedMesh(geo, m, n);
     for (let i = 0; i < n; i++) {
-      const y = Y0 + 0.03 + (YTOP - Y0 - 0.05) * (1 - Math.sqrt(rand()));
-      const th = rand() * Math.PI * 2, rT = rAt(y);
-      const r0 = rT * R(f0 * 0.3, f0 * 0.6);
-      const len = Math.max(0.18, rT * R(f0, f1) - r0 + 0.2) * R(0.85, 1.1);
-      d.position.set(Math.cos(th) * r0, y, Math.sin(th) * r0);
-      const dir = new THREE.Vector3(Math.cos(th), R(-0.5, -0.05) + (y > YTOP - 0.5 ? 1.0 : 0), Math.sin(th)).normalize();
-      d.quaternion.setFromUnitVectors(up, dir); d.rotateY(R(0, Math.PI));
+      let len, rT, rBase;
+      if (kind === 'inner') {   // the core filler, as before: short cards from inside the cone outward
+        const y = Y0 + 0.03 + (YTOP - Y0 - 0.05) * (1 - Math.sqrt(FOL())), th = FOL() * Math.PI * 2; rT = rAt(y);
+        const r0 = rT * FR(f0 * 0.3, f0 * 0.6); len = Math.max(0.18, rT * FR(f0, f1) - r0 + 0.2) * FR(0.85, 1.1); rBase = r0;
+        d.position.set(Math.cos(th) * r0, y, Math.sin(th) * r0); dir.set(Math.cos(th), FR(-0.5, -0.05) + (y > YTOP - 0.5 ? 1.0 : 0), Math.sin(th)).normalize();
+      } else if (kind === 'tip' && i < 110) {   // the leader: an upright tuft above the top whorl
+        const y = YTOP - 0.62 + FR(0, 0.42); len = FR(0.18, 0.42) * (1 - (y - YTOP + 0.62) * 0.8); rT = rAt(y); rBase = 0;
+        d.position.set(FR(-0.03, 0.03), y, FR(-0.03, 0.03)); const t = FOL() * Math.PI * 2, sp = FR(0.15, 0.8); dir.set(Math.cos(t) * sp, 1, Math.sin(t) * sp).normalize();
+      } else {   // bottle-brush cards along a branch, splayed to both sides and a little down
+        const B = pickB(), s0 = kind === 'tip' ? FR(0.5, 0.88) : FR(0.12, 0.72);
+        len = kind === 'tip' ? (1 - s0) * B.L * FR(0.85, 1.12) + 0.05 : B.L * FR(0.22, 0.45);
+        len = Math.min(0.7, Math.max(0.12, len));
+        const p = B.o.clone().addScaledVector(B.dir, s0 * B.L); d.position.copy(p);
+        side.set(-B.dir.z, 0, B.dir.x).normalize();
+        const spl = (FOL() < 0.5 ? -1 : 1) * FR(kind === 'tip' ? 0.1 : 0.3, kind === 'tip' ? 0.55 : 0.95);
+        dir.copy(B.dir).multiplyScalar(Math.cos(spl)).addScaledVector(side, Math.sin(spl)); dir.y -= FR(0, 0.22); dir.y += FR(-0.08, 0.12); dir.normalize();
+        rT = rAt(p.y); rBase = Math.hypot(p.x, p.z);
+      }
+      d.quaternion.setFromUnitVectors(up, dir); d.rotateY(FR(0, Math.PI));
       const wd = Math.min(0.75, 0.3 + len * 0.5);
       d.scale.set(wd, len, wd); d.updateMatrix(); mesh.setMatrixAt(i, d.matrix);
       // baked ambient occlusion: needles deep inside the tree are darker than the tips at the surface
-      const ao = THREE.MathUtils.lerp(0.55, 1.1, Math.min(1, (r0 + 0.6 * len) / rT));
-      mesh.setColorAt(i, col.setRGB(1, 1, 1).multiplyScalar(Math.sqrt(bright) * ao * R(0.85, 1.15)).lerp(new THREE.Color(1.1, 1.05, 0.8), R(0, 0.15)));
+      const ao = THREE.MathUtils.lerp(0.55, 1.1, Math.min(1, (rBase + 0.6 * len) / Math.max(0.05, rT)));
+      mesh.setColorAt(i, col.setRGB(1, 1, 1).multiplyScalar(Math.sqrt(bright) * ao * FR(0.85, 1.15)).lerp(warm, FR(0, 0.15)));
     }
-    if (LOW) mesh.count = Math.round(n * 0.65);   // fewer needle cards on phones (all are generated, so the random layout matches desktop)
+    if (LOW) mesh.count = Math.round(n * 0.65);   // fewer needle cards on phones (all are generated, so the layout matches desktop)
     mesh.castShadow = mesh.receiveShadow = true; treeGroup.add(mesh);
     const base = mesh.instanceMatrix.array.slice(), tip = new Float32Array(n * 3), mid = new Float32Array(n * 3), wd = new Float32Array(n);
     for (let i = 0; i < n; i++) { const e = base.subarray(i * 16, i * 16 + 16); for (let k = 0; k < 3; k++) { tip[i * 3 + k] = e[12 + k] + e[4 + k]; mid[i * 3 + k] = e[12 + k] + e[4 + k] * 0.6; } wd[i] = Math.hypot(e[0], e[1], e[2]) * 0.25; }   // half the card width
     const order = Uint32Array.from({ length: n }, (_, i) => i).sort((a, b) => tip[a * 3 + 1] - tip[b * 3 + 1]), ys = Float32Array.from(order, i => tip[i * 3 + 1]);   // needles by tip height, for range lookups
     FOLIAGE.push({ mesh, base, tip, mid, wd, n, order, ys, mark: new Uint8Array(n), touched: [] });
   });
+  // the hinged branch rods themselves (dark green wire), seen in the gaps between tiers
+  const rod = new THREE.CylinderGeometry(0.11 * IN, 0.2 * IN, 1, 5, 1, true); rod.translate(0, 0.5, 0);
+  const rods = new THREE.InstancedMesh(rod, new THREE.MeshStandardMaterial({ color: 0x23301f, roughness: 0.8, envMapIntensity: 0.15 }), BRANCHES.length);
+  BRANCHES.forEach((B, i) => { d.position.copy(B.o); d.quaternion.setFromUnitVectors(up, B.dir); d.scale.set(1, B.L * 0.92, 1); d.updateMatrix(); rods.setMatrixAt(i, d.matrix); });
+  rods.castShadow = true; rods.receiveShadow = true; treeGroup.add(rods);
 }
 const coreGeo = new THREE.ConeGeometry(RB * 0.6, YTOP - Y0, 32, 1, true); coreGeo.translate(0, (YTOP + Y0) / 2, 0);
 // inner shell that fills the gaps between branches: dense dark needles rather than a flat colour
@@ -37379,6 +37417,12 @@ const CORE_TEX = canvasTex(256, 256, (g, w) => { g.fillStyle = '#0a1a0e'; g.fill
 const coreCone = new THREE.Mesh(coreGeo, new THREE.MeshStandardMaterial({ map: CORE_TEX, color: 0xb0b8b0, roughness: 1, side: THREE.DoubleSide, envMapIntensity: 0.15 }));
 coreCone.userData.occluder = true; treeGroup.add(coreCone);
 const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, Y0 + 0.2, 10), new THREE.MeshStandardMaterial({ color: 0x3B2A1E, roughness: 0.9 })); trunk.position.y = (Y0 + 0.2) / 2; treeGroup.add(trunk);
+// the tree's own 4-leg metal stand (no tree skirt, so it shows): a centre collar with a tightening bolt and 4 flat legs
+{ const parts = [new THREE.CylinderGeometry(1.5 * IN, 1.7 * IN, 3.5 * IN, 20).translate(0, 1.75 * IN + 0.4 * IN, 0), new THREE.CylinderGeometry(0.22 * IN, 0.22 * IN, 1.6 * IN, 8).rotateZ(Math.PI / 2).translate(1.9 * IN, 3.2 * IN, 0)];
+  for (let k = 0; k < 4; k++) { const a = Math.PI / 4 + k * Math.PI / 2, leg = new THREE.BoxGeometry(13 * IN, 0.55 * IN, 1.1 * IN); leg.rotateZ(-0.03); leg.translate(7.8 * IN, 0.45 * IN, 0); leg.rotateY(a); parts.push(leg);
+    parts.push(new THREE.CylinderGeometry(0.75 * IN, 0.85 * IN, 0.3 * IN, 12).translate(14 * IN, 0.15 * IN, 0).rotateY(a)); }   // rubber feet
+  const stand = new THREE.Mesh(mergeGeometries(parts.map(g => g.toNonIndexed())), new THREE.MeshStandardMaterial({ color: 0x1b2620, metalness: 0.6, roughness: 0.45, envMapIntensity: 0.8 }));
+  stand.castShadow = stand.receiveShadow = true; treeGroup.add(stand); }
 contactShadow(0, 0, RB * 2.6, RB * 2.6, 0, 0.9);
 // warm glow from inside the branches (the tree is pre-lit): 5 interior point lights (part of the fixed pool)
 const INTERIOR = [], INTERIOR_I = [];
@@ -37390,6 +37434,14 @@ const base = new THREE.PointLight(0xffb070, 3, 2.8, 2); base.position.set(0, 0.6
 const accent = [0, 1].map(() => { const l = new THREE.PointLight(0xff9a40, 0, 3, 2); l.position.set(0, 2.6, -4.3); scene.add(l); return l; });   // candles / fire; parked at the sill
 // pre-lit warm white bulbs: small round HDR bulbs (they bloom) + soft additive halos. Steady, as delivered.
 const LIGHT_N = 650;
+// a pre-lit bulb sits on a branch wire: move the scattered point to the nearest point on the nearest branch (same
+// distance out along it), just under the rod, so the branch's own needle cards shade it from most angles
+function onBranch(q) {
+  let best = null, bd = 1e9; const v = new THREE.Vector3();
+  for (const B of BRANCHES) { if (Math.abs(B.y - q.y) > 0.9) continue;
+    const s = Math.min(0.97, Math.max(0.25, (q.clone().sub(B.o).dot(B.dir)) / B.L)); v.copy(B.o).addScaledVector(B.dir, s * B.L); const dd = v.distanceToSquared(q); if (dd < bd) { bd = dd; best = v.clone(); } }
+  return best ? q.clone().lerp(best.add(new THREE.Vector3(0, -0.5 * IN, 0)), 0.6) : q;   // most of the way onto the wire
+}
 const lights = new THREE.InstancedMesh(new THREE.SphereGeometry(0.02, 16, 12), new THREE.MeshBasicMaterial(), LIGHT_N);
 const BULB_BASE = new Float32Array(LIGHT_N * 3), BULB_POS = new Float32Array(LIGHT_N * 3);
 let halos;
@@ -37397,7 +37449,7 @@ let halos;
   const d = new THREE.Object3D(), c = new THREE.Color();
   for (let i = 0; i < LIGHT_N; i++) {
     const y = Y0 + 0.1 + (YTOP - Y0 - 0.2) * (1 - Math.sqrt(rand())); const th = rand() * Math.PI * 2; const r = rAt(y) * R(0.62, 0.97);
-    d.position.set(Math.cos(th) * r, y, Math.sin(th) * r); d.updateMatrix(); lights.setMatrixAt(i, d.matrix);
+    d.position.copy(onBranch(new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r))); d.updateMatrix(); lights.setMatrixAt(i, d.matrix);   // clipped to the nearest branch, among its needles
     const k = R(0.85, 1.15); c.setRGB(9 * k, 6 * k, 3 * k); lights.setColorAt(i, c); BULB_BASE.set([c.r, c.g, c.b], i * 3);   // one rand() per bulb, as before, so placements downstream don't move
     BULB_POS.set([d.position.x, d.position.y, d.position.z], i * 3);
   }
@@ -37451,9 +37503,9 @@ const ENV_C = new THREE.Vector3(0, 3.3, 0.75);   // capture point: just inside t
 const ENV_OFF = new Map();                         // env texture with the bulbs -> () => the same room without them
 const PMREM_EQ = pmremGen.fromEquirectangular.bind(pmremGen);
 pmremGen.fromEquirectangularPlain = PMREM_EQ;
-function envTreeGroup(lit) {   // the tree as seen from the capture point: a dark green core and (lit) the pre-lit bulbs at HDR values
+function envTreeGroup(lit) {   // the tree as seen from the capture point: a green core (warm-lit when the bulbs are on) and (lit) the pre-lit bulbs at HDR values
   const g = new THREE.Group();
-  const core = new THREE.Mesh(new THREE.ConeGeometry(RB * 0.5, YTOP - Y0, 24, 1, true), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.012, 0.03, 0.016), side: THREE.DoubleSide }));
+  const core = new THREE.Mesh(new THREE.ConeGeometry(RB * 0.5, YTOP - Y0, 24, 1, true), new THREE.MeshBasicMaterial({ color: lit ? new THREE.Color(0.05, 0.06, 0.025) : new THREE.Color(0.02, 0.04, 0.022), side: THREE.DoubleSide }));
   core.position.y = (YTOP + Y0) / 2; g.add(core);
   if (lit) {
     const ids = []; for (let i = 0; i < LIGHT_N; i += 2) ids.push(i);   // every other bulb (325): enough glints, little extra diffuse light
@@ -37556,7 +37608,7 @@ if (!LOW && renderer.capabilities.isWebGL2) {
   NEEDLE_MAT.customProgramCacheKey = () => 'needleGlow';
 } else {   // LOW: one baked glow value per needle card (at its 60% point), warming its instance colour
   const c = new THREE.Color(), warm = new THREE.Color(1.7, 1.35, 0.65);
-  FOLIAGE.forEach(F => { const ic = F.mesh.instanceColor; for (let i = 0; i < F.n; i++) { const g = GLOW.field(F.mid[i * 3], F.mid[i * 3 + 1], F.mid[i * 3 + 2]); if (g <= 0.01) continue; c.fromBufferAttribute(ic, i); c.lerp(warm.clone().multiplyScalar(c.g), Math.min(0.6, 1.2 * Math.sqrt(g))); ic.setXYZ(i, c.r, c.g, c.b); } ic.needsUpdate = true; });
+  FOLIAGE.forEach(F => { const ic = F.mesh.instanceColor; for (let i = 0; i < F.n; i++) { const g = GLOW.field(F.mid[i * 3], F.mid[i * 3 + 1], F.mid[i * 3 + 2]); if (g <= 0.01) continue; c.fromBufferAttribute(ic, i); c.lerp(warm.clone().multiplyScalar(c.g), Math.min(0.45, 1.0 * Math.sqrt(g))); ic.setXYZ(i, c.r, c.g, c.b); } ic.needsUpdate = true; });
 }
 
 /* ---------------- Keep needles off the front of the hero pieces ---------------- */
@@ -37629,17 +37681,20 @@ function spotFront(size, yMin, yMax, depth, spread = 1.1) {   // hero pieces go 
 }      // yaw that turns local +z outward from the trunk
 
 /* ---------------- Ribbon geometry ---------------- */
-// strip along points with given surface normals; 3 columns across so tails can have a V-cut end
-function strip(pts, nrm, width, { uLen = width, notch = false, taper = null, flip = false } = {}) {
+// strip along points with given surface normals; 3 columns across so tails can have a V-cut end.
+// ripple: wired-edge wave (fraction of the width) on the two edges, out of phase, `waves` per strip; cup: the centre
+// column sits back by this fraction of the width, so the ribbon cups and catches light along its edges.
+function strip(pts, nrm, width, { uLen = width, notch = false, taper = null, flip = false, ripple = 0, waves = 6, cup = 0 } = {}) {
   const n = pts.length, pos = [], uv = [], idx = []; let L = 0;
   const tng = new THREE.Vector3(), side = new THREE.Vector3();
   for (let i = 0; i < n; i++) {
     tng.subVectors(pts[Math.min(i + 1, n - 1)], pts[Math.max(i - 1, 0)]).normalize();
     side.crossVectors(tng, nrm[i]).normalize();
     if (i) L += pts[i].distanceTo(pts[i - 1]);
-    const w = width * (taper ? taper(i / (n - 1)) : 1) / 2, p = pts[i];
-    let c = p.clone(); if (notch && i === n - 1) c.addScaledVector(tng, -width * 0.42);
-    [p.clone().addScaledVector(side, -w), c, p.clone().addScaledVector(side, w)].forEach((v, k) => { pos.push(v.x, v.y, v.z); uv.push(L / uLen, flip ? 1 - k / 2 : k / 2); });
+    const t = i / (n - 1), w = width * (taper ? taper(t) : 1) / 2, p = pts[i];
+    let c = p.clone().addScaledVector(nrm[i], -cup * w * 2); if (notch && i === n - 1) c.addScaledVector(tng, -width * 0.42);
+    const e0 = ripple ? ripple * width * Math.sin(t * Math.PI * 2 * waves) : 0, e1 = ripple ? ripple * width * Math.sin(t * Math.PI * 2 * waves + 1.9) : 0;
+    [p.clone().addScaledVector(side, -w).addScaledVector(nrm[i], e0), c, p.clone().addScaledVector(side, w).addScaledVector(nrm[i], e1)].forEach((v, k) => { pos.push(v.x, v.y, v.z); uv.push(L / uLen, flip ? 1 - k / 2 : k / 2); });
     if (i < n - 1) { const a = i * 3; idx.push(a, a + 3, a + 1, a + 1, a + 3, a + 4, a + 1, a + 4, a + 2, a + 2, a + 4, a + 5); }
   }
   const g = new THREE.BufferGeometry();
@@ -37647,32 +37702,38 @@ function strip(pts, nrm, width, { uLen = width, notch = false, taper = null, fli
   g.setIndex(idx); g.computeVertexNormals(); return g;
 }
 // a hand-tied bow: loops (ribbon width vertical), centre knot, two hanging V-cut tails. All sizes in inches.
-function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1, open = 0, flare = 0.32, loopTilt = 0.22 }) {
+// Loops are pinched to 0.3 of the width where they enter the knot, carry a wired-edge ripple, cup slightly, and droop
+// (droop ~ 0.28: the outer end sags about 15 degrees) with a little random yaw and tilt each. Tails flare out, then fall
+// under their weight with a half twist (180 degrees) along their length. The knot is a creased band. tails:false leaves
+// them off (gift bows lay their own along the lid).
+function bowGeo({ ribbon, span, tail, loops = 2, uLen = ribbon, seed = 1, open = 0, flare = 0.32, loopTilt = 0.22, droop = 0.28, ripple = 0.04, twist = Math.PI, tails = true }) {
   const r = rng(seed), parts = [], W = ribbon * IN, Lb = span / 2 * IN, T = tail * IN;
   const loopDefs = loops === 2 ? [[0, loopTilt, 1], [Math.PI, loopTilt, 1]] : [[0, 0.5, 1], [Math.PI, 0.5, 1], [0, -0.32, 0.82], [Math.PI, -0.32, 0.82]];
+  const pinch = t => { const m = Math.min(t, 1 - t) / 0.15, s = Math.min(1, m); return 0.3 + 0.7 * s * s * (3 - 2 * s); };
   loopDefs.forEach(([yaw, tilt, len]) => {
-    const pts = [], nrm = [], L = Lb * len * (0.95 + r() * 0.1), dz = Math.max(W * 0.62, L * 0.34);
-    for (let i = 0; i <= 40; i++) {
-      const th = i / 40 * Math.PI * 2;
+    const pts = [], nrm = [], L = Lb * len * (0.95 + r() * 0.1), dz = Math.max(W * 0.62, L * 0.34), dr = droop * (0.8 + r() * 0.4);
+    const e = new THREE.Euler(open + (r() - 0.5) * 0.12, yaw + (r() - 0.5) * 0.16, tilt + (r() - 0.5) * 0.08);
+    for (let i = 0; i <= 48; i++) {
+      const th = i / 48 * Math.PI * 2;
       const x = L / 2 * (1 - Math.cos(th)) * (1 - 0.12 * Math.sin(th / 2)), z = dz * Math.sin(th) * (0.75 + 0.25 * Math.sin(th / 2));
-      const p = new THREE.Vector3(x, 0, z), n = new THREE.Vector3(x - L / 2, 0, z * 1.6).normalize();
-      const e = new THREE.Euler(open, yaw, tilt); p.applyEuler(e); n.applyEuler(e); p.z += 0.15 * W; pts.push(p); nrm.push(n);
+      const p = new THREE.Vector3(x, -dr * x * x / L, z), n = new THREE.Vector3(x - L / 2, 0, z * 1.6).normalize();
+      p.applyEuler(e); n.applyEuler(e); p.z += 0.15 * W; pts.push(p); nrm.push(n);
     }
-    parts.push(strip(pts, nrm, W, { uLen: uLen * IN, taper: t => 0.55 + 0.45 * Math.sin(Math.min(1, Math.sin(t * Math.PI) * 1.4) * Math.PI / 2) }));
+    parts.push(strip(pts, nrm, W, { uLen: uLen * IN, taper: pinch, ripple, waves: 5, cup: 0.06 }));
   });
-  [-1, 1].forEach(s => {  // tails
+  if (tails) [-1, 1].forEach(s => {
     const pts = [], nrm = [];
-    for (let i = 0; i <= 30; i++) {
-      const t = i / 30, tw = 0.5 * Math.sin(t * 3.2 + s);
-      pts.push(new THREE.Vector3(s * (0.03 * W + t * T * flare + Math.sin(t * 4) * 0.08 * W), -t * T * (1 - flare * 0.35), 0.1 * W + Math.sin(t * 2.6 + s) * 0.2 * W + t * T * flare * 0.25));
-      nrm.push(new THREE.Vector3(Math.sin(tw) * s, 0, Math.cos(tw)).normalize());
+    for (let i = 0; i <= 36; i++) {
+      const t = i / 36, tw = s * twist * 0.9 * t + 0.2 * Math.sin(t * 5 + s);
+      pts.push(new THREE.Vector3(s * (0.03 * W + T * flare * Math.sin(t * Math.PI / 2) + Math.sin(t * 4) * 0.06 * W), -T * (0.72 * t + 0.28 * t * t) * (1 - flare * 0.3), 0.1 * W + Math.sin(t * 2.6 + s) * 0.18 * W + T * flare * 0.25 * Math.sin(t * Math.PI)));
+      nrm.push(new THREE.Vector3(Math.sin(tw), 0, Math.cos(tw)).normalize());
     }
-    parts.push(strip(pts, nrm, W * 0.92, { uLen: uLen * IN, notch: true }));
+    parts.push(strip(pts, nrm, W * 0.92, { uLen: uLen * IN, notch: true, taper: t => Math.min(1, 0.55 + t * 3), ripple: ripple * 0.6, waves: 3, cup: 0.04 }));
   });
-  { // knot
-    const pts = [], nrm = [], kr = W * 0.24;
-    for (let i = 0; i <= 24; i++) { const th = i / 24 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(th) * kr, 0, Math.sin(th) * kr * 0.8 + 0.2 * W)); nrm.push(new THREE.Vector3(Math.cos(th), 0, Math.sin(th))); }
-    parts.push(strip(pts, nrm, W * 0.8, { uLen: uLen * IN }));
+  { // knot: a creased band wrapped round the pinched loops
+    const pts = [], nrm = [], kx = W * 0.3, kz = W * 0.24;
+    for (let i = 0; i <= 28; i++) { const th = i / 28 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(th) * kx, 0, Math.sin(th) * kz + 0.2 * W)); nrm.push(new THREE.Vector3(Math.cos(th) * kz, 0, Math.sin(th) * kx).normalize()); }
+    parts.push(strip(pts, nrm, W * 0.78, { uLen: uLen * IN, ripple: 0.05, waves: 2, cup: 0.1 }));
   }
   return mergeGeometries(parts);
 }
@@ -37712,32 +37773,47 @@ function pawBurlapTex(name, tileIn, widthIn, pawIn, perTile) {
   });
   return t;
 }
+// Paws are glued on the front face only (render key paw_face 'front'): the ribbon's visible outer face is the strip's
+// back face (strip() winds its triangles so the geometric front faces along -nrm), so the paw texture goes on BackSide
+// and plain burlap on FrontSide; inside the loops and the back of a twisted tail read as plain weave.
+function pawRibbonMeshes(geo, id, tex, rep, ribbonIn, pawIn, perTile, face) {
+  const paw = { map: pawBurlapTex(tex, rep, ribbonIn, pawIn, perTile), bumpMap: bumpTex(tex), bumpScale: 1.5, roughness: 0.95, envMapIntensity: 0.3 };
+  if (face !== 'front') return [new THREE.Mesh(geo, mat(id, THREE.MeshStandardMaterial, { ...paw, side: THREE.DoubleSide }))];
+  return [new THREE.Mesh(geo, mat(id, THREE.MeshStandardMaterial, { ...paw, side: THREE.BackSide })), new THREE.Mesh(geo, mat(id, THREE.MeshStandardMaterial, { map: photoTex(tex, [1, 1]), bumpMap: bumpTex(tex), bumpScale: 1.5, roughness: 0.95, envMapIntensity: 0.3, side: THREE.FrontSide }))];
+}
 BUILD.topper = (r, id) => {
   const [tex, rep] = RIB[r.ribbon];
   const two = r.loops === 2;   // board bow: two big upswept loops over shorter tails (render keys tail 14, loop_tilt 0.35)
-  const g = bowGeo({ ribbon: r.ribbon, span: r.span, tail: r.tail, loops: r.loops, uLen: rep, seed: 9, open: two ? 0.62 : 0.2, flare: two ? 0.45 : 0.4, loopTilt: r.loop_tilt ?? 0.22 });
+  const g = bowGeo({ ribbon: r.ribbon, span: r.span, tail: r.tail, loops: r.loops, uLen: rep, seed: 9, open: two ? 0.62 : 0.2, flare: two ? 0.42 : 0.4, loopTilt: r.loop_tilt ?? 0.22, droop: two ? 0.22 : 0.28, twist: two ? Math.PI * 0.45 : Math.PI });
   const ribbonLen = 2 * Math.PI * r.span / 2 * 0.9 + 2 * r.tail + 8;   // inches of ribbon in the bow (loops + tails + knot)
-  const m = r.paws ? mat(id, THREE.MeshStandardMaterial, { map: pawBurlapTex(tex, rep, r.ribbon, r.paw_in || 3, r.paws / (ribbonLen / rep)), roughness: 0.95, side: THREE.DoubleSide, envMapIntensity: 0.3 }) : ribbonMat(id, tex);
-  const bow = new THREE.Mesh(g, m); bow.position.set(0, YTOP + 0.1 + (r.ribbon - 4) * IN * 0.45, 0.14); bow.castShadow = true;
-  TARGET.add(bow); tag(bow, id); addInstancePos(id, bow.position);
+  const meshes = r.paws ? pawRibbonMeshes(g, id, tex, rep, r.ribbon, r.paw_in || 3, r.paws / (ribbonLen / rep), r.paw_face) : [new THREE.Mesh(g, ribbonMat(id, tex))];
+  meshes.forEach(bow => { bow.position.set(0, YTOP + 0.1 + (r.ribbon - 4) * IN * 0.45, 0.14); bow.castShadow = true; TARGET.add(bow); tag(bow, id); });
+  addInstancePos(id, meshes[0].position);
 };
 BUILD.flourish = r => {
-  if (r.streamers) [-1, 1].forEach(s => {   // two burlap streamers from the bow down the front of the tree
-    const pts = [], nrm = [], yEnd = Y0 + 0.4;
-    for (let i = 0; i <= 260; i++) {
-      const t = i / 260, y = YTOP - 0.1 - t * (YTOP - 0.1 - yEnd), th = Math.PI / 2 + s * (0.24 + t * 0.42) + 0.05 * Math.sin(t * 17 + s);
-      const ph = t * 5.5, bulge = Math.pow(Math.max(0, Math.sin(ph * Math.PI * 2)), 2);
-      const rr = rAt(y) * 0.97 + 0.05 + 0.16 * bulge * (0.4 + t), tw = 0.55 * Math.sin(ph * Math.PI * 2 + s);
-      const rad = new THREE.Vector3(Math.cos(th), 0.15, Math.sin(th)).normalize(), tan = new THREE.Vector3(-Math.sin(th), 0, Math.cos(th));
-      pts.push(new THREE.Vector3(Math.cos(th) * rr, y, Math.sin(th) * rr)); nrm.push(rad.multiplyScalar(Math.cos(tw)).addScaledVector(tan, Math.sin(tw)).normalize());
-    }
-    const m = new THREE.Mesh(strip(pts, nrm, 6 * IN, { uLen: 10 * IN, notch: true }), ribbonMat('topper', 'tx_burlap6')); m.castShadow = true; TARGET.add(m); tag(m, 'topper');
+  if (r.streamers) [-1, 1].forEach(s => {   // two burlap streamers (render key len, inches each) from the bow down the front of the tree, paws on the front
+    const path = yEnd => { const pts = [], nrm = []; let L = 0;
+      for (let i = 0; i <= 260; i++) {
+        const t = i / 260, y = YTOP - 0.1 - t * (YTOP - 0.1 - yEnd), th = Math.PI / 2 + s * (0.24 + t * 0.42) + 0.05 * Math.sin(t * 17 + s);
+        const ph = t * 5.5, bulge = Math.pow(Math.max(0, Math.sin(ph * Math.PI * 2)), 2);
+        const rr = rAt(y) * 0.97 + 0.05 + 0.16 * bulge * (0.4 + t), tw = 0.55 * Math.sin(ph * Math.PI * 2 + s);
+        const rad = new THREE.Vector3(Math.cos(th), 0.15, Math.sin(th)).normalize(), tan = new THREE.Vector3(-Math.sin(th), 0, Math.cos(th));
+        pts.push(new THREE.Vector3(Math.cos(th) * rr, y, Math.sin(th) * rr)); nrm.push(rad.multiplyScalar(Math.cos(tw)).addScaledVector(tan, Math.sin(tw)).normalize()); if (i) L += pts[i].distanceTo(pts[i - 1]);
+      }
+      return { pts, nrm, L };
+    };
+    let lo = Y0 + 0.2, hi = YTOP - 0.6, P = path(lo);   // end the streamer where its length matches the plan's (render key len)
+    if (r.len && P.L > r.len * IN) { for (let it = 0; it < 18; it++) { const m = (lo + hi) / 2; if (path(m).L > r.len * IN) lo = m; else hi = m; } P = path(lo); }
+    const geo = strip(P.pts, P.nrm, 6 * IN, { uLen: 10 * IN, notch: true, ripple: 0.025, waves: 18, cup: 0.04 });
+    const ms = r.paws ? pawRibbonMeshes(geo, 'topper', 'tx_burlap6', 10, 6, r.paw_in || 3, r.paws / 2 / (P.L / IN / 10), 'front') : [new THREE.Mesh(geo, ribbonMat('topper', 'tx_burlap6'))];
+    ms.forEach(m => { m.castShadow = true; TARGET.add(m); tag(m, 'topper'); });
   });
   if (r.crown) {   // twelve gold glitter sprays fanned out behind the bow
     const beads = [], L = (SZ('gold_picks').h || 17) * IN * 0.85, c = new THREE.Vector3(0, YTOP + 0.05, -0.05);
     const stems = [], up = new THREE.Vector3(0, 1, 0), gm = mat('gold_picks', THREE.MeshStandardMaterial, { color: 0xd8b062, metalness: 0.9, roughness: 0.3, emissive: 0x3a2508, emissiveIntensity: 0.6 });
-    for (let k = 0; k < 12; k++) {
-      const a = -1.3 + k / 11 * 2.6 + R(-0.05, 0.05), dir = new THREE.Vector3(Math.sin(a), Math.cos(a) * 0.95, -0.22).normalize(), len = L * R(0.85, 1.05);
+    const nc = r.n || 12;
+    for (let k = 0; k < nc; k++) {
+      const a = -1.3 + k / (nc - 1) * 2.6 + R(-0.05, 0.05), dir = new THREE.Vector3(Math.sin(a), Math.cos(a) * 0.95, -0.22).normalize(), len = L * R(0.85, 1.05);
       stems.push({ p: c.clone().addScaledVector(dir, len * 0.5), rot: new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(up, dir)), sv: new THREE.Vector3(1, len, 1), noMark: true });
       for (let b = 0; b < 22; b++) { const t = 0.35 + Math.pow(b / 22, 0.8) * 0.65, side = new THREE.Vector3(R(-1, 1), R(-1, 1), R(-1, 1)).multiplyScalar((b % 3 ? 0.35 : 1.1) * IN); beads.push({ p: c.clone().addScaledVector(dir, len * t).add(side), s: 0.2 * IN * R(0.8, 1.3), noMark: !(k === 6 && b === 10) }); }
     }
@@ -37786,45 +37862,92 @@ BUILD.cats = (r, id) => {
   }
 };
 
+/* ---------------- Hangers: cords and wire hooks from a piece's top into the branches ---------------- */
+// hangerGeo(len, back, rad, from): one thin tube per attachment point in `from` ([[x, y, z], ...], inches), each rising
+// along a slightly sagging curve to one apex `len` inches up and `back` inches into the tree (local -z). Inches in, scene units out.
+const HANGER_CACHE = {};
+function hangerGeo(len, back, rad, from = [[0, 0, 0]], seg = 10) {
+  const k = [len, back, rad, JSON.stringify(from), seg].join('|'); if (HANGER_CACHE[k]) return HANGER_CACHE[k];
+  const apex = new THREE.Vector3(0, len, -back).multiplyScalar(IN);
+  const tubes = from.map(([x, y, z]) => { const a = new THREE.Vector3(x, y, z).multiplyScalar(IN), mid = a.clone().lerp(apex, 0.5); mid.x += x * 0.15 * IN; mid.y -= 0.12 * len * IN; mid.z += 0.15 * back * IN;
+    return new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(a, mid, apex), seg, rad * IN, 4, false).toNonIndexed(); });
+  return (HANGER_CACHE[k] = tubes.length > 1 ? mergeGeometries(tubes) : tubes[0]);
+}
+const goldCord = () => mat('gold_cord', THREE.MeshStandardMaterial, { color: 0xd4a94e, metalness: 0.85, roughness: 0.35 });
+
 /* ---------------- Doghouse ornaments: foam board, true size from the template ---------------- */
-const brickTex = canvasTex(256, 256, (g, w) => {   // 11.6 courses per tile; a tile covers 6.4"
-  g.fillStyle = '#3c0f0b'; g.fillRect(0, 0, w, w);
-  for (let y = 0; y < w; y += 22) for (let x = (y / 22) % 2 ? -26 : 0; x < w; x += 52) { g.fillStyle = `hsl(${2 + Math.random() * 6}, ${55 + Math.random() * 15}%, ${26 + Math.random() * 8}%)`; g.fillRect(x + 2, y + 2, 48, 18); }
-  noise(g, w, w, 2500, 0.2, ['#000', '#c86a5a']);
-});
 const shingleTex = canvasTex(256, 256, (g, w) => {
   g.fillStyle = '#d9c497'; g.fillRect(0, 0, w, w);
   for (let y = 0; y < w; y += 32) for (let x = (y / 32) % 2 ? -24 : 0; x < w; x += 48) { g.fillStyle = `hsl(40, ${38 + Math.random() * 12}%, ${72 + Math.random() * 10}%)`; g.fillRect(x + 1, y, 46, 30); g.fillStyle = 'rgba(80,55,25,.35)'; g.fillRect(x, y + 28, 48, 3); g.fillRect(x, y, 2, 30); }
   noise(g, w, w, 1500, 0.15, ['#5a3d1d']);
 });
+function brickTexFor(bhIn, blIn, mortar, seed) {   // one tile = 4 bricks x 6 courses, staggered; dark-brick base under dabbed barn red
+  const tw = 4 * blIn, th = 6 * bhIn, W2 = 256, H2 = Math.max(32, Math.round(256 * th / tw)), br = rng(seed);
+  const t = canvasTex(W2, H2, (g, w, h) => {
+    g.fillStyle = mortar; g.fillRect(0, 0, w, h);
+    const ch = h / 6, bl = w / 4, j = Math.max(1.5, ch * 0.09);
+    for (let k = 0; k < 6; k++) for (let x = k % 2 ? -bl / 2 : 0; x < w; x += bl) {
+      g.fillStyle = `hsl(${358 + br() * 9}, ${52 + br() * 16}%, ${24 + br() * 9}%)`; g.fillRect(x + j / 2, k * ch + j / 2, bl - j, ch - j);
+      g.fillStyle = `rgba(${br() < 0.5 ? '160,52,40' : '40,8,6'},${0.15 + br() * 0.2})`; for (let d = 0; d < 5; d++) g.fillRect(x + j + br() * (bl - 3 * j), k * ch + j + br() * (ch - 3 * j), 2 + br() * 5, 2 + br() * 3);   // dabbed sponge texture
+    }
+    noise(g, w, h, 1200, 0.18, ['#000', '#c86a5a']);
+  });
+  t.userData = { tw, th }; return t;
+}
+function pawShapes(s, cx, cy) {   // drawPaw's pad and four toes as separate shapes (inches, y up)
+  const ell = (x, y, rx, ry, rot) => { const sh = new THREE.Shape(); sh.absellipse(0, 0, rx, ry, 0, Math.PI * 2, false, 0); const pts = sh.getPoints(28).map(p => new THREE.Vector2(cx + x + p.x * Math.cos(rot) - p.y * Math.sin(rot), cy + y + p.x * Math.sin(rot) + p.y * Math.cos(rot))); return new THREE.Shape(pts); };
+  return [ell(0, -0.2 * s, 0.32 * s, 0.26 * s, 0), ...[[-0.36, -0.14, -0.4], [-0.13, -0.38, -0.12], [0.13, -0.38, 0.12], [0.36, -0.14, 0.4]].map(([x, y, r]) => ell(x * s, -y * s, 0.12 * s, 0.16 * s, -r))];
+}
 BUILD.doghouses = (r, id) => {
-  const W = r.w * IN, D = r.d * IN, wallH = r.wall * IN, H = r.ridge * IN, big = r.w > 5, over = (big ? 0.75 : 0.35) * IN, tile = 6.4 * IN;
+  const W = r.w * IN, D = r.d * IN, wallH = r.wall * IN, H = r.ridge * IN, big = r.w > 5, over = (big ? 0.75 : 0.35) * IN;
+  const [doorW, doorH] = r.door || (big ? [3.8, 4.6] : [1.5, 1.9]), trim = big ? 0.5 : 0.22, fb = (big ? 0.19 : 0.12);   // trim width, foam-board thickness (in)
+  const bt = brickTexFor(r.brick_h || (big ? 0.9 : 0.4), r.brick_l || (big ? 1.5 : 0.7), r.mortar || '#3a1912', big ? 21 : 22);
+  const pawRaised = r.raised_paw !== undefined ? !!r.raised_paw : big, pawY = r.ridge - (r.paw_y ?? (r.ridge - r.wall) * 0.62), pawS = big ? 2.5 : 1;
   const frontTex = canvasTex(512, Math.round(512 * r.ridge / r.w), (g, w, h) => {
-    const b = brickTex.image, tw = w * 6.4 / r.w; for (let x = 0; x < w; x += tw) for (let y = 0; y < h; y += tw) g.drawImage(b, x, y, tw, tw);
-    const px = w / r.w, dw = (big ? 3.8 : 1.5) * px, dh = (big ? 4.6 : 1.9) * px, dx = w / 2, by = h, trim = (big ? 0.5 : 0.22) * px;
-    g.fillStyle = '#efe0bf';
-    [[0, trim], [w - trim, trim]].forEach(([x, tw2]) => g.fillRect(x, h - r.wall * px, tw2, r.wall * px));   // cream corner trims
-    g.beginPath(); g.moveTo(dx - dw / 2 - trim, by); g.lineTo(dx - dw / 2 - trim, by - dh + dw / 2); g.arc(dx, by - dh + dw / 2, dw / 2 + trim, Math.PI, 0); g.lineTo(dx + dw / 2 + trim, by); g.fill();
-    const ig = g.createRadialGradient(dx, by - 20, 5, dx, by - dh * 0.5, dh); ig.addColorStop(0, '#d98a3a'); ig.addColorStop(0.35, '#5b2a12'); ig.addColorStop(1, '#170905');
+    const px = w / r.w, b = bt.image; for (let x = 0; x < w; x += bt.userData.tw * px) for (let y = h; y > -bt.userData.th * px; y -= bt.userData.th * px) g.drawImage(b, x, y - bt.userData.th * px, bt.userData.tw * px, bt.userData.th * px);   // courses measured up from the bottom edge
+    const dw = doorW * px, dh = doorH * px, dx = w / 2, by = h;
+    const ig = g.createLinearGradient(0, by - dh, 0, by); ig.addColorStop(0, '#070302'); ig.addColorStop(1, r.interior === 'dark' ? '#1c0d07' : '#5b2a12');   // dark inside (render key interior)
     g.fillStyle = ig; g.beginPath(); g.moveTo(dx - dw / 2, by); g.lineTo(dx - dw / 2, by - dh + dw / 2); g.arc(dx, by - dh + dw / 2, dw / 2, Math.PI, 0); g.lineTo(dx + dw / 2, by); g.fill();
-    drawPaw(g, w / 2, h - (r.wall + (r.ridge - r.wall) * 0.38) * px, (big ? 2.5 : 1) * px, '#efe0bf');
+    if (!pawRaised) drawPaw(g, w / 2, h - pawY * px, pawS * px, '#efe0bf');   // the small house's paw is painted on
   }, { clamp: true });
-  const brick = brickTex.clone(); brick.needsUpdate = true; brick.repeat.set(D / tile, wallH / tile);
+  const brick = bt.clone(); brick.needsUpdate = true; brick.repeat.set(r.d / bt.userData.tw, r.wall / bt.userData.th); brick.offset.set(0, 0);
   const shingle = shingleTex.clone(); shingle.needsUpdate = true; shingle.repeat.set(1.2 * r.w / 8.5, 1.2 * r.d / 6);
   const body = new THREE.BoxGeometry(W, wallH, D); body.translate(0, wallH / 2, 0);
   const gable = new THREE.Shape(); gable.moveTo(-W / 2, 0); gable.lineTo(W / 2, 0); gable.lineTo(W / 2, wallH); gable.lineTo(0, H); gable.lineTo(-W / 2, wallH); gable.closePath();
   const front = new THREE.ShapeGeometry(gable); { const uv = front.attributes.uv, p = front.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, (p.getX(i) + W / 2) / W, p.getY(i) / H); } front.translate(0, 0, D / 2 + 0.001);
   const back = new THREE.ShapeGeometry(gable); back.rotateY(Math.PI); back.translate(0, 0, -D / 2 - 0.001);
-  const slope = Math.atan2(H - wallH, W / 2), rl = Math.hypot(W / 2, H - wallH) + over;
-  const roofs = [-1, 1].map(sg => { const rf = new THREE.BoxGeometry(rl, 0.3 * IN, D + 2 * over); rf.rotateZ(-sg * slope); rf.translate(sg * (rl / 2 - over * 0.6) * Math.cos(slope), H - (rl / 2 - over * 0.6) * Math.sin(slope) + 0.15 * IN, 0); return rf; });
+  const slope = Math.atan2(H - wallH, W / 2), rl = Math.hypot(W / 2, H - wallH) + over, rT = 0.3 * IN;
+  const roofAt = (sg, along, below) => { const c = Math.cos(slope), s = Math.sin(slope); return new THREE.Vector3(sg * along * c + sg * s * -below, H - along * s + rT / 2 + 0.15 * IN - c * below, 0); };   // a point on a roof slope: `along` from the peak, `below` under the roof's mid-plane
+  const roofs = [-1, 1].map(sg => { const rf = new THREE.BoxGeometry(rl, rT, D + 2 * over); rf.rotateZ(-sg * slope); const c = roofAt(sg, rl / 2 - over * 0.6, 0); rf.translate(c.x, c.y - rT / 2, 0); return rf; });
   const geoBrick = mergeGeometries([body.toNonIndexed(), back.toNonIndexed()]), geoRoof = mergeGeometries(roofs.map(x => x.toNonIndexed()));
+  // raised cream trims (template page 8), extruded from foam board and glued on: one merged geometry
+  const ex = (shapes, depth, z) => { const g = new THREE.ExtrudeGeometry(shapes, { depth: depth * IN, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03 * IN, bevelSegments: 1, curveSegments: 20 }); g.scale(IN, IN, 1); g.translate(0, 0, z); return g.toNonIndexed(); };
+  const trims = [], zf = D / 2 + 0.002;
+  { const ow = doorW / 2 + trim, ar = doorW / 2, y0 = fb, yc = doorH - ar;   // U arch trim: 0.5" all round the arch-topped door, legs on the threshold
+    const u = new THREE.Shape(); u.moveTo(-ow, y0); u.lineTo(-ow, yc); u.absarc(0, yc, ow, Math.PI, 0, true); u.lineTo(ow, y0); u.lineTo(ar, y0); u.lineTo(ar, yc); u.absarc(0, yc, ar, 0, Math.PI, false); u.lineTo(-ar, y0); u.closePath();
+    trims.push(ex(u, fb, zf)); }
+  [-1, 1].forEach(sg => [zf, -zf - fb * IN].forEach(z => { const c = new THREE.BoxGeometry(trim * IN, wallH - 0.02 * IN, fb * IN); c.translate(sg * (W / 2 - trim * IN / 2), wallH / 2, z + fb * IN / 2); trims.push(c.toNonIndexed()); }));   // corner trims, front and back
+  if (r.threshold !== false) { const t = new THREE.BoxGeometry((doorW + 2 * trim) * IN, fb * IN, (big ? 0.75 : 0.4) * IN + fb * IN); t.translate(0, fb * IN / 2, D / 2 + ((big ? 0.75 : 0.4) * IN + fb * IN) / 2); trims.push(t.toNonIndexed()); }
+  if (r.barge !== false) [-1, 1].forEach(sg => {   // barge boards along the front roof edges, top flush with the roof
+    const bw = (big ? 0.6 : 0.3) * IN, len = rl, b = new THREE.BoxGeometry(len, bw, fb * IN); b.rotateZ(-sg * slope);
+    const c = roofAt(sg, len / 2 - over * 0.6, bw / 2 - rT / 2); b.translate(c.x, c.y, D / 2 + over - fb * IN / 2 + 0.01 * IN); trims.push(b.toNonIndexed());
+  });
+  if (pawRaised) trims.push(ex(pawShapes(pawS, 0, pawY), fb, zf));
+  const geoTrim = mergeGeometries(trims);
   const mBrick = mat(id, THREE.MeshStandardMaterial, { map: brick, roughness: 0.8 }), mFront = mat(id, THREE.MeshStandardMaterial, { map: frontTex, roughness: 0.8, side: THREE.DoubleSide }), mRoof = mat(id, THREE.MeshStandardMaterial, { map: shingle, roughness: 0.75 });
+  const mTrim = mat(id, THREE.MeshStandardMaterial, { color: 0xefe2c2, roughness: 0.6 });
   const list = [];
   for (let i = 0; i < r.n; i++) {
     const { p } = i < 2 ? spotFront(H * 1.15, 2.2, 4.4, 1.03, i ? 1.3 : 0.3) : spot(H * 1.15, Y0 + 0.7, YTOP - 1.3, 1.03);
     list.push({ p: p.clone().add(new THREE.Vector3(0, -H * 0.5, 0)), rot: new THREE.Euler(0, faceY(p) + R(-0.25, 0.25), R(-0.05, 0.05)) });
   }
-  instanced(geoBrick, mBrick, list, id); instanced(front, mFront, list.map(l => ({ ...l, noMark: true })), id); instanced(geoRoof, mRoof, list.map(l => ({ ...l, noMark: true })), id);
+  const nm = list.map(l => ({ ...l, noMark: true }));
+  instanced(geoBrick, mBrick, list, id); instanced(front, mFront, nm, id); instanced(geoRoof, mRoof, nm, id); instanced(geoTrim, mTrim, nm, id);
+  if (r.ridge_cap !== false) {   // ridge cap: two strips glued as a peak, painted barn red with sienna
+    const cw = (big ? 0.5 : 0.25) * IN, caps = [-1, 1].map(sg => { const c = new THREE.BoxGeometry(cw, fb * IN, D + 2 * over); c.rotateZ(-sg * slope); const q = roofAt(sg, cw / 2 - 0.02 * IN, -rT / 2 - fb * IN / 2); c.translate(q.x, q.y, 0); return c.toNonIndexed(); });
+    instanced(mergeGeometries(caps), mat(id, THREE.MeshStandardMaterial, { color: 0x7c1d16, roughness: 0.7 }), nm, id);
+  }
+  if (r.hang === 'loop') instanced(hangerGeo(r.ridge + 1.8, 1.2, 0.05, [[-r.w * 0.12, r.ridge, 0], [r.w * 0.12, r.ridge, 0]]), goldCord(), nm, null, { cast: false });   // a gold cord loop glued under the ridge
   list.forEach(l => HERO_BOX.push({ g: TARGET, p: l.p, rot: l.rot, hw: W / 2 + over, y0: 0, y1: H + 0.3 * IN, zf: D / 2 + over }));   // clearFoliage keeps needles off the front
 };
 
@@ -37856,11 +37979,19 @@ BUILD.paws = (r, id) => {
     }
     instanced(ring, goldMetal(id), list, id);
     list.forEach(l => HERO_BOX.push({ g: TARGET, p: l.p, rot: l.rot, hw: Rr + tube, y0: -top - Rr - tube, y1: -top + Rr + 2 * IN, zf: tube * 0.8 }));
-    instanced(face, mat(id, THREE.MeshStandardMaterial, { map: faceTex, roughness: 0.9 }), list.map(l => ({ ...l, noMark: true })), id);
+    // the black glitter card paw sparkles: roughness/metalness and a glitter normal map inside the paw only, matte Aida round it
+    const pawPx = (() => { const c = document.createElement('canvas'); c.width = c.height = 512; drawPaw(c.getContext('2d'), 256, 512 * 0.53, 512 * 0.66, '#fff'); return c.getContext('2d').getImageData(0, 0, 512, 512).data; })();
+    const gr = rng(515), pxTex = fill => canvasTex(512, 512, (g, w) => { const im = g.createImageData(w, w); for (let i = 0; i < w * w; i++) fill(im.data, i * 4, pawPx[i * 4 + 3] > 127); g.putImageData(im, 0, 0); }, { srgb: false, clamp: true });
+    const rmTex = pxTex((d, o, inPaw) => { const sp = gr() < 0.3; d[o] = 0; d[o + 1] = inPaw ? (sp ? 25 : 90 + gr() * 60) : 235; d[o + 2] = inPaw ? (sp ? 230 : 140 + gr() * 50) : 0; d[o + 3] = 255; });   // G roughness, B metalness
+    const nTex = pxTex((d, o, inPaw) => { const a = gr() * 6.283, k = inPaw && gr() < 0.6 ? gr() * 0.8 : 0; d[o] = 128 + Math.cos(a) * k * 127; d[o + 1] = 128 + Math.sin(a) * k * 127; d[o + 2] = 255 * Math.sqrt(1 - k * k * 0.5); d[o + 3] = 255; });
+    instanced(face, mat(id, THREE.MeshStandardMaterial, { map: faceTex, roughness: 1, metalness: 1, roughnessMap: rmTex, metalnessMap: rmTex, normalMap: nTex, normalScale: new THREE.Vector2(0.8, 0.8), envMapIntensity: 1 }), list.map(l => ({ ...l, noMark: true })), id);
     const feltBack = r.back === 'felt' ? mat(id, THREE.MeshStandardMaterial, { color: 0x161412, roughness: 1, map: canvasTex(128, 128, (g, w) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, w); noise(g, w, w, 2500, 0.25, ['#999', '#ddd']); }) })
                                        : mat(id, THREE.MeshStandardMaterial, { color: 0xcdb48a, roughness: 0.95 });   // plain backing otherwise
     instanced(backDisc, feltBack, list.map(l => ({ ...l, noMark: true })), id);
     instanced(clasp, mat(id, THREE.MeshStandardMaterial, { color: 0xb8954a, metalness: 1, roughness: 0.35 }), list.map(l => ({ ...l, noMark: true })), id);
+    // the gold cord: a doubled loop through the brass screw eye, rising behind the bow into the branch (board_paw.jpg)
+    const eye = (Rr + 0.55 * IN - top) / IN;
+    instanced(hangerGeo(1.6, 1.1, 0.06, [[-0.08, eye, -0.05], [0.08, eye, -0.05]]), goldCord(), list.map(l => ({ ...l, noMark: true })), null, { cast: false });
     instanced(bow, velvet(id, 0x5a0a14), list.map(l => ({ ...l, noMark: true })), id);
   } else {                   // 4" painted wood rounds with a mini velvet bow (the earlier design)
     const h = 4.3 * IN, geo = new THREE.PlaneGeometry(h * CUT.paw_disc.w / CUT.paw_disc.h, h); geo.translate(0, -h / 2, 0);
@@ -37910,7 +38041,7 @@ BUILD.bones = (r, id) => {
     const { xc, yc, r: lr } = geo.userData, apex = new THREE.Vector3(0, yc + lr + Math.min(3.2, Lin * 0.4) * IN, -1.1 * IN);
     const cords = [-1, 1].map(sg => { const a = new THREE.Vector3(sg * xc * 0.92, yc + lr * 0.8, 0), mid = a.clone().lerp(apex, 0.5); mid.x += sg * 0.15 * IN; mid.y -= 0.25 * IN;
       return new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(a, mid, apex), 12, 0.05 * IN, 5, false).toNonIndexed(); });
-    instanced(mergeGeometries(cords), mat('gold_cord', THREE.MeshStandardMaterial, { color: 0xd4a94e, metalness: 0.85, roughness: 0.35 }), list.map(l => ({ ...l, noMark: true })), null);
+    instanced(mergeGeometries(cords), goldCord(), list.map(l => ({ ...l, noMark: true })), null);
   }
 };
 
@@ -37921,8 +38052,9 @@ const capMat = new THREE.MeshStandardMaterial({ color: 0xcaa25a, metalness: 1, r
 const glitterNormal = canvasTex(512, 512, (g, w) => { const im = g.createImageData(w, w); for (let i = 0; i < w * w; i++) { const a = Math.random() * Math.PI * 2, s = Math.random() < 0.6 ? Math.random() * 0.9 : 0; im.data[i * 4] = 128 + Math.cos(a) * s * 127; im.data[i * 4 + 1] = 128 + Math.sin(a) * s * 127; im.data[i * 4 + 2] = 255 * Math.sqrt(1 - s * s * 0.5); im.data[i * 4 + 3] = 255; } g.putImageData(im, 0, 0); }, { repeat: [5, 3], srgb: false });
 const glitterRough = canvasTex(256, 256, (g, w) => { const im = g.createImageData(w, w); for (let i = 0; i < w * w; i++) { const v = Math.random() < 0.35 ? 20 : 150 + Math.random() * 90; im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 255; } g.putImageData(im, 0, 0); }, { repeat: [5, 3], srgb: false });
 const finish = {
-  // shiny = lacquered glass: a coloured mirror under a clear coat, so the bulb glints on top stay white-hot
-  shiny: () => ({ color: 0xffffff, metalness: 1, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 1.6 }),
+  // shiny = lacquered glass: a coloured mirror under a clear coat, so the bulb glints on top stay white-hot. Metalness 0.85,
+  // not 1: a little diffuse lacquer keeps the body crimson where it reflects the dark room
+  shiny: () => ({ color: 0xffffff, metalness: 0.85, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 1.6 }),
   mirror: () => ({ color: 0xffffff, metalness: 1, roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.6 }),
   matte: () => ({ color: 0xffffff, metalness: 0.35, roughness: 0.5, clearcoat: 0.15, clearcoatRoughness: 0.4, envMapIntensity: 0.3 }),
   glitter: () => ({ color: 0xffffff, metalness: 0.8, roughness: 0.42, roughnessMap: glitterRough, normalMap: glitterNormal, normalScale: new THREE.Vector2(0.9, 0.9), envMapIntensity: 1.1 }),
@@ -37962,7 +38094,7 @@ function balls(id, list, spots) {   // list: [{ d (in), c, f }]; big first so th
     const r = b.d / 2 * IN, d0 = b.d >= 3.9 ? 0.93 : 0.9, p = spot(r * 2.2, Y0 + 0.25 + r, YTOP - 0.3, d0).p.clone();   // a copy: the spot itself stays in placed[]
     // depth: smooth glossy balls ride the tips, sequin/glitter and small balls are tucked deeper and lit by the bulb glow
     // (LD5, R9). Drawn from BDEPTH, so spot() and rand() run exactly as before and every later piece lands where it did.
-    const u = BDEPTH(), dep = b.f === 'shiny' || b.f === 'mirror' ? 0.86 + 0.08 * u : b.f === 'glitter' || b.f.startsWith('tex:') ? (b.d >= 3.9 ? 0.74 + 0.12 * u : 0.7 + 0.22 * u) : 0.65 + 0.3 * u;
+    const u = BDEPTH(), dep = b.f === 'shiny' || b.f === 'mirror' ? 0.86 + 0.08 * u : b.f === 'glitter' || b.f.startsWith('tex:') ? (b.d >= 3.9 ? 0.8 + 0.1 * u : 0.76 + 0.16 * u) : 0.74 + 0.21 * u;
     const rr = Math.hypot(p.x, p.z), rn = (rr - 0.02) * dep / d0 + 0.02; p.x *= rn / rr; p.z *= rn / rr;
     const rx = R(-0.2, 0.2), ry = R(0, 6.28), rz = R(-0.2, 0.2), yawOnly = b.f === 'glitter' || b.f.startsWith('tex:');   // stripes and sequin rows stay square to the cap
     (groups[b.f] ||= []).push({ p, s: r, c: b.c, rot: new THREE.Euler(yawOnly ? 0 : rx, ry, yawOnly ? 0 : rz) }); spots.push({ p, s: r }); });
@@ -37979,6 +38111,8 @@ BUILD.baubles = r => {
     .sort((a, b) => Math.max(...b[1].map(x => x.d)) - Math.max(...a[1].map(x => x.d)))
     .forEach(([id, list]) => balls(id, list, spots));
   instanced(capGeo, capMat, spots.map(b => ({ p: b.p, s: b.s, noMark: true })), null);
+  // a gold wire hook from each cap's loop up into the branch behind (one draw call)
+  instanced(hangerGeo(1.3, 0.9, 0.022, [[0, 0, 0]], 8), capMat, spots.map(b => ({ p: b.p.clone().add(new THREE.Vector3(0, b.s * 1.2, 0)), rot: new THREE.Euler(0, faceY(b.p), 0), noMark: true })), null, { cast: false });
 };
 
 /* ---------------- Tartan ribbon: cascades with poufs, and big hand-tied bows ---------------- */
@@ -37988,7 +38122,7 @@ BUILD.ribbon = r => {
     const th0 = k * Math.PI * 2 / r.cascades + 0.25, pts = [], nrm = [];
     for (let i = 0; i <= 320; i++) {
       const t = i / 320, y = YTOP - 0.55 - t * (YTOP - Y0 - 0.55), th = th0 + 0.5 * t + 0.04 * Math.sin(t * 13 + k);
-      const ph = t * 4.5 + k * 0.37, bulge = Math.pow(Math.max(0, Math.sin(ph * Math.PI * 2)), 2.2);
+      const ph = t * (r.poufs || 4.5) + k * 0.37, bulge = Math.pow(Math.max(0, Math.sin(ph * Math.PI * 2)), 2.2);
       const rr = rAt(y) * 0.95 + 0.02 + 0.11 * bulge * (0.5 + rAt(y) / RB * 0.5), tw = 0.5 * Math.sin(ph * Math.PI * 2 + 1.2);
       const rad = new THREE.Vector3(Math.cos(th), 0.25 + bulge * 0.5 * Math.cos(ph * Math.PI * 2), Math.sin(th)).normalize(), tan = new THREE.Vector3(-Math.sin(th), 0, Math.cos(th));
       pts.push(new THREE.Vector3(Math.cos(th) * rr, y, Math.sin(th) * rr)); nrm.push(rad.multiplyScalar(Math.cos(tw)).addScaledVector(tan, Math.sin(tw)).normalize());
@@ -38152,39 +38286,163 @@ function stockPawTex(name) {
     g.globalCompositeOperation = 'source-atop'; drawPaw(g, cx * c.w, cy * c.h, Math.min(s, 0.16) * c.h * 0.62, '#151313', -0.15); t.needsUpdate = true; });
   return (STOCK_TEX[name] = t);
 }
-BUILD.stockings = r => { ['stock_red', 'stock_green', 'stock_cream'].forEach(n => { for (let i = 0; i < r.n / 3; i++) { const { p } = spot(SZ('stockings').h * IN, 1.4, 5.5, 1.0);
+const YARN = { stock_red: 0x8e1420, stock_green: 0x1d4a2c, stock_cream: 0xe6dcc6 };
+BUILD.stockings = r => { const loops = []; ['stock_red', 'stock_green', 'stock_cream'].forEach(n => { for (let i = 0; i < r.n / 3; i++) { const { p } = spot(SZ('stockings').h * IN, 1.4, 5.5, 1.0);
   const hIn = (SZ('stockings').h || 4.3) * 1.25, D = Math.min(hIn * CUT[n].w / CUT[n].h, hIn) * IN * 0.22, th = faceY(p);   // hung on the branch tips, in front of the needles
-  photoCard(n, 'stockings', hIn, p.clone().add(new THREE.Vector3(Math.sin(th), 0, Math.cos(th)).multiplyScalar(0.6 * D + 1.2 * IN)), { anchor: 'top', depth: 0.22, ry: th + yawJ(0.4), tilt: 0.05, tex: r.paws ? stockPawTex(n) : null, hero: true }); } }); };
-function sprays(id, n, color, stemsPer, beadIn, lenIn) {   // glitter spray picks: thin stems tipped with glitter beads
-  const beads = []; const L = lenIn * IN;
+  const at = p.clone().add(new THREE.Vector3(Math.sin(th), 0, Math.cos(th)).multiplyScalar(0.6 * D + 1.2 * IN));
+  const g = photoCard(n, 'stockings', hIn, at, { anchor: 'top', depth: 0.22, ry: th + yawJ(0.4), tilt: 0.05, tex: r.paws ? stockPawTex(n) : null, hero: true });
+  loops.push({ p: at.clone().add(new THREE.Vector3(0, -0.15 * IN, 0)), rot: new THREE.Euler(0, g.rotation.y, 0), c: YARN[n], noMark: true }); } });   // the knit hanging loop, over a branch behind
+  instanced(hangerGeo(1.3, 1.6, 0.07, [[-0.25, 0, -0.1], [0.25, 0, -0.1]], 8), mat('stockings', THREE.MeshStandardMaterial, { color: 0xffffff, roughness: 1 }), loops, null, { cast: false }); };
+// Shared helpers for small instanced parts: an orientation from an "up" axis (and an optional facing), and
+// a quaternion -> Euler for instanced() lists.
+const _UP = new THREE.Vector3(0, 1, 0);
+function eulerFromAxes(up, face = null) {   // local +y along `up`; local +z as close to `face` as possible
+  const y = up.clone().normalize(); let z = face ? face.clone().addScaledVector(y, -face.dot(y)) : null;
+  if (!z || z.lengthSq() < 1e-6) return new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(_UP, y));
+  z.normalize(); const x = new THREE.Vector3().crossVectors(y, z);
+  return new THREE.Euler().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+}
+const STEM_GEO = (() => { const g = new THREE.CylinderGeometry(1, 1, 1, 5, 1, true); g.translate(0, 0.5, 0); return g; })();   // unit stem from 0 to +y
+const stemItem = (a, b, rad) => { const d = b.clone().sub(a), L = d.length(); return { p: a.clone(), rot: eulerFromAxes(d), sv: new THREE.Vector3(rad, L, rad), noMark: true }; };
+// a gold glitter lace leaf (the gold_picks product): pointed, serrated, 1 unit long along +y, slightly cupped
+const LEAF_GEO = (() => {
+  const s = new THREE.Shape(); s.moveTo(0, 0);
+  const n = 7, R2 = [];
+  for (let i = 1; i <= n; i++) { const t = i / (n + 1), w = 0.26 * Math.sin(Math.PI * Math.pow(t, 0.8)); R2.push([w, t]); }
+  R2.forEach(([w, t], i) => { s.lineTo(w * 0.78, t - 0.05); s.lineTo(w, t); });
+  s.lineTo(0, 1); R2.slice().reverse().forEach(([w, t]) => { s.lineTo(-w, t); s.lineTo(-w * 0.78, t - 0.05); }); s.lineTo(0, 0);
+  const g = new THREE.ShapeGeometry(s, 2), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); p.setZ(i, -1.1 * x * x + 0.12 * Math.sin(y * Math.PI)); }   // cupped along the midrib, arched
+  g.computeVertexNormals(); return g;
+})();
+// a small glitter poinsettia: two rings of 5 pointed petals round a cluster of beads
+const FLOWER_GEO = (() => {
+  const parts = [];
+  [[0, 1, 0.12], [Math.PI / 5, 0.72, 0.2]].forEach(([a0, len, lift]) => { for (let k = 0; k < 5; k++) { const g = LEAF_GEO.clone(); g.scale(0.8, len, 0.8); g.rotateX(-Math.PI / 2 + lift); g.rotateY(a0 + k * Math.PI * 2 / 5); parts.push(g); } });
+  for (let k = 0; k < 7; k++) { const a = k * 2.4, rr = k ? 0.09 : 0; parts.push(new THREE.SphereGeometry(0.06, 8, 6).translate(Math.cos(a) * rr, 0.06, Math.sin(a) * rr)); }
+  return mergeGeometries(parts.map(g => g.index ? g.toNonIndexed() : g));
+})();
+const SPRAY = rng(4242);   // leaves and flowers on the gold picks: their own stream, so rand() and every placement stay as they were
+const sJ = a => (SPRAY() * 2 - 1) * a;
+function sprays(id, n, color, stemsPer, beadIn, lenIn) {   // the gold glitter picks: wire stems with bead sprays, lace leaves and a small poinsettia
+  const beads = [], stems = [], leaves = [], flowers = [], L = lenIn * IN;
+  const gm = mat(id, THREE.MeshStandardMaterial, { color, metalness: 0.85, roughness: 0.35, roughnessMap: glitterRough, normalMap: glitterNormal, side: THREE.DoubleSide });
   for (let i = 0; i < n; i++) {
-    const { p, th } = spot(L * 0.5, 1.4, 6.3, 0.86);
+    const { p, th } = spot(L * 0.5, 1.4, 6.3, 0.86), out = new THREE.Vector3(Math.cos(th), 0, Math.sin(th));
+    const base = p.clone().addScaledVector(out, -1.5 * IN);   // the pick's stem is pushed in among the branches
     for (let k = 0; k < stemsPer; k++) {
       const dir = new THREE.Vector3(Math.cos(th + R(-0.5, 0.5)), R(0, 0.8), Math.sin(th + R(-0.5, 0.5))).normalize();
-      for (let b = 0; b < 9; b++) { const t = 0.55 + b / 9 * 0.45; beads.push({ p: p.clone().addScaledVector(dir, L * t).add(new THREE.Vector3(R(-1, 1), R(-1, 1), R(-1, 1)).multiplyScalar(0.7 * IN)), s: beadIn / 2 * IN * R(0.8, 1.2), noMark: !(k === 0 && b === 3) }); }
+      stems.push(stemItem(base, p.clone().addScaledVector(dir, L * 0.98), 0.045 * IN));
+      for (let b = 0; b < 9; b++) {
+        const t = 0.55 + b / 9 * 0.45, bp = p.clone().addScaledVector(dir, L * t).add(new THREE.Vector3(R(-1, 1), R(-1, 1), R(-1, 1)).multiplyScalar(0.7 * IN));
+        beads.push({ p: bp, s: beadIn / 2 * IN * R(0.8, 1.2), noMark: !(k === 0 && b === 3) });
+        if (b % 3 === 1) stems.push(stemItem(p.clone().addScaledVector(dir, L * (t - 0.06)), bp, 0.02 * IN));   // a fine wire twig to each bead cluster
+      }
+      // two lace leaves along each stem, turned to face out of the tree
+      for (let q = 0; q < 2; q++) {
+        const t = 0.3 + 0.4 * SPRAY(), at = p.clone().addScaledVector(dir, L * t), side = new THREE.Vector3().crossVectors(dir, _UP).normalize().multiplyScalar(q ? -1 : 1);
+        const ld = dir.clone().multiplyScalar(0.6).addScaledVector(side, 0.8).add(new THREE.Vector3(0, sJ(0.3), 0)).normalize();
+        leaves.push({ p: at, rot: eulerFromAxes(ld, out.clone().add(new THREE.Vector3(sJ(0.4), 0.3, sJ(0.4)))), s: (2.4 + SPRAY() * 0.8) * IN, noMark: true });   // lace leaves about 2.5-3" long, as on the product
+      }
     }
+    const fd = out.clone().add(new THREE.Vector3(sJ(0.3), 0.35, sJ(0.3))).normalize();   // the flower faces out and a little up
+    flowers.push({ p: p.clone().addScaledVector(out, L * 0.18), rot: eulerFromAxes(fd), s: (1.7 + SPRAY() * 0.3) * IN, noMark: true });
   }
-  instanced(SPH, mat(id, THREE.MeshStandardMaterial, { color, metalness: 0.85, roughness: 0.35, roughnessMap: glitterRough, normalMap: glitterNormal }), beads, id);
+  instanced(SPH, gm, beads, id);
+  instanced(STEM_GEO, gm, stems, id);
+  instanced(LEAF_GEO, gm, leaves, id);
+  instanced(FLOWER_GEO, gm, flowers, id);
+}
+// The 24-pack of pine picks (data/img/pine_picks.jpg) mixes four heads: jingle bells, red berries, red-and-white
+// mushrooms and plain cones, each with pinecones and a fan of pine sprigs. 4" tall x 3" wide, built as instanced geometry.
+const PINECONE_GEO = (() => {   // a lathe with a sawtooth profile: overlapping scales, about 1 x 1.4 (scaled per instance)
+  const pts = [], N = 64;
+  for (let i = 0; i <= N; i++) { const t = i / N, egg = Math.sin(Math.PI * Math.pow(t, 0.75)) * (1 - 0.25 * t), saw = 1 - 0.22 * ((t * 9) % 1); pts.push(new THREE.Vector2(Math.max(0.001, 0.5 * egg * saw), t * 1.4)); }
+  const g = new THREE.LatheGeometry(pts, 14), p = g.attributes.position, col = new Float32Array(p.count * 3), c = new THREE.Color(), lo = new THREE.Color(0x2e1a0c), hi = new THREE.Color(0x9a6a3c);
+  for (let i = 0; i < p.count; i++) { const y = p.getY(i), a = Math.atan2(p.getZ(i), p.getX(i)), ph = ((y / 1.4 * 9 + a / (Math.PI * 2) * 3) % 1 + 1) % 1;   // scales spiral round the cone
+    const r = Math.hypot(p.getX(i), p.getZ(i)); p.setX(i, p.getX(i) * (1 + 0.12 * (1 - ph))); p.setZ(i, p.getZ(i) * (1 + 0.12 * (1 - ph)));
+    c.copy(lo).lerp(hi, Math.pow(1 - ph, 1.5) * (r > 0.05 ? 1 : 0.3)); col.set([c.r, c.g, c.b], i * 3); }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.computeVertexNormals(); g.translate(0, -0.2, 0); return g;
+})();
+const MUSH_CAP = (() => { const g = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2); g.scale(1, 0.62, 1); return g; })();
+const MUSH_TEX = canvasTex(256, 128, (g, w, h) => { g.fillStyle = '#c8121c'; g.fillRect(0, 0, w, h); g.fillStyle = '#fbf3e4'; for (let i = 0; i < 26; i++) { const x = (i * 97) % w, y = 12 + ((i * 53) % (h * 0.7)); g.beginPath(); g.ellipse(x, y, 7 + (i % 3) * 2, 5 + (i % 2) * 2, 0, 0, 6.28); g.fill(); } });
+const BELL_GEO = (() => {   // a jingle bell: a sphere with a slot and a small loop
+  const s = new THREE.SphereGeometry(1, 20, 14), p = s.attributes.position;
+  for (let i = 0; i < p.count; i++) { const y = p.getY(i), x = p.getX(i); if (y < -0.25 && Math.abs(x) < 0.12) p.setY(i, y * 0.8); }
+  s.computeVertexNormals(); const loop = new THREE.TorusGeometry(0.22, 0.07, 6, 12).translate(0, 1.05, 0);
+  return mergeGeometries([s.toNonIndexed(), loop.toNonIndexed()]);
+})();
+function pinePicks(id, n) {
+  const PK = rng(8128), J = a => (PK() * 2 - 1) * a, cones = [], bells = [], berries = [], caps = [], mstems = [], sprigs = [], stems = [];
+  for (let i = 0; i < n; i++) {
+    const { p } = spot(0.35, 1.3, 5.8, 0.95), ry = faceY(p) + R(-0.6, 0.6);   // the same placement draws as the old photo picks
+    const q = new THREE.Quaternion().setFromAxisAngle(_UP, ry), L = (x, y, z) => new THREE.Vector3(x, y, z).multiplyScalar(IN).applyQuaternion(q).add(p);
+    const D = (x, y, z) => new THREE.Vector3(x, y, z).applyQuaternion(q).normalize(), out = D(0, 0, 1), head = i % 4;   // bells, berries, mushrooms, plain cones
+    stems.push(stemItem(L(0, -0.4, -2.2), L(0, -0.2, 0.2), 0.1 * IN));   // the wired stem goes into the branch
+    // 6 pine sprigs fanned up and out (the foliage needle card, a lighter green)
+    for (let k = 0; k < 6; k++) { const a = -1.1 + k / 5 * 2.2 + J(0.15), len = (3.2 + PK() * 0.9) * IN;
+      sprigs.push({ p: L(0, 0, 0), rot: eulerFromAxes(D(Math.sin(a) * 0.9, 0.35 + Math.cos(a) * 0.55, 0.55 + J(0.2)), out), sv: new THREE.Vector3(len * 0.75, len, len * 0.75), c: new THREE.Color(1.05, 1.15, 0.85), noMark: true }); }
+    // pinecones hang below the head, tips down and out
+    const nc = head === 3 ? 3 : 2;
+    for (let k = 0; k < nc; k++) { const x = nc === 2 ? (k ? 0.55 : -0.6) : (k - 1) * 0.65, s = (head === 3 ? 1.05 : 0.95) * (0.9 + PK() * 0.2) * IN;
+      cones.push({ p: L(x, -0.35 - (k % 2) * 0.2, 0.9), rot: eulerFromAxes(D(x * 0.5, -0.75, 0.6)), sv: new THREE.Vector3(s, s, s), noMark: k > 0 }); }
+    if (head === 0) [-0.35, 0.35].forEach((x, k) => bells.push({ p: L(x, 0.45 + k * 0.15, 1.2), rot: eulerFromAxes(D(J(0.3), 1, 0.2)), s: 0.42 * IN, c: k ? 0xd4ae5c : 0xb3121d, noMark: true }));
+    if (head === 1) for (let k = 0; k < 5; k++) { const a = k * 1.3; berries.push({ p: L(Math.cos(a) * 0.38, 0.45 + Math.sin(a) * 0.3, 1.25 + (k % 2) * 0.1), s: 0.24 * IN, noMark: true }); }
+    if (head === 2) [[-0.3, 0.5, 0.55], [0.4, 0.3, 0.4]].forEach(([x, y, r]) => { const up = D(x * 0.8, 1, 0.5), base = L(x, y - 0.45, 1.1), top = base.clone().addScaledVector(up, 0.45 * IN);
+      mstems.push(stemItem(base, top, 0.13 * IN)); caps.push({ p: top, rot: eulerFromAxes(up), sv: new THREE.Vector3(r, r, r).multiplyScalar(IN), noMark: true }); });
+  }
+  const sprigMat = NEEDLE_MAT;
+  instanced(PINECONE_GEO, mat(id, THREE.MeshStandardMaterial, { vertexColors: true, roughness: 0.88 }), cones, id);
+  instanced(STEM_GEO, mat(id, THREE.MeshStandardMaterial, { color: 0xffffff, roughness: 0.9 }), stems.map(m => ({ ...m, c: 0x6a4a2a })).concat(mstems.map(m => ({ ...m, c: 0xf2e6cc }))), id);
+  instanced(NEEDLE_GEO, sprigMat, sprigs, null);
+  if (bells.length) instanced(BELL_GEO, mat(id, THREE.MeshStandardMaterial, { color: 0xffffff, metalness: 0.9, roughness: 0.28 }), bells, id);
+  if (berries.length) instanced(SPH, mat(id, THREE.MeshPhysicalMaterial, { color: 0xa50d16, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08 }), berries, id);
+  if (caps.length) instanced(MUSH_CAP, mat(id, THREE.MeshPhysicalMaterial, { map: MUSH_TEX, roughness: 0.35, clearcoat: 0.6 }), caps, id);
 }
 BUILD.greens = r => {
   sprays('gold_picks', r.gold, 0xd4ad5c, 3, 0.4, 6);
-  for (let i = 0; i < Math.round(r.pine * 2 / 3); i++) { const { p } = spot(0.35, 1.3, 5.8, 0.95); photoCard('pine_pick', 'pine_picks', (SZ('pine_picks').h || 4) * 1.3, p, { anchor: 'center', depth: 0.25, ry: faceY(p) + R(-0.6, 0.6) }); }
-  if (r.berries) {   // glossy red berry clusters (0.6" berries on 7" stems)
-    const list = [], bd = (SZ('glossy_berries').berry_d || 0.6) * IN;
-    for (let i = 0; i < r.berries; i++) { const { p, th } = spot(0.25, 1.3, 6.3, 0.97); const out = new THREE.Vector3(Math.cos(th), 0, Math.sin(th)); for (let k = 0; k < 7; k++) list.push({ p: p.clone().add(new THREE.Vector3(R(-1, 1) * 1.1 * IN, R(-0.6, 1.6) * IN, R(-1, 1) * 1.1 * IN)).addScaledVector(out, 0.03), s: bd / 2 * R(0.85, 1.1), noMark: k > 0 }); }
-    instanced(SPH, mat('glossy_berries', THREE.MeshPhysicalMaterial, { color: 0x9d0a12, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.05 }), list, 'glossy_berries');
+  pinePicks('pine_picks', Math.round(r.pine * 2 / 3));
+  if (r.berries) {   // glossy red berry clusters (0.6" berries on 7" stems): 7 berries on brown twigs from the cluster's stem
+    const list = [], twigs = [], bd = (SZ('glossy_berries').berry_d || 0.6) * IN;
+    for (let i = 0; i < r.berries; i++) {
+      const { p, th } = spot(0.25, 1.3, 6.3, 0.97); const out = new THREE.Vector3(Math.cos(th), 0, Math.sin(th));
+      const hub = p.clone().add(new THREE.Vector3(0, -0.3 * IN, 0)).addScaledVector(out, 0.01), root = hub.clone().addScaledVector(out, -2.2 * IN).add(new THREE.Vector3(0, -0.9 * IN, 0));
+      twigs.push(stemItem(root, hub, 0.06 * IN));
+      for (let k = 0; k < 7; k++) { const bp = p.clone().add(new THREE.Vector3(R(-1, 1) * 1.1 * IN, R(-0.6, 1.6) * IN, R(-1, 1) * 1.1 * IN)).addScaledVector(out, 0.03), s = bd / 2 * R(0.85, 1.1);
+        list.push({ p: bp, s, noMark: k > 0 }); twigs.push(stemItem(hub, bp.clone().addScaledVector(bp.clone().sub(hub).normalize(), -s * 0.8), 0.035 * IN)); }
+    }
+    const bm = mat('glossy_berries', THREE.MeshPhysicalMaterial, { color: 0x9d0a12, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.05 });
+    instanced(SPH, bm, list, 'glossy_berries');
+    instanced(STEM_GEO, mat('glossy_berries', THREE.MeshStandardMaterial, { color: 0x4a2c1a, roughness: 0.85 }), twigs, 'glossy_berries');
   }
 };
 
 /* ---------------- Under the tree: wrapped gifts ---------------- */
+// A wrapped moving box: paper-rounded edges (RoundedBox, 0.25" radius), the ribbon sitting 0.04" proud with soft edges,
+// and a hand-tied bow standing up on the crossing (tilted back 0.3 rad, loops resting on the lid), its tails laid along
+// the lid toward the front and hanging down the front face (board_gifts.jpg).
 function giftBox([wi, di, hi], faceMat, ribbonMat, ribIn, x, z, ry, id, bow, oneWay = false) {
-  const w = wi * IN, d = di * IN, h = hi * IN, g = new THREE.Group();
-  const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), faceMat); b.position.y = h / 2; b.castShadow = b.receiveShadow = true; g.add(b);
+  const w = wi * IN, d = di * IN, h = hi * IN, g = new THREE.Group(), pr = 0.04 * IN;
+  const b = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 2, 0.25 * IN), faceMat); b.position.y = h / 2; b.castShadow = b.receiveShadow = true; g.add(b);
   const rw = ribIn * IN;
-  (oneWay ? [[rw, h * 1.006, d * 1.006]] : [[w * 1.006, h * 1.006, rw], [rw, h * 1.006, d * 1.006]]).forEach(([a, bb, c]) => { const rb = new THREE.Mesh(new THREE.BoxGeometry(a, bb, c), ribbonMat); rb.position.y = h / 2; g.add(rb); });
+  (oneWay ? [[rw, h + 2 * pr, d + 2 * pr]] : [[w + 2 * pr, h + 2 * pr, rw], [rw, h + 2 * pr, d + 2 * pr]]).forEach(([a, bb, c]) => { const rb = new THREE.Mesh(new RoundedBoxGeometry(a, bb, c, 2, 0.27 * IN), ribbonMat); rb.position.y = h / 2; rb.receiveShadow = true; g.add(rb); });
   g.position.set(x, 0, z); g.rotation.y = ry; TARGET.add(g); tag(g, id); addInstancePos(id, new THREE.Vector3(x, h * 0.7, z));
   contactShadow(x, z, w * 1.5, d * 1.5, ry, 0.7);
-  if (bow) { const m = new THREE.Mesh(bow.geo, bow.mat); m.position.set(x, h + 0.01, z); m.rotation.set(-1.25, ry, 0); m.castShadow = true; TARGET.add(m); tag(m, bow.id); }
+  if (bow) {
+    const W = bow.ribbon * IN, top = h + pr, bg = new THREE.Group(); g.add(bg);
+    const m = new THREE.Mesh(bow.geo, bow.mat); m.position.set(0, top + W * 0.62, 0); m.rotation.x = -0.3; m.castShadow = true; bg.add(m);
+    [-1, 1].forEach(sg => {   // tails: from the knot down onto the lid, along it to the front edge, then down the front face
+      const pts = [], nrm = [], k0 = new THREE.Vector3(sg * 0.1 * W, top + W * 0.45, 0.2 * W), lid = new THREE.Vector3(sg * 0.9 * IN, top + 0.02 * IN, 1.2 * IN), edge = new THREE.Vector3(sg * 1.7 * IN, top + 0.02 * IN, d / 2 + 0.05 * IN);
+      const end = new THREE.Vector3(sg * 2.1 * IN, top - Math.min(h * 0.45, (bow.tail - 3) * IN), d / 2 + pr + 0.03 * IN);
+      for (let i = 0; i <= 30; i++) { const t = i / 30;
+        if (t < 0.25) { const u = t / 0.25; pts.push(k0.clone().lerp(lid, u).add(new THREE.Vector3(0, Math.sin(u * Math.PI) * 0.2 * W, 0))); nrm.push(new THREE.Vector3(0, u, 1 - u).normalize()); }
+        else if (t < 0.55) { const u = (t - 0.25) / 0.3; pts.push(lid.clone().lerp(edge, u)); nrm.push(new THREE.Vector3(0, 1, 0)); }
+        else { const u = (t - 0.55) / 0.45; pts.push(edge.clone().lerp(end, u).add(new THREE.Vector3(0, 0, Math.sin(u * Math.PI) * 0.05 * IN))); nrm.push(new THREE.Vector3(0, 1 - Math.min(1, u * 3), Math.min(1, u * 3)).normalize()); }
+      }
+      bg.add(new THREE.Mesh(strip(pts, nrm, W * 0.92, { uLen: bow.uLen * IN, notch: true, cup: 0.03 }), bow.mat));
+    });
+    tag(bg, bow.id);
+  }
   return g;
 }
 const boxTex = (name, wi, hi) => photoTex(name, [+(wi / 8).toFixed(2), +(hi / 8).toFixed(2)]);
@@ -38193,26 +38451,49 @@ BUILD.gifts = () => {
   const tw = s => mat('tartan_wrap', THREE.MeshStandardMaterial, { map: boxTex('tx_tartan_wrap', s[0], s[2]), roughness: 0.42 });
   const kp = s => mat('paw_wrap', THREE.MeshStandardMaterial, { map: boxTex('tx_paw_wrap', s[0], s[2]), roughness: 0.85 });
   const cream = mat('burlap_ribbon', THREE.MeshStandardMaterial, { color: 0xcdb48a, roughness: 0.95 });
-  const creamBow = { geo: bowGeo({ ribbon: 1.5, span: 10, tail: 6, uLen: 6, seed: 23 }), mat: ribbonMat('burlap_ribbon', 'tx_burlap15'), id: 'burlap_ribbon' };
+  const creamBow = { geo: bowGeo({ ribbon: 1.5, span: 10, tail: 6, uLen: 6, seed: 23, open: 0.25, loopTilt: 0.18, droop: 0.2, tails: false }), mat: ribbonMat('burlap_ribbon', 'tx_burlap15'), id: 'burlap_ribbon', ribbon: 1.5, tail: 6, uLen: 6 };
   // the four Canadian Tire moving boxes at their real sizes: tartan with cream ribbon (A, B, C), kraft paw paper with tartan ribbon (D)
   giftBox(B[0], tw(B[0]), cream, 1.5, -1.6, 1.05, 0.35, 'gift_boxes', creamBow);
   giftBox(B[1], tw(B[1]), cream, 1.5, -1.45, -0.7, 0.15, 'gift_boxes', creamBow);
   giftBox(B[2], tw(B[2]), cream, 1.5, 1.6, 0.25, -0.45, 'gift_boxes', creamBow);
   giftBox(B[3], kp(B[3]), tartanMat('tartan_ribbon'), 4, 0.95, 1.45, -0.2, 'gift_boxes', creamBow, true);
 };
+// Floor layout as on the board (LD9): the bone pillow front-centre-left with the bowl just to its right, in front of the
+// gifts; the dog and cat pair stands to the right of the bowl, clear of the basket. [x, z, yaw]
+const FLOOR_AT = { pillow: [-1.0, 3.0, 0.12], bowl: [-0.12, 3.08, 0.4], dog: [0.62, 2.62], cat: [1.18, 2.88] };
+// a stuffed pillow from a 2D outline: a grid over the shape, raised by a rounded profile of the distance to the edge
+// (front and back halves meeting in a seam on the outline), so the surface is smooth with no seams between parts
+function pillowGeo(L, H, T) {
+  const S = 0.6 * L * (H / (0.6 * L)), r = 0.27 * S, yc = 0.23 * S, sh = 0.18 * L, xc = L / 2 - r;   // bone outline: four lobes and a fat shaft (board_floor.jpg)
+  const smin = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; return Math.min(a, b) - h * h * k * 0.25; };
+  const sdf = (x, y) => { let d = 1e9; [[xc, yc], [xc, -yc], [-xc, yc], [-xc, -yc]].forEach(([cx, cy]) => { d = smin(d, Math.hypot(x - cx, y - cy) - r, r * 0.5); });
+    const qx = Math.abs(x) - xc, qy = Math.abs(y) - sh, box = Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0); return smin(d, box, r * 0.6); };
+  const nx = LOW ? 64 : 96, ny = Math.round(nx * H / L), m = 0.06 * L, x0 = -L / 2 - m, y0 = -H / 2 - m, dx = (L + 2 * m) / nx, dy = (H + 2 * m) / ny, N = (nx + 1) * (ny + 1), Rr = T * 1.15;
+  const P = new Float32Array(N * 3), UV = new Float32Array(N * 2), inside = new Uint8Array(N), id = (i, j) => j * (nx + 1) + i;
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+    let x = x0 + i * dx, y = y0 + j * dy; const n = id(i, j), d = sdf(x, y); let z = 0;
+    if (d < 0) { const k = Math.min(1, -d / Rr); z = T / 2 * Math.sqrt(1 - (1 - k) * (1 - k)) * (1 + 0.06 * Math.cos(x / L * Math.PI)); inside[n] = 1; }
+    else { const e = 1e-4 * L, gx = (sdf(x + e, y) - sdf(x - e, y)) / (2 * e), gy = (sdf(x, y + e) - sdf(x, y - e)) / (2 * e), gl = Math.hypot(gx, gy) || 1; x -= gx / gl * d; y -= gy / gl * d; }   // onto the outline
+    P.set([x, y, z], n * 3); UV.set([(x + L / 2) / L, (y + H / 2) / H], n * 2);
+  }
+  const idx = []; for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const a = id(i, j), b = id(i + 1, j), c = id(i + 1, j + 1), d = id(i, j + 1); [[a, b, c], [a, c, d]].forEach(t => { if (t.some(q => inside[q])) idx.push(...t); }); }
+  const mk = sign => { const g = new THREE.BufferGeometry(), p = P.slice(); for (let n = 0; n < N; n++) p[n * 3 + 2] *= sign; g.setAttribute('position', new THREE.BufferAttribute(p, 3)); g.setAttribute('uv', new THREE.BufferAttribute(UV.slice(), 2));
+    const ix = idx.slice(); if (sign < 0) for (let t = 0; t < ix.length; t += 3) { const q = ix[t + 1]; ix[t + 1] = ix[t + 2]; ix[t + 2] = q; } g.setIndex(ix); g.computeVertexNormals(); return g; };
+  return { front: mk(1), back: mk(-1) };
+}
 BUILD.floor = r => {
-  if (r.pillow) {   // cream sherpa bone pillow, 15" x 9" x 3", with the black felt paw
+  if (r.pillow) {   // cream sherpa bone pillow, 15" x 9" x 3", with the black felt paw: a smooth stuffed bone (no lumpy spheres)
     const s = SZ('bone_pillow'); const L = (s.w || 15) * IN, H = (s.d || 9) * IN, T = (s.h || 3) * IN;
-    const parts = [];
-    for (let k = -3; k <= 3; k++) parts.push(new THREE.SphereGeometry(H * 0.27, 20, 14).translate(k * L * 0.08, 0, 0));
-    [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([x, y]) => parts.push(new THREE.SphereGeometry(H * 0.3, 20, 14).translate(x * L * 0.33, y * H * 0.2, 0)));
-    const geo = mergeGeometries(parts.map(p => p.toNonIndexed())); geo.scale(1, 1, T / (H * 0.6));
-    const g = new THREE.Group(); const body = new THREE.Mesh(geo, mat('bone_pillow', THREE.MeshStandardMaterial, { map: sherpaTex, bumpMap: sherpaTex, bumpScale: 3, roughness: 1 })); body.castShadow = true; g.add(body);
-    const pawT = canvasTex(256, 256, (c, w) => { c.clearRect(0, 0, w, w); drawPaw(c, 128, 136, 210, '#141414'); }, { clamp: true });
-    const paw = new THREE.Mesh(new THREE.PlaneGeometry(4.5 * IN, 4.5 * IN), mat('felt', THREE.MeshStandardMaterial, { map: pawT, transparent: true, alphaTest: 0.3, roughness: 1 }));
-    paw.position.set(-L * 0.18, 0.2 * IN, T * 0.52); g.add(paw);
-    g.position.set(-1.95, H * 0.42, 2.7); g.rotation.set(-0.35, 0.45, 0.06); TARGET.add(g); tag(g, 'bone_pillow'); addInstancePos('bone_pillow', g.position);
-    contactShadow(-1.95, 2.65, L * 1.3, H * 1.1, 0.45, 0.75);
+    const { front, back } = pillowGeo(L, H, T);
+    const sr = rng(606), sherpa = (g, w, hh) => { g.fillStyle = '#e6ddcc'; g.fillRect(0, 0, w, hh); for (let i = 0; i < 7000; i++) { const x = sr() * w, y = sr() * hh, rr = 3 + sr() * 6; g.fillStyle = sr() < .5 ? '#f6f0e4' : '#cbbfa9'; g.beginPath(); g.arc(x, y, rr, 0, 6.28); g.fill(); } };
+    const plain = canvasTex(1024, Math.round(1024 * H / L), sherpa, { clamp: true });
+    const pawT = canvasTex(1024, Math.round(1024 * H / L), (g, w, hh) => { g.drawImage(plain.image, 0, 0); const px = w / (L / IN);
+      g.globalAlpha = 0.35; drawPaw(g, w * 0.32 + 2, hh * 0.48 + 3, 3.7 * px, '#000'); g.globalAlpha = 1; drawPaw(g, w * 0.32, hh * 0.48, 3.7 * px, '#151413');   // felt paw, glued on (soft shadow at its edge)
+      g.globalCompositeOperation = 'source-atop'; noise(g, w, hh, 3000, 0.08, ['#444', '#000']); }, { clamp: true });
+    const m = (map) => mat('bone_pillow', THREE.MeshStandardMaterial, { map, bumpMap: plain, bumpScale: 3, roughness: 1, envMapIntensity: 0.3 });
+    const g = new THREE.Group(); [new THREE.Mesh(front, m(pawT)), new THREE.Mesh(back, m(plain))].forEach(x => { x.castShadow = x.receiveShadow = true; g.add(x); });
+    const P = FLOOR_AT.pillow; g.position.set(P[0], H * 0.47, P[1]); g.rotation.set(-0.18, P[2], 0.02); TARGET.add(g); tag(g, 'bone_pillow'); addInstancePos('bone_pillow', g.position);
+    contactShadow(P[0], P[1] - 0.05, L * 1.3, T * 2.6, P[2], 0.8);
   }
   if (r.bowl && r.bowl_kind === 'steel') {   // Loving Pets Bella bowl: straight-sided deep red (merlot) shell, brushed steel inside, cream paw prints
     const s = SZ('bowl'); const rr = (s.w || 8.5) / 2 * IN, h = (s.h || 2.5) * IN;
@@ -38224,9 +38505,9 @@ BUILD.floor = r => {
     const bowl = new THREE.Group();
     const mShell = new THREE.Mesh(shell, mat('bowl', THREE.MeshPhysicalMaterial, { map: paws, roughness: 0.28, clearcoat: 0.8, clearcoatRoughness: 0.15, side: THREE.DoubleSide }));
     const mSteel = new THREE.Mesh(steel, mat('bowl', THREE.MeshStandardMaterial, { map: brushed, metalness: 1, roughness: 0.32, envMapIntensity: 1.2, side: THREE.DoubleSide }));
-    bowl.add(mShell, mSteel); bowl.position.set(-0.78, 0, 3.95); bowl.rotation.y = 0.4; bowl.traverse(o => { o.castShadow = o.receiveShadow = true; });
-    TARGET.add(bowl); tag(bowl, 'bowl'); addInstancePos('bowl', new THREE.Vector3(-0.78, h, 3.95));
-    contactShadow(-0.78, 3.95, rr * 3, rr * 3, 0, 0.7);
+    bowl.add(mShell, mSteel); bowl.position.set(FLOOR_AT.bowl[0], 0, FLOOR_AT.bowl[1]); bowl.rotation.y = FLOOR_AT.bowl[2]; bowl.traverse(o => { o.castShadow = o.receiveShadow = true; });
+    TARGET.add(bowl); tag(bowl, 'bowl'); addInstancePos('bowl', new THREE.Vector3(FLOOR_AT.bowl[0], h, FLOOR_AT.bowl[1]));
+    contactShadow(FLOOR_AT.bowl[0], FLOOR_AT.bowl[1], rr * 3, rr * 3, 0, 0.7);
   } else if (r.bowl) {     // red glazed bowl with white dots and two painted paws
     const s = SZ('bowl'); const rr = (s.w || 5.9) / 2 * IN, h = (s.h || 1.8) * IN;
     const prof = [[0, 0], [rr * 0.72, 0], [rr * 0.8, h * 0.06], [rr * 0.98, h * 0.85], [rr, h], [rr * 0.93, h], [rr * 0.76, h * 0.2], [0, h * 0.16]].map(([x, y]) => new THREE.Vector2(x, y));
@@ -38235,8 +38516,8 @@ BUILD.floor = r => {
     geo.computeVertexNormals();
     const dots = canvasTex(1024, 256, (g, w, hh) => { g.fillStyle = '#b5101c'; g.fillRect(0, 0, w, hh); g.fillStyle = '#fbf7ef'; for (let y = 40; y < hh; y += 90) for (let x = (y / 90) % 2 ? 60 : 0; x < w; x += 120) { g.beginPath(); g.arc(x, y, 14, 0, 6.28); g.fill(); } [w * 0.22, w * 0.72].forEach(x => { g.fillStyle = '#b5101c'; g.fillRect(x - 70, 20, 140, 200); drawPaw(g, x, 125, 120, '#fbf7ef'); }); });
     const bowl = new THREE.Mesh(geo, mat('bowl', THREE.MeshPhysicalMaterial, { map: dots, roughness: 0.12, clearcoat: 1, side: THREE.DoubleSide }));
-    bowl.position.set(-0.78, 0, 3.95); bowl.castShadow = true; TARGET.add(bowl); tag(bowl, 'bowl'); addInstancePos('bowl', new THREE.Vector3(-0.78, h, 3.95));
-    contactShadow(-0.78, 3.95, rr * 3, rr * 3, 0, 0.7);
+    bowl.position.set(FLOOR_AT.bowl[0], 0, FLOOR_AT.bowl[1]); bowl.castShadow = true; TARGET.add(bowl); tag(bowl, 'bowl'); addInstancePos('bowl', new THREE.Vector3(FLOOR_AT.bowl[0], h, FLOOR_AT.bowl[1]));
+    contactShadow(FLOOR_AT.bowl[0], FLOOR_AT.bowl[1], rr * 3, rr * 3, 0, 0.7);
   }
 };
 
@@ -38297,11 +38578,13 @@ BUILD.basket = r => {
   [0, 1].forEach(k => { const c = new THREE.Mesh(new THREE.BoxGeometry(3.4 * IN, 2.1 * IN, 0.003), [0, 1, 2, 3, 4, 5].map(f => f === 4 ? mat('gift_card', THREE.MeshStandardMaterial, { map: photoTex('tx_card'), roughness: 0.4 }) : mat('gift_card', THREE.MeshStandardMaterial, { color: 0xFBFAF6, roughness: 0.4 })));
     c.position.set(bw * 0.08 + k * 0.06, bh + 1.2 * IN + k * 0.02, -bd * 0.12 - k * 0.03); c.rotation.set(-0.25, 0.1 - k * 0.15, 0.05 - k * 0.12); g.add(c); tag(c, 'gift_card'); });
   addInstancePos('gift_card', W(bw * 0.1, bh + 1.4 * IN, -bd * 0.1));
-  // toys stand in the basket, leaning back against the handle side and kept inside the rim (|x| <= 0.3 x width)
+  // toys stand in the basket, kept inside the rim: the 9" sherpa bone stands on end in the right-hand corner (rolled up
+  // 70 degrees, leaning back), clear of the jar; the rope cane leans behind it and the knot sits at the front right.
   const ht = SZ('holiday_toy'), toyH = (ht.w || 9) * CUT.small_bone.h / CUT.small_bone.w;   // the cream sherpa bone, 9" long, with its black felt paw
-  photoCard('small_bone', 'holiday_toy', toyH, W(bw * 0.24, bh * 0.55, -bd * 0.22), { ry: ry - 0.35, tilt: -0.4, depth: 0.32 });
-  photoCard('rope_cane', 'rope', 8, W(bw * 0.3, bh * 0.45, -bd * 0.02), { ry: ry - 0.2, tilt: -0.3 });
-  photoCard('rope_knot', 'rope', 5, W(bw * 0.3, bh * 0.6, bd * 0.2), { mark: false, ry: ry + 0.1, tilt: -0.25 });
+  const toyW = (ht.w || 9) * IN, roll = 1.2, lift = toyW / 2 * Math.sin(roll) + 0.5 * IN;
+  const toy = photoCard('small_bone', 'holiday_toy', toyH, W(bw * 0.27, lift - toyH * IN / 2 * Math.cos(roll), bd * 0.02), { ry: ry - 0.25, tilt: -0.3, depth: 0.32 }); toy.rotation.z = roll;
+  photoCard('rope_cane', 'rope', 8, W(bw * 0.12, bh * 0.4, -bd * 0.3), { ry: ry - 0.2, tilt: -0.35 });
+  photoCard('rope_knot', 'rope', 5, W(bw * 0.24, bh * 0.55, bd * 0.24), { mark: false, ry: ry + 0.1, tilt: -0.25 });
 };
 
 /* ---------------- Giant doghouse (extra): 24 x 20 x 26", sign; the pair sits in its doorway ---------------- */
@@ -38313,9 +38596,10 @@ BUILD.pair = r => {   // the board's dog-and-cat photo: a golden retriever and a
   const dh = SZ('golden').h || 11, ch = r.cat_h || cs.h || 6, prev = TARGET, cd = catDepth({ h: ch, l: r.cat_l || cs.l, pose: r.cat_pose || 'stand' });
   TARGET = free;
   // as in the board's pair photo they turn toward each other: the golden a little to its left (toward the cat), the cat to its right
-  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0.42, 0, 2.62), { depth: 0.45, ry: 0.35 }); photoCard(catCut, catId, ch, new THREE.Vector3(0.98, 0, 2.86), { depth: cd, ry: -0.5 });
-  contactShadow(0.42, 2.66, 0.85, 0.5, 0, 0.8); contactShadow(0.98, 2.9, 0.6, 0.38, 0, 0.8);
-  addInstancePos('bandanas', new THREE.Vector3(0.42, dh * IN * 0.55, 2.66));
+  const [dx, dz] = FLOOR_AT.dog, [cx, cz] = FLOOR_AT.cat;
+  photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(dx, 0, dz), { depth: 0.45, ry: 0.35 }); photoCard(catCut, catId, ch, new THREE.Vector3(cx, 0, cz), { depth: cd, ry: -0.5 });
+  contactShadow(dx, dz + 0.04, 0.85, 0.5, 0, 0.8); contactShadow(cx, cz + 0.04, 0.6, 0.38, 0, 0.8);
+  addInstancePos('bandanas', new THREE.Vector3(dx, dh * IN * 0.55, dz + 0.04));
   TARGET = door;
   photoCard('golden_scarf', 'golden', dh, new THREE.Vector3(0, 0, GIANT.front + 0.07), { depth: 0.45, ry: 0.35 }); photoCard(catCut, catId, ch, new THREE.Vector3(GIANT.W * 0.2, 0, GIANT.front + 0.24), { depth: cd, ry: -0.5 });   // both in the doorway (door 10" wide)
   contactShadow(0, GIANT.front + 0.1, 0.85, 0.5, 0, 0.8); contactShadow(GIANT.W * 0.2, GIANT.front + 0.26, 0.55, 0.32, 0, 0.8);
